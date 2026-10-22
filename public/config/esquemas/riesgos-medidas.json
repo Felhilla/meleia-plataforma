@@ -1,0 +1,64 @@
+{
+  "titulo": "Medidas",
+  "campos": {
+    "codigo": {
+      "tipo": "texto",
+      "etiqueta": "Código",
+      "obligatorio": true,
+      "max": 40
+    },
+    "titulo": {
+      "tipo": "texto",
+      "etiqueta": "Título",
+      "obligatorio": true,
+      "max": 250
+    },
+    "descripcion": {
+      "tipo": "texto-largo",
+      "etiqueta": "Descripción",
+      "obligatorio": false,
+      "max": 10000
+    },
+    "componente": {
+      "tipo": "lista",
+      "etiqueta": "Componente",
+      "obligatorio": true,
+      "valores": [
+        "componente-1",
+        "componente-2",
+        "componente-3",
+        "componente-4",
+        "componente-5",
+        "componente-6"
+      ]
+    },
+    "riesgos": {
+      "tipo": "lista",
+      "etiqueta": "Riesgos que atiende",
+      "obligatorio": false,
+      "valores": [],
+      "multiple": true
+    },
+    "responsable": {
+      "tipo": "texto",
+      "etiqueta": "Responsable (área o cargo; sin nombres personales)",
+      "obligatorio": false,
+      "max": 250
+    },
+    "plazo": {
+      "tipo": "fecha",
+      "etiqueta": "Plazo",
+      "obligatorio": false
+    },
+    "estado": {
+      "tipo": "lista",
+      "etiqueta": "Estado",
+      "obligatorio": true,
+      "valores": [
+        "Pendiente",
+        "En curso",
+        "Cumplida"
+      ]
+    }
+  }
+}

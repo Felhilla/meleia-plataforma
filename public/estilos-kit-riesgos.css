@@ -1,0 +1,54 @@
+/* Adaptación del mapa y fichas de Riesgos y del panel y pilares del capítulo 06. */
+.kr { display: grid; gap: var(--e5); min-width: 0; }
+.kr h2, .kr h3 { margin-bottom: var(--e3); }
+.kr-resumen { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--e3); }
+.kr-resumen .tarjeta { display: grid; gap: var(--e2); padding: var(--e4); border-left: 5px solid var(--principal); }
+.kr-mapa { display: grid; gap: var(--e2); }
+.kr-fila { display: grid; grid-template-columns: minmax(65px, .4fr) repeat(3, minmax(0, 1fr)); gap: var(--e2); }
+.kr-fila > strong { align-self: center; text-align: center; }
+.kr-fila > span { font-size: var(--t-micro); overflow-wrap: anywhere; }
+.kr-celda { min-height: 128px; padding: var(--e3); border: 1px solid var(--borde); border-radius: var(--radio-chico); display: flex; flex-direction: column; align-items: start; gap: var(--e2); }
+.kr-celda small { font-size: var(--t-micro); }
+.kr-alta { background: var(--alta-fondo); color: var(--alta); }
+.kr-media { background: var(--media-fondo); color: var(--media); }
+.kr-baja { background: var(--baja-fondo); color: var(--baja); }
+.kr-celda .boton { padding: var(--e2); min-height: 44px; background: var(--superficie); color: var(--texto); }
+.kr-filtros { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--e3); }
+.kr label { display: grid; gap: var(--e2); }
+.kr select, .kr input, .kr textarea, .kr-dialogo select, .kr-dialogo input, .kr-dialogo textarea { display: block; width: 100%; min-width: 0; border: 1px solid var(--borde-fuerte); border-radius: var(--radio-chico); background: var(--superficie); color: var(--texto); padding: 10px; }
+.kr textarea, .kr-dialogo textarea { min-height: 110px; }
+.kr-tabla { overflow-x: auto; max-width: 100%; }
+.kr-tabla table { width: 100%; border-collapse: collapse; }
+.kr-tabla td, .kr-tabla th { padding: var(--e3); text-align: left; border-bottom: 1px solid var(--borde); overflow-wrap: anywhere; }
+.kr-acciones, .kr-subtabs { display: flex; flex-wrap: wrap; gap: var(--e2); }
+.kr-subtabs [aria-pressed="true"] { background: var(--principal); color: var(--sobre-principal); }
+.kr-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e4); margin-top: var(--e4); }
+.kr-form > p, .kr-form > .kr-previa { grid-column: 1 / -1; }
+.kr-campo { min-width: 0; }
+.kr-campo label { font-weight: 700; margin-bottom: var(--e2); }
+.kr-error { color: var(--alta); margin: var(--e2) 0; }
+.kr-error:empty, .kr-previa:empty { display: none; }
+.kr-ayuda { font-size: var(--t-chico); padding-left: var(--e4); color: var(--texto-suave); }
+.kr-previa, .kr-bloque { border-top: 1px solid var(--borde); padding-top: var(--e4); margin-top: var(--e4); }
+.kr-fondo { position: fixed; inset: 0; z-index: 100; background: color-mix(in srgb, var(--texto) 25%, transparent); display: grid; place-items: center; padding: var(--e3); }
+.kr-dialogo { background: var(--superficie); color: var(--texto); width: min(1100px, 100%); max-height: 92dvh; overflow: auto; padding: var(--e5); border: 1px solid var(--borde); border-radius: var(--radio); box-shadow: var(--sombra-alta); overflow-wrap: anywhere; }
+.kr-dialogo > .boton:first-child { display: block; margin-left: auto; margin-bottom: var(--e3); }
+.kr-dialogo h2 { max-width: 850px; }
+.kr-dialogo h3 { margin-bottom: var(--e3); }
+.kr-plan { display: grid; grid-template-columns: minmax(250px, .85fr) minmax(0, 1.4fr); gap: var(--e5); align-items: start; }
+.kr-global { padding: var(--e4); }
+.kr-anillo { --avance: 0%; display: grid; place-items: center; width: 110px; height: 110px; flex-shrink: 0; border-radius: 50%; background: radial-gradient(closest-side, var(--superficie) 80%, transparent 82%), conic-gradient(var(--principal) var(--avance), var(--borde) 0); font-size: var(--t-h3); font-weight: 700; color: var(--principal); margin-bottom: var(--e3); }
+.kr-pilares { display: grid; gap: var(--e3); }
+.kr-pilar { display: flex; justify-content: space-between; align-items: center; gap: var(--e3); padding: var(--e4); border: 1px solid var(--borde); border-radius: var(--radio); box-shadow: var(--sombra); background: var(--superficie); color: var(--texto); cursor: pointer; text-align: left; }
+.kr-pilar > span { display: grid; gap: var(--e2); }
+.kr-pilar .kr-anillo { width: 80px; height: 80px; margin: 0; }
+@media (max-width: 960px) { .kr-plan { grid-template-columns: 1fr; } .kr-resumen, .kr-filtros { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 540px) {
+  .kr-form, .kr-filtros { grid-template-columns: 1fr; }
+  .kr-resumen .tarjeta, .kr-dialogo, .kr-pilar { padding: var(--e3); }
+  .kr-fila { grid-template-columns: 54px repeat(3, minmax(0, 1fr)); gap: var(--e1); }
+  .kr-celda { padding: var(--e1); min-height: 110px; }
+  .kr-celda .boton { font-size: var(--t-chico); padding: var(--e1); }
+  .kr-tabla td, .kr-tabla th { padding: var(--e2); }
+  .kr-tabla .boton { padding: var(--e2); }
+}

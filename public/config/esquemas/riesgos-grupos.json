@@ -1,0 +1,35 @@
+{
+  "titulo": "Grupos",
+  "campos": {
+    "nombre": {
+      "tipo": "texto",
+      "etiqueta": "Nombre del grupo",
+      "obligatorio": true,
+      "max": 250
+    },
+    "categoria": {
+      "tipo": "lista",
+      "etiqueta": "Categoría de actor",
+      "obligatorio": true,
+      "valores": [
+        "Instituciones gubernamentales",
+        "Comunidades y asociaciones",
+        "Academia",
+        "Empresas y gremios",
+        "Medios de comunicación",
+        "Empleados, contratistas y proveedores"
+      ]
+    },
+    "participantes": {
+      "tipo": "entero",
+      "etiqueta": "Número de participantes",
+      "obligatorio": false,
+      "min": 0
+    },
+    "fecha": {
+      "tipo": "fecha",
+      "etiqueta": "Fecha de la sesión",
+      "obligatorio": true
+    }
+  }
+}

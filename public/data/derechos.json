@@ -1,6 +1,6 @@
 {
   "origen": "referencia",
-  "nota": "Estándares internacionales que protegen cada derecho humano afectado; se usan como estándares relacionados de cada riesgo.",
+  "nota": "Estándares internacionales que protegen cada derecho humano afectado; se usan como estándares relacionados de cada riesgo. Kit 22-oct-2026: se agregan 7 derechos relevantes para minería (agua, medio ambiente, alimentación, vivienda y tierra, seguridad personal, participación, pueblos indígenas), pendientes de validación de Felipe.",
   "derechos": {
     "Derecho a la vida": [
       "DUDH · art. 3",
@@ -55,6 +55,33 @@
       "OIT C87 · Libertad sindical",
       "OIT C98 · Negociación colectiva",
       "PIDESC · art. 8"
+    ],
+    "Derecho al agua y al saneamiento": [
+      "AG ONU · Res. 64/292 (2010)",
+      "PIDESC · art. 11 y 12 (Observación General 15)"
+    ],
+    "Derecho a un medio ambiente limpio, saludable y sostenible": [
+      "AG ONU · Res. 76/300 (2022)",
+      "Acuerdo de Escazú"
+    ],
+    "Derecho a la alimentación": [
+      "PIDESC · art. 11"
+    ],
+    "Derecho a una vivienda adecuada y a la tierra": [
+      "PIDESC · art. 11"
+    ],
+    "Derecho a la libertad y seguridad personal": [
+      "DUDH · art. 3",
+      "PIDCP · art. 9",
+      "Principios Voluntarios de Seguridad y Derechos Humanos"
+    ],
+    "Derecho a la participación": [
+      "PIDCP · art. 25",
+      "Acuerdo de Escazú · art. 7"
+    ],
+    "Derechos de los pueblos indígenas y tribales": [
+      "OIT C169 · Pueblos indígenas y tribales",
+      "Declaración de la ONU sobre los derechos de los pueblos indígenas"
     ]
   }
 }

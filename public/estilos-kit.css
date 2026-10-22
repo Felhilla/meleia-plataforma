@@ -1,6 +1,6 @@
 /* El Kit reutiliza los tokens y los logos de identidad E11. */
 #cabecera .barra { max-width: 1440px; height: auto; min-height: 80px; flex-wrap: wrap; gap: var(--e3); padding: var(--e3) var(--e4); }
-#kit-cuenta { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e2); margin-left: auto; min-width: 0; }
+#kit-cuenta { display: flex; align-items: center; flex-wrap: nowrap; gap: var(--e2); margin-left: auto; min-width: 0; }
 #kit-cuenta select { max-width: 260px; }
 #kit-nav, .kit-pestanas { display: flex; flex-wrap: wrap; gap: var(--e3); padding: var(--e3) var(--e4); border-bottom: 1px solid var(--borde); }
 #kit-nav:empty { display: none; }
@@ -31,3 +31,8 @@ button:disabled { opacity: .65; cursor: wait; }
   .kit-modulos { grid-template-columns: 1fr; }
   .kit-ingreso { padding: var(--e4); }
 }
+
+#kit-cuenta > *, #kit-cuenta label { flex-shrink: 0; white-space: nowrap; }
+#kit-cuenta select { flex-shrink: 1; min-width: 160px; }
+/* En pantallas angostas la cuenta sí puede pasar a otra línea */
+@media (max-width: 760px) { #kit-cuenta { flex-wrap: wrap; } }

@@ -1,0 +1,77 @@
+{
+  "titulo": "Riesgos",
+  "campos": {
+    "codigo": {
+      "tipo": "texto",
+      "etiqueta": "Código",
+      "obligatorio": true,
+      "max": 40
+    },
+    "nombre": {
+      "tipo": "texto",
+      "etiqueta": "Nombre",
+      "obligatorio": true,
+      "max": 250
+    },
+    "descripcion": {
+      "tipo": "texto-largo",
+      "etiqueta": "Descripción",
+      "obligatorio": false,
+      "max": 10000
+    },
+    "derecho_humano": {
+      "tipo": "lista",
+      "etiqueta": "Derecho humano afectado",
+      "obligatorio": true,
+      "valores": [
+        "Derecho a la vida",
+        "Derecho a condiciones de trabajo dignas",
+        "Derecho a condiciones laborales justas y equitativa",
+        "Derecho a la igualdad y no discriminación",
+        "Derecho a la salud",
+        "Derechos del niño",
+        "Derecho a la movilidad",
+        "Derecho al acceso a la información",
+        "Derecho al acceso a la justicia y reparación efectiva",
+        "Derecho al mínimo vital",
+        "Derecho de asociación, libertad sindical, negociación colectiva"
+      ]
+    },
+    "ambitos": {
+      "tipo": "lista",
+      "etiqueta": "Ámbito",
+      "obligatorio": false,
+      "valores": [
+        "Operación propia",
+        "Cadena de suministro",
+        "Cadena de distribución",
+        "Comunidades del área de influencia"
+      ],
+      "multiple": true
+    },
+    "localizacion": {
+      "tipo": "texto",
+      "etiqueta": "Localización",
+      "obligatorio": false,
+      "max": 250
+    },
+    "actividades": {
+      "tipo": "texto-largo",
+      "etiqueta": "Actividades que lo generan",
+      "obligatorio": false,
+      "max": 10000
+    },
+    "medidas_control": {
+      "tipo": "texto-largo",
+      "etiqueta": "Medidas de control existentes",
+      "obligatorio": false,
+      "max": 10000
+    },
+    "analisis_controles": {
+      "tipo": "texto-largo",
+      "etiqueta": "Análisis de controles",
+      "obligatorio": false,
+      "max": 10000
+    }
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "gravedad": {
+    "criterios": [
+      "escala",
+      "alcance",
+      "irremediabilidad"
+    ],
+    "minimo": 1,
+    "maximo": 3,
+    "cortes": [
+      {
+        "nivel": "Baja",
+        "menor_que": 1.5
+      },
+      {
+        "nivel": "Media",
+        "menor_que": 2.5
+      },
+      {
+        "nivel": "Alta",
+        "menor_que": null
+      }
+    ]
+  },
+  "niveles": [
+    "Alta",
+    "Media",
+    "Baja"
+  ],
+  "probabilidades": [
+    "Baja",
+    "Media",
+    "Alta"
+  ],
+  "prioridad": {
+    "Alta": {
+      "Alta": "Alta",
+      "Media": "Alta",
+      "Baja": "Media"
+    },
+    "Media": {
+      "Alta": "Alta",
+      "Media": "Media",
+      "Baja": "Baja"
+    },
+    "Baja": {
+      "Alta": "Media",
+      "Media": "Baja",
+      "Baja": "Baja"
+    }
+  },
+  "plazos": {
+    "Alta": 6,
+    "Media": 12,
+    "Baja": 18,
+    "sinRiesgo": 12
+  },
+  "componentes": [
+    {
+      "id": "componente-1",
+      "nombre": "Fortalecimiento del compromiso organizacional"
+    },
+    {
+      "id": "componente-2",
+      "nombre": "Articulación estructurada de gestión en empresa y derechos humanos"
+    },
+    {
+      "id": "componente-3",
+      "nombre": "Acciones de gestión y manejo de los riesgos e impactos en DDHH"
+    },
+    {
+      "id": "componente-4",
+      "nombre": "Mecanismo de reclamación y reparación"
+    },
+    {
+      "id": "componente-5",
+      "nombre": "Mecanismo de medición y seguimiento"
+    },
+    {
+      "id": "componente-6",
+      "nombre": "Modelo de comunicación y reporte"
+    }
+  ],
+  "componentesPorEmpresa": {},
+  "estadoCumplido": "Cumplida",
+  "resultadoConfirma": "Confirma",
+  "resultadoAjuste": "Propone ajuste",
+  "tiposMedida": {
+    "Causa": {
+      "Potencial": [
+        "Cesar y/o poner fin",
+        "Prevenir y/o mitigar"
+      ],
+      "Manifestado": [
+        "Reparar"
+      ]
+    },
+    "Contribuye": {
+      "Potencial": [
+        "Cesar y/o poner fin",
+        "Prevenir y/o mitigar",
+        "Ejercicio de influencia"
+      ],
+      "Manifestado": [
+        "Reparar",
+        "Colaborar en reparar"
+      ]
+    },
+    "Directamente vinculada": {
+      "Potencial": [
+        "Ejercicio de influencia"
+      ],
+      "Manifestado": [
+        "Ejercicio de influencia"
+      ]
+    }
+  }
+}

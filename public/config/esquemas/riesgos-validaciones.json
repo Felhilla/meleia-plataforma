@@ -1,0 +1,88 @@
+{
+  "titulo": "Validaciones",
+  "campos": {
+    "riesgo": {
+      "tipo": "referencia",
+      "etiqueta": "Riesgo",
+      "obligatorio": true,
+      "coleccion": "riesgos"
+    },
+    "grupo": {
+      "tipo": "referencia",
+      "etiqueta": "Grupo",
+      "obligatorio": true,
+      "coleccion": "riesgos-grupos"
+    },
+    "resultado": {
+      "tipo": "lista",
+      "etiqueta": "Resultado",
+      "obligatorio": true,
+      "valores": [
+        "Confirma",
+        "Propone ajuste"
+      ]
+    },
+    "propuesta_escala": {
+      "tipo": "entero",
+      "etiqueta": "Escala propuesta",
+      "obligatorio": false,
+      "min": 1,
+      "max": 3
+    },
+    "propuesta_alcance": {
+      "tipo": "entero",
+      "etiqueta": "Alcance propuesta",
+      "obligatorio": false,
+      "min": 1,
+      "max": 3
+    },
+    "propuesta_irremediabilidad": {
+      "tipo": "entero",
+      "etiqueta": "Irremediabilidad propuesta",
+      "obligatorio": false,
+      "min": 1,
+      "max": 3
+    },
+    "propuesta_probabilidad": {
+      "tipo": "lista",
+      "etiqueta": "Probabilidad propuesta",
+      "obligatorio": false,
+      "valores": [
+        "Alta",
+        "Media",
+        "Baja"
+      ]
+    },
+    "propuesta_tipo_impacto": {
+      "tipo": "lista",
+      "etiqueta": "Tipo de impacto propuesta",
+      "obligatorio": false,
+      "valores": [
+        "Potencial",
+        "Manifestado"
+      ]
+    },
+    "propuesta_vinculacion": {
+      "tipo": "lista",
+      "etiqueta": "Vinculación propuesta",
+      "obligatorio": false,
+      "valores": [
+        "Causa",
+        "Contribuye",
+        "Directamente vinculada"
+      ]
+    },
+    "propuesta_justificacion": {
+      "tipo": "texto-largo",
+      "etiqueta": "Justificación propuesta",
+      "obligatorio": false,
+      "max": 10000
+    },
+    "comentario": {
+      "tipo": "texto-largo",
+      "etiqueta": "Comentario del grupo",
+      "obligatorio": false,
+      "max": 10000
+    }
+  }
+}
