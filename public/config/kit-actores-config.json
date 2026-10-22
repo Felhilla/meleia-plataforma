@@ -1,0 +1,100 @@
+{
+  "corte": 4,
+  "niveles": [
+    {
+      "nombre": "Gestión activa",
+      "descripcion": "Interacción estratégica y monitoreo constante",
+      "fila": 1,
+      "columna": 1,
+      "influencia": "alta",
+      "impacto": "bajo"
+    },
+    {
+      "nombre": "Involucramiento estratégico",
+      "descripcion": "Colaboración directa, corresponsabilidad y participación estructurada",
+      "fila": 1,
+      "columna": 2,
+      "influencia": "alta",
+      "impacto": "alto"
+    },
+    {
+      "nombre": "Seguimiento periférico",
+      "descripcion": "Comunicación básica y monitoreo",
+      "fila": 2,
+      "columna": 1,
+      "influencia": "baja",
+      "impacto": "bajo"
+    },
+    {
+      "nombre": "Gestión cautelosa",
+      "descripcion": "Escucha activa, información continua y medidas de mitigación",
+      "fila": 2,
+      "columna": 2,
+      "influencia": "baja",
+      "impacto": "alto"
+    }
+  ],
+  "subidas": {
+    "Seguimiento periférico": [
+      "Gestión activa",
+      "Gestión cautelosa"
+    ],
+    "Gestión activa": [
+      "Involucramiento estratégico"
+    ],
+    "Gestión cautelosa": [
+      "Involucramiento estratégico"
+    ],
+    "Involucramiento estratégico": []
+  },
+  "escalas": {
+    "influencia": [
+      "El actor no cuenta con recursos o capacidad para incidir o afectar a la empresa y su proyecto",
+      "El actor cuenta con pocos recursos o capacidad para incidir o afectar a la empresa y su proyecto (v. gr. Invita a paro o boicot, pero no logra movilizar a muchas personas para que se unan a su iniciativa).",
+      "El actor cuenta con algunos recursos o capacidad para incidir o afectar a la empresa y su proyecto (v. gr. Invita a paro o boicot y logra movilizar a algunas personas para que se unan a su iniciativa y hasta logra aparecer en los medios de comunicación de alcance local).",
+      "El actor cuenta con buenos recursos o capacidad para incidir o afectar a la empresa y su proyecto. (v. gr. Invita a paro o boicot y logra movilizar a muchas personas para que se unan a su iniciativa y hasta logra aparecer en los medios de comunicación de alcance regional, afectando la continuidad del proyecto).",
+      "El actor cuenta con buenos recursos o capacidad para incidir o afectar a la empresa y su proyecto. (v. gr. Invita a paro o boicot y logra movilizar a muchas personas para que se unan a su iniciativa y hasta logra aparecer en los medios de comunicación de alcance nacional, paralizando el proyecto, de manera temporal o definitiva)."
+    ],
+    "impacto": [
+      "Si la empresa no desarrolla su proyecto, el actor no se verá afectado en nada, en cuanto a recursos, condiciones de vida, o satisfacción de necesidades e intereses.",
+      "Si la empresa no desarrolla su proyecto, el actor se verá afectado en muy pocos aspectos, en cuanto a recursos, condiciones de vida, o satisfacción de necesidades e intereses.",
+      "Si la empresa no desarrolla su proyecto, el actor se verá afectado en algunos aspectos, en cuanto a recursos, condiciones de vida, o satisfacción de necesidades e intereses.",
+      "Si la empresa no desarrolla su proyecto, el actor se verá afectado en múltiples aspectos, en cuanto a recursos, condiciones de vida, o satisfacción de necesidades e intereses.",
+      "Si la empresa no desarrolla su proyecto, el actor se verá afectado en casi todos los aspectos, en cuanto a recursos, condiciones de vida, o satisfacción de necesidades e intereses."
+    ],
+    "dependencia": [
+      "No existe dependencia operativa, estratégica ni social entre las partes",
+      "Existencia mínima de vínculos indirectos o simbólicos, sin afectación directa.",
+      "Existe una relación funcional moderada (p. ej., contrataciones, trámites o permisos).",
+      "Interdependencia significativa (ej.: comunidades que dependen del empleo o la contratación de proveeduría de servicios por parte de la empresa y su proyecto y la empresa y el proyecto de la comunidad para operar).",
+      "Alta vulnerabilidad mutua. La continuidad de la operación depende críticamente de este actor o viceversa."
+    ],
+    "tension": [
+      "Relación estable, sin antecedentes de conflicto o demandas significativas.",
+      "Percepción neutral o levemente crítica. Bajo riesgo de movilización o tensión.",
+      "Han existido desacuerdos, reclamos menores o desinformación que requieren monitoreo.",
+      "Conflictos activos o latentes; presencia de reclamos reiterativos o movilización.",
+      "Conflicto abierto, presión social activa o acciones que impiden la operación."
+    ],
+    "responsabilidad": [
+      "No existe relación normativa ni expectativa significativa de responsabilidad.",
+      "Expectativas sociales limitadas, sin obligación formal o directa.",
+      "Responsabilidad difusa pero relevante, derivada de políticas internas o buenas prácticas.",
+      "Responsabilidad reconocida por compromisos públicos, normativos o contractuales.",
+      "Responsabilidad directa y crítica (por ejemplo, autoridades regulatorias, comunidades con impacto directo o titulares de derechos adquiridos)."
+    ]
+  },
+  "alerta": {
+    "posicion": "Desfavorable",
+    "tensionMinima": 4
+  },
+  "motivosAjuste": [
+    "Calificación en el límite: un eje en 3 que se comporta como alto",
+    "Conflicto: tensión de 4 o más, o posición desfavorable con capacidad de movilizar",
+    "Obligación legal o contractual directa: responsabilidad de 4 o más",
+    "Decisión estratégica de la empresa",
+    "Ajuste del mapeo original (criterio experto GH)"
+  ],
+  "categoriasPorEmpresa": {},
+  "escalasFuente": "Hoja «Metodología» de los mapeos de actores de GH (AA1000SES), redacción genérica."
+}

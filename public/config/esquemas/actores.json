@@ -1,0 +1,133 @@
+{
+  "titulo": "Actores",
+  "campos": {
+    "categoria": {
+      "tipo": "lista",
+      "etiqueta": "Categoría",
+      "obligatorio": true,
+      "valores": [
+        "Instituciones gubernamentales",
+        "Comunidades y asociaciones",
+        "Academia",
+        "Empresas y gremios",
+        "Medios de comunicación",
+        "Empleados, contratistas y proveedores"
+      ]
+    },
+    "subgrupo": {
+      "tipo": "texto",
+      "etiqueta": "Subgrupo",
+      "obligatorio": false,
+      "max": 250
+    },
+    "orden": {
+      "tipo": "lista",
+      "etiqueta": "Orden o alcance",
+      "obligatorio": false,
+      "valores": [
+        "Nacional",
+        "Regional",
+        "Local"
+      ]
+    },
+    "institucion": {
+      "tipo": "texto",
+      "etiqueta": "Institución u organización",
+      "obligatorio": true,
+      "max": 250
+    },
+    "dependencia_area": {
+      "tipo": "texto",
+      "etiqueta": "Dependencia o área",
+      "obligatorio": false,
+      "max": 250
+    },
+    "cargo": {
+      "tipo": "texto",
+      "etiqueta": "Cargo o rol",
+      "obligatorio": true,
+      "max": 250
+    },
+    "caracterizacion": {
+      "tipo": "texto-largo",
+      "etiqueta": "Caracterización",
+      "obligatorio": false,
+      "max": 4000
+    },
+    "posicion": {
+      "tipo": "lista",
+      "etiqueta": "Posición",
+      "obligatorio": true,
+      "valores": [
+        "Favorable",
+        "Neutral",
+        "Desfavorable"
+      ]
+    },
+    "dependencia": {
+      "tipo": "nivel",
+      "etiqueta": "Dependencia",
+      "obligatorio": true,
+      "escala": 5
+    },
+    "tension": {
+      "tipo": "nivel",
+      "etiqueta": "Tensión",
+      "obligatorio": true,
+      "escala": 5
+    },
+    "responsabilidad": {
+      "tipo": "nivel",
+      "etiqueta": "Responsabilidad",
+      "obligatorio": true,
+      "escala": 5
+    },
+    "influencia": {
+      "tipo": "nivel",
+      "etiqueta": "Influencia",
+      "obligatorio": true,
+      "escala": 5
+    },
+    "impacto": {
+      "tipo": "nivel",
+      "etiqueta": "Impacto",
+      "obligatorio": true,
+      "escala": 5
+    },
+    "nivel_ajustado": {
+      "tipo": "lista",
+      "etiqueta": "Nivel ajustado",
+      "obligatorio": false,
+      "valores": [
+        "Gestión activa",
+        "Involucramiento estratégico",
+        "Seguimiento periférico",
+        "Gestión cautelosa"
+      ]
+    },
+    "motivo_ajuste": {
+      "tipo": "lista",
+      "etiqueta": "Motivo del ajuste",
+      "obligatorio": false,
+      "valores": [
+        "Calificación en el límite: un eje en 3 que se comporta como alto",
+        "Conflicto: tensión de 4 o más, o posición desfavorable con capacidad de movilizar",
+        "Obligación legal o contractual directa: responsabilidad de 4 o más",
+        "Decisión estratégica de la empresa",
+        "Ajuste del mapeo original (criterio experto GH)"
+      ],
+      "valoresManual": [
+        "Calificación en el límite: un eje en 3 que se comporta como alto",
+        "Conflicto: tensión de 4 o más, o posición desfavorable con capacidad de movilizar",
+        "Obligación legal o contractual directa: responsabilidad de 4 o más",
+        "Decisión estratégica de la empresa"
+      ]
+    },
+    "explicacion_ajuste": {
+      "tipo": "texto-largo",
+      "etiqueta": "Explicación del ajuste",
+      "obligatorio": false,
+      "max": 1000
+    }
+  }
+}

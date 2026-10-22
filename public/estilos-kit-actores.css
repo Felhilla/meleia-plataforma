@@ -1,0 +1,33 @@
+.ka { min-width: 0; }
+.ka h2 { margin: var(--e5) 0 var(--e3); }
+.ka-filtros, .ka-resumen { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: var(--e3); margin: var(--e4) 0; }
+.ka-resumen > p { grid-column: 1 / -1; }
+.ka-bloque, .ka-cuadrante { padding: var(--e4); background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); min-width: 0; }
+.ka-bloque h3, .ka-cuadrante h3 { margin-bottom: var(--e2); }
+.ka-mapa { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--e3); }
+.ka-fichas { max-height: 330px; overflow-y: auto; display: flex; flex-wrap: wrap; align-content: flex-start; gap: var(--e2); padding: var(--e2); }
+.ka-actor { text-align: left; font-size: var(--t-chico); overflow-wrap: anywhere; border-radius: var(--radio-chico); }
+.ka-favorable { color: var(--baja); background: var(--baja-fondo); }
+.ka-neutral { color: var(--texto); background: var(--fondo-alterno); }
+.ka-desfavorable { color: var(--alta); background: var(--alta-fondo); }
+.ka-tabla { max-width: 100%; overflow-x: auto; margin: var(--e4) 0; }
+.ka-tabla table { width: 100%; border-collapse: collapse; }
+.ka-tabla th, .ka-tabla td { padding: var(--e3); border-bottom: 1px solid var(--borde); text-align: left; vertical-align: top; }
+.ka-acciones { display: flex; flex-wrap: wrap; gap: var(--e2); }
+.ka-form { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--e4); margin: var(--e4) 0; }
+.ka-campo { min-width: 0; }
+.ka-form > p, .ka-form > button, .ka-form > div:last-child { grid-column: 1 / -1; }
+.ka-ayuda { color: var(--texto-suave); font-size: var(--t-chico); padding-left: var(--e4); }
+.ka-error { color: var(--alta); }
+.ka-fondo { position: fixed; inset: 0; z-index: 60; background: rgb(0 0 0 / 45%); display: flex; justify-content: flex-end; }
+.ka-dialogo { background: var(--superficie); padding: var(--e5); width: min(680px,100%); overflow-y: auto; overflow-wrap: anywhere; box-shadow: var(--sombra-alta); }
+.ka-dialogo h2 { margin: var(--e4) 0; }
+@media (max-width: 767px) {
+  .ka-filtros, .ka-resumen, .ka-form { grid-template-columns: minmax(0,1fr); }
+  .ka-cuadrante { padding: var(--e2); }
+  .ka-cuadrante h3 { font-size: 1rem; overflow-wrap: anywhere; }
+  .ka-cuadrante p, .ka-cuadrante small { font-size: var(--t-chico); }
+  .ka-actor { padding: var(--e2); }
+  .ka-mapa { gap: var(--e2); }
+  .ka-dialogo { padding: var(--e4); }
+}
