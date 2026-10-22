@@ -36,3 +36,15 @@ button:disabled { opacity: .65; cursor: wait; }
 #kit-cuenta select { flex-shrink: 1; min-width: 160px; }
 /* En pantallas angostas la cuenta sí puede pasar a otra línea */
 @media (max-width: 760px) { #kit-cuenta { flex-wrap: wrap; } }
+
+/* E19 · Portada global y casos por módulo. */
+.kit-presentacion { font-size: var(--t-h3); color: var(--texto-suave); }
+.kit-credenciales { margin-top: var(--e5); color: var(--texto-suave); border-left: 2px solid var(--borde); padding-left: var(--e3); }
+.kit-credenciales h2 { font-size: var(--t-cuerpo); margin: 0; }
+.kit-modulos article { padding: var(--e5); display: flex; flex-direction: column; gap: var(--e3); }
+.kit-modulos article h2 { font-size: var(--t-h3); margin: 0; }
+.kit-modulos article a { padding: var(--e2) 0; margin-top: auto; font-weight: 700; }
+.kit-casos { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e2); margin-bottom: var(--e3); }
+.kit-casos a { padding: var(--e2) var(--e3); border: 1px solid var(--borde); border-radius: var(--radio-chico); text-decoration: none; background: var(--superficie); }
+.kit-casos a[aria-current] { background: var(--fondo-alterno); border-color: var(--principal); color: var(--principal); font-weight: 700; }
+#kit-nav a small { display: block; max-width: 20ch; font-size: var(--t-micro); color: var(--texto-suave); font-weight: 400; }

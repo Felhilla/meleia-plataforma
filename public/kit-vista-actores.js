@@ -11,7 +11,7 @@
   const texto = (n, valor) => n.append(el('p', valor));
   function mensaje(n, valor) { const p = el('p', valor, 'ka-mensaje'); p.setAttribute('role', 'status'); n.append(p); return p; }
   function bloque(n, titulo) { const s = el('section', null, 'ka-bloque'); s.append(el('h3', titulo)); n.append(s); return s; }
-  function ruta(empresa, vista) { return '#/e/' + encodeURIComponent(empresa) + '/actores/' + vista; }
+  function ruta(empresa, vista) { return '#/actores/' + encodeURIComponent(empresa) + '/' + vista; }
   function enlace(n, empresa) { const a = el('a', 'Ir a Alimentación'); a.href = ruta(empresa, 'alimentacion'); n.append(a); }
   function tabla(n, cabeceras, filas) {
     const marco = el('div', null, 'ka-tabla'), t = el('table'), head = el('thead'), tr = el('tr'), body = el('tbody');
@@ -76,30 +76,45 @@
     const ctx = await preparar(contenedor, datos, params); if (!ctx) return;
     const actores = ctx.listas.actores;
     if (!actores.length) { texto(contenedor, 'Esta empresa aún no tiene actores registrados. Agrega su institución, cargo y calificaciones para construir el mapa.'); if (params.puedeEditar) enlace(contenedor, params.empresa); return ctx.limpiar; }
-    contenedor.append(el('h2', 'Cómo relacionarse con los actores del proyecto'));
-    texto(contenedor, 'Metodología AA1000SES. Filtra el mapa y abre un actor para consultar su ficha. El color y el texto indican su posición.');
-    const filtros = el('div', null, 'ka-filtros'), selects = {};
-    ['categoria', 'subgrupo', 'orden', 'posicion'].forEach(k => { selects[k] = seleccionar(filtros, ctx.esquema.campos[k].etiqueta, [{ id: '', nombre: 'Todos' }, ...[...new Set(actores.map(a => a[k]).filter(Boolean))].sort()]); });
-    const solo = seleccionar(filtros, 'Atención', [{ id: '', nombre: 'Todos' }, { id: 'alertas', nombre: 'Solo alertas' }]);
-    const resumen = el('div', null, 'ka-resumen'), mapa = el('div', null, 'ka-mapa'), lista = el('div');
+    const filtros = el('div', null, 'ka-filtros'), controlesLista = el('div', null, 'ka-controles-lista'), selects = {};
+    ['categoria', 'orden', 'posicion', 'subgrupo'].forEach(k => { selects[k] = seleccionar(k === 'subgrupo' ? controlesLista : filtros, ctx.esquema.campos[k].etiqueta, [{ id: '', nombre: 'Todos' }, ...[...new Set(actores.map(a => a[k]).filter(Boolean))].sort()]); });
+    const soloLabel = el('label', null, 'ka-solo-alertas'), solo = el('input'); solo.type = 'checkbox'; soloLabel.append(solo, el('span', 'Solo alertas')); filtros.append(soloLabel);
+    const resumen = el('div', null, 'ka-resumen'), mapa = el('div', null, 'ka-mapa'), lista = el('div'), distribucion = el('div', null, 'ka-distribucion');
+    resumen.setAttribute('aria-live', 'polite');
     mapa.setAttribute('aria-label', 'Mapa 360°: influencia alta arriba, impacto alto a la derecha');
-    const orden = seleccionar(filtros, 'Ordenar lista por', ['institucion', 'cargo', 'categoria', 'nivel', 'posicion'].map((id, i) => ({ id, nombre: ['Institución', 'Cargo', 'Categoría', 'Nivel final', 'Posición'][i] })), 'institucion');
-    const sentido = seleccionar(filtros, 'Sentido', ['Ascendente', 'Descendente'], 'Ascendente');
+    const orden = seleccionar(controlesLista, 'Ordenar lista por', ['institucion', 'cargo', 'categoria', 'nivel', 'posicion'].map((id, i) => ({ id, nombre: ['Institución', 'Cargo', 'Categoría', 'Nivel final', 'Posición'][i] })), 'institucion');
+    const sentido = seleccionar(controlesLista, 'Sentido', ['Ascendente', 'Descendente'], 'Ascendente');
     function pintar() {
-      const visibles = actores.filter(a => Object.entries(selects).every(([k,s]) => !s.value || a[k] === s.value) && (!solo.value || K.alerta(a, ctx.cfg)));
+      const visibles = actores.filter(a => Object.entries(selects).every(([k,s]) => !s.value || a[k] === s.value) && (!solo.checked || K.alerta(a, ctx.cfg)));
       resumen.replaceChildren(); mapa.replaceChildren(); lista.replaceChildren();
       const ind = K.indicadores(visibles, ctx.cfg);
-      texto(resumen, `${ind.total} ${ind.total === 1 ? 'actor visible' : 'actores visibles'} · ${ind.alertas} ${ind.alertas === 1 ? 'alerta' : 'alertas'}`);
-      for (const [titulo, valores] of [['Por cuadrante', ind.cuadrantes], ['Por posición', ind.posiciones], ['Por categoría', ind.categorias]]) {
-        const s = bloque(resumen, titulo); valores.forEach(v => texto(s, `${v.nombre}: ${v.cantidad} (${numero(v.porcentaje)} %)`));
+      const estrategicos = ind.cuadrantes.find(v => v.nombre === 'Involucramiento estratégico')?.cantidad || 0;
+      const desfavorables = ind.posiciones.find(v => v.nombre === 'Desfavorable')?.cantidad || 0;
+      [[ind.total, 'Actores visibles'], [estrategicos, 'Involucramiento estratégico'], [desfavorables, 'Desfavorables'], [ind.alertas, 'Alertas']].forEach(([valor, etiqueta]) => {
+        const dato = el('div', null, 'ka-dato'); dato.append(el('strong', numero(valor)), el('span', etiqueta)); resumen.append(dato);
+      });
+      distribucion.replaceChildren();
+      for (const [titulo, valores] of [['Por categoría', ind.categorias], ['Por posición', ind.posiciones]]) {
+        const s = bloque(distribucion, titulo); valores.forEach(v => {
+          const fila = el('div', null, 'ka-distribucion-fila'), pista = el('div', null, 'ka-barra'), relleno = el('span');
+          relleno.style.width = v.porcentaje + '%'; pista.setAttribute('aria-hidden', 'true'); pista.append(relleno);
+          fila.append(el('span', v.nombre), el('span', `${v.cantidad} · ${numero(v.porcentaje)} %`), pista); s.append(fila);
+        });
       }
       ctx.cfg.niveles.forEach(n => {
         const q = el('section', null, 'ka-cuadrante'); q.dataset.cuadrante = n.nombre; q.style.gridRow = n.fila; q.style.gridColumn = n.columna;
-        q.append(el('h3', n.nombre), el('p', n.descripcion), el('small', `Influencia ${n.influencia} · Impacto ${n.impacto}`));
+        q.dataset.intensidad = n.fila === 1 && n.columna === 2 ? 'estrategico' : n.fila === 2 && n.columna === 1 ? 'periferico' : 'intermedio';
+        q.append(el('h3', n.nombre), el('p', n.descripcion, 'ka-relacionamiento'));
         const fichas = el('div', null, 'ka-fichas'); fichas.tabIndex = 0; fichas.setAttribute('role', 'region'); fichas.setAttribute('aria-label', 'Actores de ' + n.nombre);
         const miembros = visibles.filter(a => K.nivelFinal(a, ctx.cfg) === n.nombre);
-        texto(q, `${miembros.length} ${miembros.length === 1 ? 'actor' : 'actores'}`);
-        miembros.forEach(a => { const b = boton(`${a.institucion} · ${a.cargo} · ${a.posicion}${K.alerta(a, ctx.cfg) ? ' · ⚠ Alerta' : ''}`, () => ficha(ctx, a)); b.className = 'ka-actor ka-' + a.posicion.toLowerCase(); fichas.append(b); });
+        const cantidad = el('p', null, 'ka-cantidad'); cantidad.append(el('strong', numero(miembros.length)), el('span', ` ${miembros.length === 1 ? 'actor' : 'actores'} · ${numero(ind.total ? miembros.length / ind.total * 100 : 0)} %`)); q.append(cantidad);
+        miembros.forEach(a => {
+          const alerta = K.alerta(a, ctx.cfg), b = boton(null, () => ficha(ctx, a));
+          b.className = 'ka-actor'; b.title = `${a.institucion} · ${a.cargo} · ${a.posicion}${alerta ? ' · Alerta' : ''}`; b.setAttribute('aria-label', b.title);
+          const punto = el('span', null, 'ka-punto ka-' + a.posicion.toLowerCase()); punto.setAttribute('aria-hidden', 'true');
+          b.append(punto, el('span', a.institucion, 'ka-institucion'));
+          if (alerta) { const icono = el('span', '⚠', 'ka-alerta'); icono.setAttribute('aria-hidden', 'true'); b.append(icono); } fichas.append(b);
+        });
         if (!miembros.length) texto(fichas, 'Sin actores en este cuadrante.'); q.append(fichas); mapa.append(q);
       });
       const valor = a => orden.value === 'nivel' ? K.nivelFinal(a, ctx.cfg) : a[orden.value];
@@ -108,7 +123,12 @@
       if (!visibles.length) texto(lista, 'No hay actores con estos filtros.');
     }
     [...Object.values(selects), solo, orden, sentido].forEach(s => { s.onchange = pintar; });
-    contenedor.append(filtros, resumen, el('h2', 'Mapa 360°'), el('p', 'Influencia alta ↑ · Impacto alto →. Desplázate dentro de cada cuadrante para consultar todos sus actores.'), mapa, el('h2', 'Lista de actores'), lista); pintar(); return ctx.limpiar;
+    const marco = el('div', null, 'ka-marco-mapa');
+    marco.append(el('span', 'Influencia ↑', 'ka-eje-influencia'), mapa, el('span', 'Impacto →', 'ka-eje-impacto'));
+    const leyenda = el('div', null, 'ka-leyenda'); leyenda.setAttribute('aria-label', 'Leyenda del mapa');
+    ['Favorable', 'Neutral', 'Desfavorable'].forEach(p => { const item = el('span'); item.append(el('span', null, 'ka-punto ka-' + p.toLowerCase()), el('span', p)); leyenda.append(item); }); leyenda.append(el('span', '⚠ Alerta de atención'));
+    const detalle = el('details', null, 'ka-distribucion-detalle'); detalle.append(el('summary', 'Ver distribución'), distribucion);
+    contenedor.append(resumen, el('h2', 'Mapa 360°'), marco, leyenda, detalle, el('h2', 'Lista de actores'), filtros, controlesLista, lista); pintar(); return ctx.limpiar;
   }
   function formulario(ctx, n, original, alGuardar) {
     const form = el('form', null, 'ka-form'), controles = {}, errores = {}; form.noValidate = true;

@@ -31,3 +31,52 @@
   .ka-mapa { gap: var(--e2); }
   .ka-dialogo { padding: var(--e4); }
 }
+
+/* E19 · El mapa concentra la lectura; los detalles quedan bajo demanda. */
+.ka-resumen { grid-template-columns: repeat(4,minmax(0,1fr)); gap: var(--e3); margin: var(--e4) 0; padding: var(--e3) 0; border-block: 1px solid var(--borde); }
+.ka-dato { display: flex; flex-direction: column; gap: var(--e1); min-width: 0; }
+.ka-dato strong { font-size: 2rem; color: var(--principal); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.ka-dato span { font-size: var(--t-chico); color: var(--texto-suave); }
+.ka-marco-mapa { display: grid; grid-template-columns: 24px minmax(0,1fr); gap: var(--e2); }
+.ka-eje-influencia { writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; }
+.ka-eje-impacto { grid-column: 2; text-align: center; }
+.ka-eje-influencia, .ka-eje-impacto { font-size: var(--t-chico); color: var(--texto-suave); }
+.ka-cuadrante { height: 330px; display: flex; flex-direction: column; padding: var(--e3); background: color-mix(in srgb, var(--suave) 18%, var(--superficie)); }
+.ka-cuadrante[data-intensidad="estrategico"] { background: color-mix(in srgb, var(--suave) 35%, var(--superficie)); border-top: 3px solid var(--oro); }
+.ka-cuadrante[data-intensidad="periferico"] { background: var(--fondo-alterno); }
+.ka-cuadrante h3 { font-size: var(--t-cuerpo); margin: 0 0 var(--e1); }
+.ka-relacionamiento { font-size: var(--t-chico); color: var(--texto-suave); margin: 0; }
+.ka-cantidad { margin: var(--e2) 0; font-size: var(--t-chico); }
+.ka-cantidad strong { font-size: 1.8rem; color: var(--principal); }
+.ka-fichas { flex: 1; min-height: 0; max-height: none; overflow-y: auto; overscroll-behavior: contain; padding: var(--e1); gap: var(--e2); }
+.ka-actor { display: inline-flex; align-items: center; gap: var(--e2); max-width: 100%; min-width: 0; height: 32px; padding: var(--e1) var(--e2); border: 1px solid var(--borde); background: var(--superficie); color: var(--texto); cursor: pointer; }
+.ka-institucion { max-width: 25ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ka-punto { display: inline-block; flex: 0 0 8px; width: 8px; height: 8px; border-radius: 50%; }
+.ka-punto.ka-favorable { background: var(--baja); }
+.ka-punto.ka-neutral { background: var(--texto-suave); }
+.ka-punto.ka-desfavorable { background: var(--alta); }
+.ka-alerta { color: var(--alta); }
+.ka-leyenda, .ka-leyenda > span { display: flex; align-items: center; gap: var(--e2); }
+.ka-leyenda { flex-wrap: wrap; gap: var(--e3); margin: var(--e3) 0; font-size: var(--t-chico); color: var(--texto-suave); }
+.ka-filtros { grid-template-columns: repeat(3,minmax(0,1fr)) auto; align-items: end; margin: var(--e3) 0; }
+.ka-filtros label, .ka-controles-lista label { min-width: 0; font-size: var(--t-chico); }
+.ka-filtros select, .ka-controles-lista select { width: 100%; min-width: 0; padding: var(--e2); background: var(--superficie); color: var(--texto); border: 1px solid var(--borde); border-radius: var(--radio-chico); }
+.ka-solo-alertas { display: flex; align-items: center; gap: var(--e2); padding-block: var(--e2); }
+.ka-solo-alertas input { width: auto; }
+.ka-controles-lista { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: var(--e3); }
+.ka-distribucion-detalle { margin-top: var(--e4); }
+.ka-distribucion-detalle summary { cursor: pointer; color: var(--principal); }
+.ka-distribucion { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--e3); margin-top: var(--e3); }
+.ka-distribucion-fila { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: var(--e1) var(--e2); margin-top: var(--e3); font-size: var(--t-chico); }
+.ka-barra { grid-column: 1 / -1; height: 5px; background: var(--fondo-alterno); border-radius: var(--radio-chico); overflow: hidden; }
+.ka-barra span { display: block; height: 100%; background: var(--principal); }
+@media (max-width: 650px) {
+  .ka-resumen { gap: var(--e2); }
+  .ka-dato strong { font-size: 1.5rem; }
+  .ka-dato span { font-size: .7rem; }
+  .ka-cuadrante { height: 360px; padding: var(--e2); }
+  .ka-cuadrante h3 { font-size: .85rem; }
+  .ka-relacionamiento { font-size: .75rem; }
+  .ka-filtros, .ka-controles-lista { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .ka-distribucion { grid-template-columns: minmax(0,1fr); }
+}

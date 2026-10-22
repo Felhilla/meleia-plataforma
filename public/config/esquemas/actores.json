@@ -25,6 +25,7 @@
       "etiqueta": "Orden o alcance",
       "obligatorio": false,
       "valores": [
+        "Internacional",
         "Nacional",
         "Regional",
         "Local"

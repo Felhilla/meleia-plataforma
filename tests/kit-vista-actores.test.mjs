@@ -78,12 +78,35 @@ test('Borrado requiere confirmación propia e historial filtra actores', async (
   await buscar(m.contenedor,'Historial de cambios').onclick(); assert.equal(m.historial[0][0],'empresa-1'); assert.equal(m.historial[0][1].coleccion,'actores'); assert.match(m.contenedor.textContent,/Todavía no hay cambios/);
 });
 test('Filtros afectan mapa, lista e indicadores; estados vacíos según permiso', async () => {
-  const m = await montar(); const atencion = m.contenedor.todos().find(n => n.tagName === 'SELECT' && n.options.some(o => o.value === 'alertas'));
-  atencion.value = 'alertas'; atencion.onchange(); assert.match(m.contenedor.textContent,/1 actor visible · 1 alerta/); assert.ok(buscar(m.contenedor,'JAC')); assert.ok(!buscar(m.contenedor,'Alcaldía'));
+  const m = await montar(); const atencion = m.contenedor.todos().find(n => n.tagName === 'INPUT' && n.type === 'checkbox');
+  atencion.checked = true; atencion.onchange(); assert.deepEqual(m.contenedor.todos().filter(n => n.className === 'ka-dato').map(n => n.children[0].textContent), ['1','0','1','1']); assert.ok(buscar(m.contenedor,'JAC')); assert.ok(!buscar(m.contenedor,'Alcaldía'));
   for (const permiso of [true,false]) { const v = await montar('mapa',permiso,{actores:[]}); assert.match(v.contenedor.textContent,/aún no tiene actores/); assert.equal(v.contenedor.todos().some(n => n.tagName === 'A'),permiso); }
 });
 test('180 actores conservan botones y texto seguro', async () => {
   const lista = Array.from({length:180},(_,i) => ({...actores()[0],id:'act-'+i,institucion:'<script>Actor '+i+'</script>'}));
   const m = await montar('mapa',false,{actores:lista}); const q = m.contenedor.todos().find(n => n.dataset.cuadrante === estrategico);
   assert.equal(q.todos().filter(n => n.tagName === 'BUTTON').length,180); assert.ok(!m.contenedor.todos().some(n => n.tagName === 'SCRIPT'));
+});
+
+test('Mapa primero, resumen compacto, fichas con tooltip y distribución plegable', async () => {
+  const m = await montar(); const nodos = m.contenedor.todos();
+  assert.equal(m.contenedor.children[0].className,'ka-resumen');
+  assert.ok(nodos.findIndex(n => n.className === 'ka-mapa') < nodos.findIndex(n => n.className === 'ka-filtros'));
+  const q = nodos.find(n => n.dataset.cuadrante === cautelosa), b = q.todos().find(n => n.tagName === 'BUTTON');
+  assert.match(b.title,/JAC · Cargo institucional · Desfavorable · Alerta/);
+  assert.doesNotMatch(b.textContent,/Cargo institucional|Desfavorable|Ajustado/);
+  assert.ok(nodos.some(n => n.tagName === 'SUMMARY' && n.textContent === 'Ver distribución'));
+  assert.equal(nodos.filter(n => n.className === 'ka-eje-influencia').length,1);
+});
+test('Categoría, orden, posición y subgrupo conservan el filtro compartido', async () => {
+  for (const etiqueta of ['Categoría','Orden o alcance','Posición','Subgrupo']) {
+    const m = await montar();
+    const label = m.contenedor.todos().find(n => n.tagName === 'LABEL' && n.textContent.startsWith(etiqueta));
+    assert.ok(label, etiqueta);
+    const select = label.children.find(n => n.tagName === 'SELECT');
+    select.value = 'Sin coincidencias'; select.onchange();
+    assert.equal(m.contenedor.todos().find(n => n.className === 'ka-dato').children[0].textContent,'0');
+    assert.equal(m.contenedor.todos().filter(n => n.className === 'ka-actor').length,0);
+    assert.match(m.contenedor.textContent,/No hay actores con estos filtros/);
+  }
 });

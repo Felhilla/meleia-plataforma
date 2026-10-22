@@ -1,29 +1,29 @@
 (function (root) {
   'use strict';
-  const modulos = [
-    { id: 'actores', numero: 'I', nombre: 'Actores', pestanas: ['mapa', 'alimentacion'] },
-    { id: 'ddhh', numero: 'II', nombre: 'Debida diligencia en DDHH', pestanas: [] },
-    { id: 'materialidad', numero: 'III', nombre: 'Doble materialidad', pestanas: [] },
-    { id: 'riesgos', numero: 'IV', nombre: 'Riesgos', pestanas: ['matriz', 'medidas', 'alimentacion'] }
-  ];
+  const modulos = typeof module !== 'undefined' && module.exports ? require('./config/kit-modulos.json').modulos : [];
+  const tabsModulo = { actores: ['mapa', 'alimentacion'], ddhh: [], materialidad: [], riesgos: ['matriz', 'medidas', 'alimentacion'] };
   const roles = { admin: 'Soporte GH', responsable: 'Responsable', demostrador: 'Demostración' };
-  function pestanas(modulo, rol) { return modulos.find(m => m.id === modulo)?.pestanas.filter(p => p !== 'alimentacion' || rol !== 'demostrador') || []; }
-  function resolverRuta(hash, usuario, empresas, preferida) {
+  function pestanas(modulo, permiso) { return (tabsModulo[modulo] || []).filter(p => p !== 'alimentacion' || permiso === true || ['admin', 'responsable'].includes(permiso)); }
+  function casos(modulo, empresas) { return empresas.filter(e => e.muestra_comercial === false || (e.muestra_comercial === true && modulo.casos.includes(e.id))); }
+  function resolverRuta(hash, usuario, empresas, puedeEditar = id => ['admin', 'responsable'].includes(empresas.find(e => e.id === id)?.rol)) {
     if (!usuario) return { clave: 'ingresar', hash: '#/ingresar' };
-    const partes = String(hash).split('?')[0].split('/');
-    const empresa = empresas.find(e => e.id === partes[2] && partes[1] === 'e') || empresas.find(e => e.id === preferida) || empresas[0];
-    if (!empresa) return { clave: 'sin-empresas', hash: '#/' };
-    const base = '#/e/' + empresa.id;
-    const modulo = partes[1] === 'e' && partes[2] === empresa.id && modulos.find(m => m.id === partes[3]);
-    if (!modulo || partes.length > 5) return { clave: 'portada', empresa, hash: base };
-    const disponibles = pestanas(modulo.id, empresa.rol);
-    const sub = partes[4] || disponibles[0];
-    if ((sub && !disponibles.includes(sub)) || (!modulo.pestanas.length && partes[4])) return { clave: 'portada', empresa, hash: base };
-    return { clave: modulo.id + (sub ? '/' + sub : ''), empresa, modulo, sub, hash: base + '/' + modulo.id + (sub ? '/' + sub : '') };
+    const portada = { clave: 'portada', hash: '#/' };
+    let partes = String(hash).split('?')[0].split('/').slice(1);
+    if (partes[0] === 'e') partes = [partes[2], partes[1], ...partes.slice(3)];
+    const modulo = modulos.find(m => m.id === partes[0]);
+    if (!modulo || partes.length > 3) return portada;
+    const disponibles = casos(modulo, empresas);
+    if (!disponibles.length && !partes[1] && !partes[2]) return { clave: 'sin-casos', modulo, hash: '#/' + modulo.id };
+    const empresa = partes[1] ? disponibles.find(e => e.id === partes[1]) : disponibles[0];
+    if (!empresa) return portada;
+    const tabs = pestanas(modulo.id, puedeEditar(empresa.id));
+    const sub = partes[2] || tabs[0];
+    if (sub && !tabs.includes(sub)) return portada;
+    return { clave: modulo.id + (sub ? '/' + sub : ''), empresa, modulo, sub, hash: '#/' + modulo.id + '/' + empresa.id + (sub ? '/' + sub : '') };
   }
   const vistas = new Map();
   const App = {
-    resolverRuta, pestanas, modulos,
+    resolverRuta, pestanas, modulos, casos,
     registrarVista(nombre, vista) { vistas.set(nombre, vista); },
     el(tag, texto, clase) { const n = root.document.createElement(tag); if (texto !== undefined && texto !== null) n.textContent = texto; if (clase) n.className = clase; return n; },
     numero(valor, opciones = {}) { return new Intl.NumberFormat('es-CO', opciones).format(valor); },
@@ -75,14 +75,8 @@
       function cabecera(ruta) {
         cuenta.replaceChildren(); nav.replaceChildren();
         if (!usuario) return;
-        if (empresas.length > 1) {
-          const label = el('label', 'Empresa'), selector = el('select'); label.htmlFor = 'empresa'; selector.id = 'empresa';
-          empresas.forEach(e => { const o = el('option', e.nombre); o.value = e.id; selector.append(o); });
-          selector.value = ruta.empresa.id;
-          selector.onchange = () => { root.location.hash = '#/e/' + selector.value; };
-          cuenta.append(label, selector);
-        } else if (ruta.empresa) cuenta.append(el('strong', ruta.empresa.nombre));
-        if (ruta.empresa) cuenta.append(el('span', roles[ruta.empresa.rol], 'chip'));
+        const rol = ['admin', 'responsable', 'demostrador'].find(r => empresas.some(e => e.rol === r));
+        if (rol) cuenta.append(el('span', roles[rol], 'chip'));
         const salir = el('button', 'Salir', 'boton secundario'); salir.type = 'button';
         salir.onclick = async () => {
           salir.disabled = true;
@@ -90,34 +84,41 @@
           catch (error) { mostrarError(error); salir.disabled = false; }
         };
         cuenta.append(salir);
-        if (!ruta.empresa) return;
-        const base = '#/e/' + ruta.empresa.id;
-        nav.append(enlace('Portada', base, ruta.clave === 'portada'));
-        modulos.forEach(m => nav.append(enlace(m.numero + ' · ' + m.nombre, base + '/' + m.id, ruta.modulo?.id === m.id)));
+        nav.append(enlace('Portada', '#/', ruta.clave === 'portada'));
+        modulos.forEach(m => { const a = enlace(`${m.numero} · ${m.corto || m.nombre}`, '#/' + m.id, ruta.modulo?.id === m.id); a.setAttribute('aria-label', `Módulo ${m.numero} · ${m.nombre}${casos(m, empresas).length ? '' : ' · Sin casos disponibles para tu cuenta'}`); a.title = `Módulo ${m.numero} · ${m.nombre}`; if (!casos(m, empresas).length) a.append(el('small', 'Sin casos disponibles para tu cuenta')); nav.append(a); });
       }
       async function render() {
         const turno = ++revision;
         if (typeof limpieza === 'function') limpieza(); limpieza = null;
         contenido.replaceChildren();
-        const ruta = resolverRuta(root.location.hash, usuario, empresas, leer('kit-empresa'));
+        const ruta = resolverRuta(root.location.hash, usuario, empresas, id => datos.puedeEditar(id));
         if (root.location.hash !== ruta.hash) root.history.replaceState(null, '', ruta.hash);
         cabecera(ruta);
         if (!usuario) { ingresar(); contenido.focus(); return; }
-        if (!ruta.empresa) { contenido.append(el('h1', 'Sin empresas asignadas'), mensaje('Escribe a soporte GH para solicitar acceso.')); return; }
-        guardar('kit-empresa', ruta.empresa.id);
-        contenido.append(el('p', ruta.empresa.nombre, 'antetitulo'), el('h1', ruta.modulo ? `Módulo ${ruta.modulo.numero} · ${ruta.modulo.nombre}` : 'Portada'));
+        contenido.append(el('h1', ruta.modulo ? `Módulo ${ruta.modulo.numero} · ${ruta.modulo.nombre}` : 'GH Studio × Meleia'));
         const zona = el('section', null, 'kit-vista'); contenido.append(zona); contenido.focus();
         try {
           if (ruta.clave === 'portada') {
-            zona.append(mensaje('Cargando contexto…'));
-            const portada = await datos.listar(ruta.empresa.id, 'portada');
-            if (turno !== revision) return;
-            zona.replaceChildren(el('h2', ruta.empresa.nombre), el('p', portada.find(r => r.id === 'portada')?.contexto || 'Un espacio compartido para conocer y gestionar los asuntos de tu empresa.'));
+            zona.append(el('p', 'Herramientas para la gestión social, ambiental y de derechos humanos de proyectos', 'kit-presentacion'));
+            const credenciales = el('section', null, 'kit-credenciales'); credenciales.append(el('h2', 'Credenciales'), el('p', 'Próximamente')); zona.append(credenciales);
             const tarjetas = el('div', null, 'kit-modulos');
-            modulos.forEach(m => { const a = enlace('', '#/e/' + ruta.empresa.id + '/' + m.id); a.className = 'tarjeta'; a.append(el('p', 'Módulo ' + m.numero, 'antetitulo'), el('h3', m.nombre), el('p', 'Abrir módulo →')); tarjetas.append(a); }); zona.append(tarjetas);
+            modulos.forEach(m => {
+              const disponibles = casos(m, empresas), tarjeta = el('article', null, 'tarjeta');
+              tarjeta.append(el('p', 'Módulo ' + m.numero, 'antetitulo'), el('h2', m.nombre), el('p', m.descripcion), el('p', disponibles.length ? 'Casos: ' + disponibles.map(e => e.nombre).join(' · ') : 'Sin casos disponibles para tu cuenta', 'nota'), enlace('Abrir módulo →', '#/' + m.id)); tarjetas.append(tarjeta);
+            }); zona.append(tarjetas);
+          } else if (ruta.clave === 'sin-casos') {
+            zona.append(mensaje('Sin casos disponibles para tu cuenta'));
           } else {
+            const disponibles = casos(ruta.modulo, empresas);
+            const selector = el(disponibles.length > 1 ? 'nav' : 'p', null, 'kit-casos');
+            selector.append(el('span', 'Caso:'));
+            if (disponibles.length > 1) {
+              selector.setAttribute('aria-label', 'Casos del módulo');
+              disponibles.forEach(e => { const sub = pestanas(ruta.modulo.id, datos.puedeEditar(e.id)).includes(ruta.sub) ? '/' + ruta.sub : ''; selector.append(enlace(e.nombre, '#/' + ruta.modulo.id + '/' + e.id + sub, e.id === ruta.empresa.id)); });
+            } else selector.append(el('strong', ruta.empresa.nombre));
+            zona.append(selector);
             const tabs = el('nav', null, 'kit-pestanas'); tabs.setAttribute('aria-label', 'Pestañas del módulo');
-            pestanas(ruta.modulo.id, ruta.empresa.rol).forEach(p => tabs.append(enlace(p === 'alimentacion' ? 'Alimentación' : p[0].toUpperCase() + p.slice(1), '#/e/' + ruta.empresa.id + '/' + ruta.modulo.id + '/' + p, p === ruta.sub)));
+            pestanas(ruta.modulo.id, datos.puedeEditar(ruta.empresa.id)).forEach(p => tabs.append(enlace(p === 'alimentacion' ? 'Alimentación' : p[0].toUpperCase() + p.slice(1), '#/' + ruta.modulo.id + '/' + ruta.empresa.id + '/' + p, p === ruta.sub)));
             zona.append(tabs);
             const cuerpo = el('div'); zona.append(cuerpo);
             const vista = vistas.get(ruta.clave);
@@ -135,7 +136,7 @@
       datos.observarSesion?.(() => { usuario = null; empresas = []; render().catch(mostrarError); });
       App.actualizarVista = render;
       root.addEventListener('hashchange', () => { render().catch(mostrarError); });
-      try { usuario = await datos.usuarioActual(); if (usuario) empresas = await datos.empresas(); await render(); }
+      try { if (!modulos.length) { const respuesta = await root.fetch('config/kit-modulos.json'); if (!respuesta.ok) throw Error('No se pudo cargar el catálogo de módulos.'); const config = await respuesta.json(); modulos.push(...config.modulos); } usuario = await datos.usuarioActual(); if (usuario) empresas = await datos.empresas(); await render(); }
       catch (error) {
         if (error.sesionCerrada) { usuario = null; await render(); contenido.querySelector('[role="status"]').textContent = error.message; }
         else { mostrarError(error); const reintentar = el('button', 'Reintentar', 'boton'); reintentar.onclick = () => root.location.reload(); contenido.append(reintentar); }

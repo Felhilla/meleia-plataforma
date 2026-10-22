@@ -2,27 +2,40 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import App from '../public/kit-armazon.js';
-const empresas = [{ id: 'uno', rol: 'responsable' }, { id: 'dos', rol: 'demostrador' }];
+const empresas = [{ id: 'uno', nombre: 'Cliente uno', rol: 'responsable', muestra_comercial: false }, { id: 'dos', nombre: 'Cliente dos', rol: 'demostrador', muestra_comercial: false }];
+const muestras = [{id:'libero-cobre',nombre:'Libero Cobre',rol:'demostrador',muestra_comercial:true}, {id:'minerales-santa-ana',nombre:'Minerales Santa Ana',rol:'responsable',muestra_comercial:true}, {id:'solgas',nombre:'Solgas',rol:'demostrador',muestra_comercial:true}];
 const resolver = (hash, usuario = { id: 'u' }) => App.resolverRuta(hash, usuario, empresas);
 test('sin sesión cualquier ruta lleva a ingresar', () => {
-  for (const hash of ['#/ingresar', '#/e/uno', '#/e/uno/riesgos/matriz', '#/inexistente']) assert.equal(resolver(hash, null).hash, '#/ingresar');
+  for (const hash of ['#/', '#/actores/uno/mapa', '#/inexistente']) assert.equal(resolver(hash, null).hash, '#/ingresar');
 });
-test('rutas de módulos y pestañas; desconocidas a portada', () => {
-  for (const ruta of ['actores/mapa', 'actores/alimentacion', 'ddhh', 'materialidad', 'riesgos/matriz', 'riesgos/medidas', 'riesgos/alimentacion']) assert.equal(resolver('#/e/uno/' + ruta).clave, ruta);
-  assert.equal(resolver('#/e/uno/actores').clave, 'actores/mapa'); assert.equal(resolver('#/e/uno/riesgos').clave, 'riesgos/matriz');
-  for (const hash of ['#/inexistente', '#/e/uno/no', '#/e/uno/riesgos/no', '#/e/uno/riesgos/matriz/extra', '#/e/ajena']) assert.equal(resolver(hash).hash, '#/e/uno');
-});
-test('demostrador no ve ni abre Alimentación', () => {
-  for (const modulo of ['actores', 'riesgos']) {
-    assert.ok(!App.pestanas(modulo, 'demostrador').includes('alimentacion'));
-    assert.equal(resolver('#/e/dos/' + modulo + '/alimentacion').hash, '#/e/dos');
-    for (const rol of ['responsable', 'admin']) assert.ok(App.pestanas(modulo, rol).includes('alimentacion'));
+test('portada global y rutas desconocidas sin empresa', () => {
+  for (const hash of ['#/', '#/inexistente', '#/riesgos/ajena', '#/riesgos/uno/no', '#/riesgos/uno/matriz/extra']) {
+    assert.equal(resolver(hash).hash, '#/'); assert.equal(resolver(hash).empresa, undefined);
   }
+  assert.equal(App.resolverRuta('#/', {}, []).clave, 'portada');
 });
-test('preferencia solo entre empresas autorizadas y cuenta sin empresas', () => {
-  assert.equal(App.resolverRuta('#/', {}, empresas, 'dos').empresa.id, 'dos');
-  assert.equal(App.resolverRuta('#/', {}, empresas, 'ajena').empresa.id, 'uno');
-  assert.equal(App.resolverRuta('#/', {}, []).clave, 'sin-empresas');
+test('rutas nuevas, primer caso y redirecciones antiguas', () => {
+  for (const ruta of ['actores/mapa', 'actores/alimentacion', 'ddhh', 'materialidad', 'riesgos/matriz', 'riesgos/medidas', 'riesgos/alimentacion']) {
+    const [modulo,sub] = ruta.split('/'), nueva = '#/' + modulo + '/uno' + (sub ? '/' + sub : '');
+    assert.equal(resolver(nueva).clave, ruta); assert.equal(resolver('#/e/uno/' + ruta).hash, nueva);
+  }
+  assert.equal(App.resolverRuta('#/actores', {}, muestras).hash, '#/actores/libero-cobre/mapa');
+  assert.equal(App.resolverRuta('#/ddhh', {}, muestras).hash, '#/ddhh/solgas');
+});
+test('casos: muestras configuradas y clientes reales visibles en todos los módulos', () => {
+  for (const m of App.modulos) {
+    assert.deepEqual(App.casos(m, [...muestras,...empresas]).map(e => e.id), [...muestras.filter(e => m.casos.includes(e.id)),...empresas].map(e => e.id));
+    assert.deepEqual(App.casos(m, [{id:'ajena',muestra_comercial:true}]), []);
+    assert.equal(App.resolverRuta('#/' + m.id, {}, []).clave, 'sin-casos');
+  }
+  assert.equal(App.resolverRuta('#/actores/solgas', {}, muestras).hash, '#/');
+});
+test('Alimentación exige permiso sobre la empresa del caso', () => {
+  for (const modulo of ['actores','riesgos']) {
+    assert.ok(!App.pestanas(modulo, 'demostrador').includes('alimentacion'));
+    assert.equal(resolver('#/' + modulo + '/dos/alimentacion').hash, '#/');
+    assert.equal(App.resolverRuta('#/' + modulo + '/uno/alimentacion', {}, empresas, () => false).hash, '#/');
+  }
 });
 test('entrada del Kit no carga el relato, conserva SDK fijo y orden defer', () => {
   const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
@@ -45,11 +58,11 @@ class Nodo {
   querySelector(s) { return this.todos().find(n => s.startsWith('[role=') ? n.attrs.role === s.match(/"([^"]+)"/)[1] : n.tag === s); }
   todos() { return this.children.flatMap(n => [n, ...n.todos()]); }
 }
-async function montar({ usuario = { id: 'u' }, hash = '#/e/uno', listar = async () => [], empresas: lista = empresas } = {}) {
+async function montar({ usuario = { id: 'u' }, hash = '#/', listar = async () => [], empresas: lista = empresas } = {}) {
   const nodos = Object.fromEntries(['contenido', 'kit-cuenta', 'kit-nav', 'tema'].map(id => [id, new Nodo('div')]));
   const salto = new Nodo('a'), eventos = {}, consultas = [], guardado = [];
   const document = { documentElement: new Nodo('html'), createElement: t => new Nodo(t), getElementById: id => nodos[id], querySelector: () => salto, addEventListener() {} };
-  const root = { document, Intl, location: { hash }, history: { replaceState(_, __, hash) { root.location.hash = hash; } }, localStorage: { getItem() { throw Error('bloqueado'); }, setItem(...args) { guardado.push(args); } }, addEventListener: (k, fn) => { eventos[k] = fn; } }; root.window = root;
+  const root = { document, Intl, fetch: async () => ({ok:true,json:async () => JSON.parse(readFileSync(new URL('../public/config/kit-modulos.json', import.meta.url), 'utf8'))}), location: { hash }, history: { replaceState(_, __, hash) { root.location.hash = hash; } }, localStorage: { getItem() { throw Error('bloqueado'); }, setItem(...args) { guardado.push(args); } }, addEventListener: (k, fn) => { eventos[k] = fn; } }; root.window = root;
   vm.runInNewContext(readFileSync(new URL('../public/kit-armazon.js', import.meta.url), 'utf8'), root);
   const datos = { usuarioActual: async () => usuario, empresas: async () => lista, puedeEditar: id => id === 'uno', listar: async (...args) => { consultas.push(args); return listar(...args); }, iniciarSesion: async () => ({ id: 'u' }), cerrarSesion: async () => {}, observarSesion(fn) { datos.salir = fn; } };
   await root.App.iniciar(datos);
@@ -63,34 +76,48 @@ test('DOM: ingreso accesible, soporte, autenticación y salida', async () => {
   form.todos().find(n => n.textContent === '¿Olvidaste tu contraseña?').onclick(); assert.match(form.textContent, /Escribe a soporte GH/);
   form.todos().filter(n => n.tag === 'input').forEach(n => { n.value = 'ejemplo'; });
   await form.onsubmit({ preventDefault() {} });
-  assert.equal(m.root.location.hash, '#/e/uno'); assert.deepEqual(m.consultas, [['uno', 'portada']]);
+  assert.equal(m.root.location.hash, '#/'); assert.deepEqual(m.consultas, []);
   await m.nodos['kit-cuenta'].todos().find(n => n.textContent === 'Salir').onclick(); assert.equal(m.root.location.hash, '#/ingresar');
 });
-test('DOM: portada solo pide su colección y módulos no precargan datos', async () => {
-  const m = await montar({ listar: async () => [{ id: 'portada', contexto: '<script>texto seguro</script>' }] });
-  assert.match(m.nodos.contenido.textContent, /<script>texto seguro<\/script>/);
-  assert.equal(m.nodos.contenido.todos().filter(n => n.tag === 'script').length, 0);
-  assert.equal(m.nodos.contenido.todos().filter(n => n.tag === 'a').length, 4);
-  m.root.location.hash = '#/e/dos/riesgos'; await m.root.App.actualizarVista();
-  assert.doesNotMatch(m.nodos.contenido.textContent, /Alimentación/); assert.match(m.nodos.contenido.textContent, /En construcción/); assert.equal(m.consultas.length, 1);
-  assert.ok(m.nodos['kit-cuenta'].querySelector('select'));
+test('DOM: portada global no consulta colecciones ni muestra selector global', async () => {
+  const m = await montar();
+  assert.match(m.nodos.contenido.textContent, /GH Studio × Meleia/);
+  assert.match(m.nodos.contenido.textContent, /Credenciales.*Próximamente/);
+  assert.equal(m.nodos.contenido.todos().filter(n => n.tag === 'article').length, 4);
+  assert.equal(m.consultas.length, 0); assert.equal(m.nodos['kit-cuenta'].querySelector('select'), undefined);
+  assert.match(m.nodos['kit-cuenta'].textContent, /Responsable/);
 });
-test('DOM: una empresa fija; sin empresas hay salida y mensaje de soporte', async () => {
-  const una = await montar({ empresas: [empresas[0]] }); assert.equal(una.nodos['kit-cuenta'].querySelector('select'), undefined);
-  const cero = await montar({ empresas: [] }); assert.match(cero.nodos.contenido.textContent, /Sin empresas asignadas/); assert.match(cero.nodos['kit-cuenta'].textContent, /Salir/);
+test('DOM: un caso solo muestra nombre; múltiples casos tienen enlaces segmentados', async () => {
+  const una = await montar({ empresas: muestras, hash:'#/ddhh' });
+  assert.match(una.nodos.contenido.textContent, /Caso: Solgas/);
+  assert.equal(una.nodos.contenido.todos().find(n => n.attrs['aria-label'] === 'Casos del módulo'), undefined);
+  const varias = await montar({ empresas:muestras, hash:'#/actores' });
+  const selector = varias.nodos.contenido.todos().find(n => n.attrs['aria-label'] === 'Casos del módulo');
+  assert.equal(selector.todos().filter(n => n.tag === 'a').length, 2);
+  assert.doesNotMatch(varias.nodos.contenido.textContent, /Alimentación/);
+  assert.match(varias.nodos['kit-cuenta'].textContent, /Responsable/);
+  varias.root.location.hash = '#/actores/minerales-santa-ana'; varias.datos.puedeEditar = id => id === 'minerales-santa-ana'; await varias.root.App.actualizarVista();
+  assert.match(varias.nodos.contenido.textContent, /Alimentación/);
+  const soporte = await montar({ empresas:[...empresas,{id:'tres',rol:'admin',muestra_comercial:false}] }); assert.match(soporte.nodos['kit-cuenta'].textContent,/Soporte GH/);
 });
-test('DOM: registro de vistas, limpieza y respuesta tardía de otra empresa', async () => {
-  const m = await montar({ hash: '#/e/uno/riesgos' }); let liberar, limpiado = false;
-  m.root.App.registrarVista('riesgos/matriz', { render(c, datos, params) { c.append(m.root.App.el('p', params.empresa)); return () => { limpiado = true; }; } });
-  await m.root.App.actualizarVista(); assert.match(m.nodos.contenido.textContent, /uno/);
-  m.datos.listar = () => new Promise(resolve => { liberar = resolve; });
-  m.root.location.hash = '#/e/uno'; const pendiente = m.root.App.actualizarVista();
-  m.root.location.hash = '#/e/dos/ddhh'; await m.root.App.actualizarVista();
-  liberar([{ id: 'portada', contexto: 'NO MOSTRAR' }]); await pendiente;
-  assert.equal(limpiado, true); assert.doesNotMatch(m.nodos.contenido.textContent, /NO MOSTRAR/);
+test('DOM: sin casos se informa en tarjeta, navegación y módulo', async () => {
+  const m = await montar({empresas:[]});
+  assert.equal(m.nodos.contenido.todos().filter(n => n.textContent === 'Sin casos disponibles para tu cuenta').length,4);
+  assert.match(m.nodos['kit-nav'].todos().find(n => n.href === '#/actores').attrs['aria-label'],/Sin casos disponibles/);
+  m.root.location.hash = '#/actores'; await m.root.App.actualizarVista(); assert.match(m.nodos.contenido.textContent,/Sin casos disponibles para tu cuenta/);
+  assert.match(m.nodos['kit-cuenta'].textContent,/Salir/);
 });
-test('DOM: error remoto visible, sesión revocada vuelve al ingreso', async () => {
-  const m = await montar({ listar: async () => { throw Error('No hay conexión con la base de datos'); } });
-  assert.match(m.nodos.contenido.querySelector('[role="alert"]').textContent, /No hay conexión/);
-  m.datos.salir(); assert.equal(m.root.location.hash, '#/ingresar'); assert.doesNotMatch(m.nodos.contenido.textContent, /Portada/);
+test('DOM: contrato de vistas, limpieza y respuesta tardía de otra empresa', async () => {
+  const m = await montar(); let liberar, limpiado = false, params;
+  m.root.App.registrarVista('riesgos/matriz', { async render(c, datos, p) { params = p; await new Promise(resolve => { liberar = resolve; }); if (p.vigente()) c.append(m.root.App.el('p','NO MOSTRAR')); return () => { limpiado = true; }; } });
+  m.root.location.hash = '#/riesgos/uno'; const pendiente = m.root.App.actualizarVista();
+  assert.equal(params.empresa,'uno'); assert.equal(params.puedeEditar,true);
+  m.root.location.hash = '#/ddhh/dos'; await m.root.App.actualizarVista(); liberar(); await pendiente;
+  assert.equal(limpiado,true); assert.equal(params.vigente(),false); assert.doesNotMatch(m.nodos.contenido.textContent,/NO MOSTRAR/);
+});
+test('DOM: error de vista visible y sesión revocada vuelve al ingreso', async () => {
+  const m = await montar(); m.root.App.registrarVista('ddhh',{render(){throw Error('No hay conexión con la base de datos');}});
+  m.root.location.hash = '#/ddhh/uno'; await m.root.App.actualizarVista();
+  assert.match(m.nodos.contenido.querySelector('[role="alert"]').textContent,/No hay conexión/);
+  m.datos.salir(); assert.equal(m.root.location.hash,'#/ingresar');
 });
