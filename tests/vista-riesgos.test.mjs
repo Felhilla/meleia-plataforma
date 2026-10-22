@@ -63,9 +63,4 @@ test('las funciones nuevas no mutan datos, filtros ni configuración', () => {
   R.filtrar(riesgos,filtro,cfg); R.ubicar(riesgos,cfg); R.accionesDe(riesgos[0].id,acciones); R.opcionesFiltro(riesgos,cfg);
   assert.equal(JSON.stringify({riesgos,acciones,cfg}),antes);
 });
-test('index carga scripts locales diferidos y en orden válido', () => {
-  const html = readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
-  const scripts = [...html.matchAll(/<script\b([^>]*)src="([^"]+)"[^>]*>/g)];
-  assert.deepEqual(scripts.map(m=>m[2]),['config.js','api-supabase.js','riesgos.js','estandares.js','plan.js','materialidad.js','app.js','vista-caso.js','vista-metodologia.js','vista-resultados.js','vista-riesgos.js','vista-estandares.js','vista-plan.js','vista-materialidad.js']);
-  assert.ok(scripts.every(m=>m[1].includes('defer')));
-});
+// E16: la carga del Kit se verifica en kit-armazon.test.mjs; la lógica de riesgos se conserva arriba.

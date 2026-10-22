@@ -154,13 +154,8 @@ test('resultados recalcula evidencia al cambiar datos y usa la última evaluaci�
   assert.match(raiz.textContent, /0 vencidas/); assert.doesNotMatch(raiz.textContent, /avances de ejemplo/);
   assert.match(raiz.textContent, /Materialidad en preparación/);
 });
-test('index carga scripts locales diferidos y en orden válido para los nueve destinos', () => {
-  const scripts = [...leer('index.html').matchAll(/<script\s+([^>]+)>/g)].map(m => m[1]);
-  assert.ok(scripts.every(s => /\bdefer\b/.test(s)));
-  const fuentes = scripts.map(s => s.match(/src="([^"]+)"/)[1]);
-  assert.deepEqual(fuentes, ['config.js','api-supabase.js','riesgos.js','estandares.js','plan.js','materialidad.js','app.js','vista-caso.js','vista-metodologia.js','vista-resultados.js','vista-riesgos.js','vista-estandares.js','vista-plan.js','vista-materialidad.js']);
-  fuentes.forEach(f => assert.doesNotThrow(() => leer(f)));
-});
+// E16: el contrato de carga del sitio se verifica en kit-armazon.test.mjs.
+// Las vistas heredadas siguen probándose como componentes reutilizables.
 
 test('metodología: portadas locales y contraste de los números del semáforo', () => {
   json('data/caso.json').metodologia.estandares.forEach(e => assert.ok(readFileSync(new URL('../public/' + e.imagen, import.meta.url)).length > 0));

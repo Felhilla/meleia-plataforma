@@ -4,44 +4,31 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>Caso demostrativo · GH Studio × Meleia</title>
+  <title>GH Studio × Meleia · Kit</title>
   <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="estilos.css">
-  <link rel="stylesheet" href="estilos-estandares.css">
-  <link rel="stylesheet" href="estilos-plan.css">
-  <link rel="stylesheet" href="estilos-materialidad.css">
-  <link rel="stylesheet" href="estilos-relato.css">
-  <link rel="stylesheet" href="estilos-riesgos.css">
+  <link rel="stylesheet" href="estilos-kit.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script defer src="config.js"></script>
-  <script defer src="api-supabase.js"></script>
-  <script defer src="riesgos.js"></script>
-  <script defer src="estandares.js"></script>
-  <script defer src="plan.js"></script>
-  <script defer src="materialidad.js"></script>
-  <script defer src="app.js"></script>
-  <script defer src="vista-caso.js"></script>
-  <script defer src="vista-metodologia.js"></script>
-  <script defer src="vista-resultados.js"></script>
-  <script defer src="vista-riesgos.js"></script>
-  <script defer src="vista-estandares.js"></script>
-  <script defer src="vista-plan.js"></script>
-  <script defer src="vista-materialidad.js"></script>
+  <script defer src="kit-datos.js"></script>
+  <script defer src="kit-validacion.js"></script>
+  <script defer src="kit-armazon.js"></script>
 </head>
 <body>
   <a class="saltar" href="#contenido">Saltar al contenido</a>
   <header id="cabecera">
     <div class="barra">
-      <a class="logos" href="#/" aria-label="GH Studio × Meleia · Inicio del caso">
+      <a class="logos" href="#/" aria-label="GH Studio × Meleia · Inicio del Kit">
         <img class="logo-color" src="img/logo-gh-color.png" alt="GH Studio" height="34"><img class="logo-blanco" src="img/logo-gh-blanco.png" alt="GH Studio" height="34">
         <i class="filete" aria-hidden="true"></i>
         <img class="logo-color" src="img/logo-meleia-color.png" alt="Meleia" height="34"><img class="logo-blanco" src="img/logo-meleia-blanco.png" alt="Meleia" height="34">
       </a>
-      <p class="caso-actual"><span>Caso</span><strong id="caso-nombre"></strong><span class="chip" id="caso-ficticia"></span></p>
+      <div id="kit-cuenta"></div>
       <button id="tema" type="button" aria-label="Activar tema oscuro" aria-pressed="false" title="Cambiar tema">☾</button>
     </div>
-    <nav id="capitulos" aria-label="Capítulos del caso" hidden></nav>
+    <nav id="kit-nav" aria-label="Módulos del Kit"></nav>
   </header>
-  <main id="contenido" tabindex="-1"><p role="status">Cargando el caso…</p></main>
+  <main id="contenido" tabindex="-1"><p role="status">Cargando el Kit…</p></main>
   <footer><div class="pie"><span>GH Studio × Meleia</span><span>Sostenibilidad · Riesgo preventivo · Debida diligencia</span></div></footer>
   <noscript>Activa JavaScript para consultar la plataforma.</noscript>
 </body>

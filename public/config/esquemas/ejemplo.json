@@ -1,0 +1,15 @@
+{
+  "campos": {
+    "id": {"tipo": "texto", "max": 80, "obligatorio": true},
+    "nombre": {"tipo": "texto", "max": 120, "obligatorio": true},
+    "detalle": {"tipo": "texto-largo", "obligatorioSi": {"campo": "estado", "valor": "otro"}},
+    "alcance": {"tipo": "entero", "min": 1, "max": 3, "etiqueta": "Alcance"},
+    "importe": {"tipo": "decimal", "min": 0},
+    "fecha": {"tipo": "fecha"},
+    "estado": {"tipo": "lista", "valores": ["activo", "otro"]},
+    "etiquetas": {"tipo": "lista", "valores": ["uno", "dos"], "multiple": true},
+    "actor": {"tipo": "referencia", "coleccion": "actores"},
+    "nivel": {"tipo": "nivel", "escala": 5},
+    "prioridad": {"tipo": "nivel", "escala": 3, "etiquetas": ["Baja", "Media", "Alta"]}
+  }
+}

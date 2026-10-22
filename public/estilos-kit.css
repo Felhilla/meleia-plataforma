@@ -1,0 +1,33 @@
+/* El Kit reutiliza los tokens y los logos de identidad E11. */
+#cabecera .barra { max-width: 1440px; height: auto; min-height: 80px; flex-wrap: wrap; gap: var(--e3); padding: var(--e3) var(--e4); }
+#kit-cuenta { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e2); margin-left: auto; min-width: 0; }
+#kit-cuenta select { max-width: 260px; }
+#kit-nav, .kit-pestanas { display: flex; flex-wrap: wrap; gap: var(--e3); padding: var(--e3) var(--e4); border-bottom: 1px solid var(--borde); }
+#kit-nav:empty { display: none; }
+#kit-nav a, .kit-pestanas a { padding: var(--e2); text-decoration: none; }
+#kit-nav a[aria-current], .kit-pestanas a[aria-current] { border-bottom: 3px solid var(--oro); font-weight: 700; }
+#contenido { width: min(1200px, calc(100% - 48px)); min-height: 65vh; margin: var(--e6) auto; }
+.kit-vista { margin-top: var(--e5); }
+.kit-vista > p { max-width: 720px; margin-top: var(--e3); }
+.kit-vista > div > h2 { margin-top: var(--e5); }
+.kit-modulos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e4); margin-top: var(--e6); }
+.kit-modulos a { text-decoration: none; padding: var(--e5); }
+.kit-modulos h3 { margin-bottom: var(--e4); }
+.kit-ingreso { max-width: 480px; margin: var(--e6) auto; padding: var(--e5); }
+.kit-ingreso form { display: grid; gap: var(--e3); margin-top: var(--e5); }
+.kit-ingreso input, #kit-cuenta select { min-width: 0; width: 100%; padding: var(--e2); border: 1px solid var(--linea); border-radius: var(--radio-chico); background: var(--superficie); }
+.kit-enlace { border: 0; background: none; text-decoration: underline; color: var(--principal); cursor: pointer; }
+.kit-error { color: var(--alta); background: var(--alta-fondo); padding: var(--e3); border-radius: var(--radio-chico); }
+:where(a, button, input, select):focus-visible { outline: 3px solid var(--principal); outline-offset: 4px; }
+button:disabled { opacity: .65; cursor: wait; }
+#contenido, #kit-cuenta, .kit-modulos { overflow-wrap: anywhere; }
+@media (max-width: 650px) {
+  #cabecera { position: static; }
+  #cabecera .barra { padding: var(--e3); }
+  #kit-cuenta { order: 3; width: 100%; margin-left: 0; }
+  #kit-cuenta select { max-width: 100%; }
+  #contenido { width: calc(100% - 32px); margin-top: var(--e5); }
+  #kit-nav { gap: var(--e1); padding: var(--e2); font-size: var(--t-chico); }
+  .kit-modulos { grid-template-columns: 1fr; }
+  .kit-ingreso { padding: var(--e4); }
+}
