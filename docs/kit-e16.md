@@ -19,7 +19,7 @@ En navegador: `KitDatos.crear(clienteSupabase)`. En Node: `import KitDatos from 
 
 Los errores son `Error` en español; incluyen `codigo`, `cause` y `sesionCerrada`. 401/JWT inválido lleva a ingreso; 403/42501 informa falta de permiso; fallos de transporte informan falta de conexión. Nunca se sustituyen por archivos locales. El tamaño se comprueba en UTF-8 antes de enviar; la restricción exacta sobre la representación JSONB pertenece a la base.
 
-No hay consultas periódicas, precarga de módulos ni recarga automática. La portada solicita únicamente `portada` de la empresa elegida. La sesión persistente usa el SDK con `autoRefreshToken: false` y `detectSessionInUrl: false`; una sesión caducada que la base rechace requiere ingresar de nuevo. El botón Reintentar es una acción explícita del usuario.
+No hay consultas periódicas, precarga de módulos ni recarga automática. La portada solicita únicamente `portada` de la empresa elegida. La sesión persistente usa el SDK con `autoRefreshToken: true` (una renovación por hora, para que la sesión no caduque en medio de una demostración) y `detectSessionInUrl: false`. Es la única consulta periódica permitida. El botón Reintentar es una acción explícita del usuario.
 
 ## KitValidacion
 

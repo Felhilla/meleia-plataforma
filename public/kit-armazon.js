@@ -146,7 +146,7 @@
   root.App = App;
   if (root.document) root.document.addEventListener('DOMContentLoaded', () => {
     try {
-      const cliente = root.supabase.createClient(root.GH_CONFIG.supabaseUrl, root.GH_CONFIG.supabaseKey, { auth: { autoRefreshToken: false, detectSessionInUrl: false, persistSession: true } });
+      const cliente = root.supabase.createClient(root.GH_CONFIG.supabaseUrl, root.GH_CONFIG.supabaseKey, { auth: { autoRefreshToken: true, detectSessionInUrl: false, persistSession: true } });
       App.iniciar(root.KitDatos.crear(cliente));
     } catch (_) { const p = App.el('p', 'No se pudo cargar el cliente de acceso. Comprueba la conexión y vuelve a abrir la página.'); p.setAttribute('role', 'alert'); root.document.getElementById('contenido').replaceChildren(p); }
   });
