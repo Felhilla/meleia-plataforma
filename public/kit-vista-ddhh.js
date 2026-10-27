@@ -30,7 +30,7 @@
   const etiqueta = e => {
     const nombre = e.nombre.replace(e.fecha, '').replace(new RegExp('\\s+' + e.fecha.slice(0, 4) + '$'), '').replace(/\s*\(ejemplo\)\s*/gi, '').trim();
     const fecha = new Intl.DateTimeFormat('es-CO', {month: 'short', year: 'numeric'}).format(new Date(e.fecha + '-01T12:00:00')).replace(' de ', ' ');
-    return `${nombre} · ${fecha}${e.origen === 'ejemplo' ? ' (ejemplo)' : e.origen === 'cargada' ? ' · Cargada en la plataforma' : ''}`;
+    return `${nombre} · ${fecha}${e.origen === 'ejemplo' ? ' · Ejemplo ilustrativo' : e.origen === 'cargada' ? ' · Cargada en la plataforma' : ''}`;
   };
   function svg(tag, attrs, texto) {
     const n = document.createElementNS('http://www.w3.org/2000/svg', tag);
@@ -328,6 +328,8 @@
     function dibujar() {
       sincronizar();
       cuerpo.replaceChildren();
+      // La evaluación de ejemplo no es de la empresa: el letrero se ve siempre que esté en pantalla.
+      if ([principal, comparada].some(e => e?.origen === 'ejemplo')) { const letrero = el('p', 'Ejemplo ilustrativo: la evaluación de ejemplo muestra cómo se ve el avance entre dos evaluaciones. Sus puntajes no son de la empresa.', 'nota dim-ejemplo'); letrero.setAttribute('role', 'note'); cuerpo.append(letrero); }
       if (!dims.grandes.length) { cuerpo.append(el('p', 'Contenido en preparación.', 'en-preparacion')); return; }
       const general = el('section', null, 'dim-general');
       dims.grandes.forEach((g, i) => general.append(tarjetaGeneral(g, i)));
