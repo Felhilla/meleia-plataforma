@@ -1,0 +1,312 @@
+{
+  "meta": {
+    "fuente": "Informe de muestra de {empresa}, edición inventada",
+    "umbral_impacto": 2.7,
+    "umbral_financiero": 2.8,
+    "escala": "0 a 5",
+    "participantes_taller": 7,
+    "pendientes": [
+      "Datos inventados para pruebas."
+    ]
+  },
+  "temas": [
+    {
+      "id": "tema-01",
+      "orden": 1,
+      "nombre": "Diseño modular",
+      "dimension": "Ambiental",
+      "tipo": "Doble",
+      "estandar_gri": "GRI de muestra",
+      "descripcion": "{empresa} desarrolla un ejemplo de diseño modular",
+      "indicadores": "Indicador inventado 1"
+    },
+    {
+      "id": "tema-02",
+      "orden": 2,
+      "nombre": "Recuperación de piezas",
+      "dimension": "Social",
+      "tipo": "Doble",
+      "estandar_gri": "GRI de muestra",
+      "descripcion": "",
+      "indicadores": ""
+    },
+    {
+      "id": "tema-03",
+      "orden": 3,
+      "nombre": "Aprendizaje creativo",
+      "dimension": "Gobernanza",
+      "tipo": "Doble",
+      "estandar_gri": "GRI de muestra",
+      "descripcion": "{empresa} desarrolla un ejemplo de aprendizaje creativo",
+      "indicadores": "Indicador inventado 3"
+    },
+    {
+      "id": "tema-04",
+      "orden": 4,
+      "nombre": "Biblioteca técnica",
+      "dimension": "Ambiental",
+      "tipo": "Doble",
+      "estandar_gri": "GRI de muestra",
+      "descripcion": "{empresa} desarrolla un ejemplo de biblioteca técnica",
+      "indicadores": "Indicador inventado 4"
+    },
+    {
+      "id": "tema-05",
+      "orden": 5,
+      "nombre": "Mantenimiento circular",
+      "dimension": "Social",
+      "tipo": "Impacto",
+      "estandar_gri": "GRI de muestra",
+      "descripcion": "{empresa} desarrolla un ejemplo de mantenimiento circular",
+      "indicadores": "Indicador inventado 5"
+    },
+    {
+      "id": "tema-06",
+      "orden": 6,
+      "nombre": "Acceso cultural",
+      "dimension": "Gobernanza",
+      "tipo": "Impacto",
+      "estandar_gri": "GRI de muestra",
+      "descripcion": "{empresa} desarrolla un ejemplo de acceso cultural",
+      "indicadores": "Indicador inventado 6"
+    },
+    {
+      "id": "tema-07",
+      "orden": 7,
+      "nombre": "Distribución editorial",
+      "dimension": "Ambiental",
+      "tipo": "Impacto",
+      "estandar_gri": "GRI de muestra",
+      "descripcion": "{empresa} desarrolla un ejemplo de distribución editorial",
+      "indicadores": "Indicador inventado 7"
+    },
+    {
+      "id": "tema-08",
+      "orden": 8,
+      "nombre": "Calidad de impresión",
+      "dimension": "Social",
+      "tipo": "Financiera",
+      "estandar_gri": "GRI de muestra",
+      "descripcion": "{empresa} desarrolla un ejemplo de calidad de impresión",
+      "indicadores": "Indicador inventado 8"
+    },
+    {
+      "id": "tema-09",
+      "orden": 9,
+      "nombre": "Trazabilidad de papel",
+      "dimension": "Gobernanza",
+      "tipo": "Financiera",
+      "estandar_gri": "GRI de muestra",
+      "descripcion": "{empresa} desarrolla un ejemplo de trazabilidad de papel",
+      "indicadores": "Indicador inventado 9"
+    },
+    {
+      "id": "tema-10",
+      "orden": 10,
+      "nombre": "Archivo digital",
+      "dimension": "Ambiental",
+      "tipo": "Financiera",
+      "estandar_gri": "GRI de muestra",
+      "descripcion": "{empresa} desarrolla un ejemplo de archivo digital",
+      "indicadores": "Indicador inventado 10"
+    }
+  ],
+  "impacto_top": [
+    {
+      "id": "imp-01",
+      "puesto": 1,
+      "aspecto": "Diseño modular",
+      "importancia": 4.8,
+      "probabilidad": 4.1
+    },
+    {
+      "id": "imp-02",
+      "puesto": 2,
+      "aspecto": "Recuperación de piezas",
+      "importancia": 4.59,
+      "probabilidad": 3.97
+    },
+    {
+      "id": "imp-03",
+      "puesto": 3,
+      "aspecto": "Aprendizaje creativo",
+      "importancia": 4.38,
+      "probabilidad": 3.84
+    },
+    {
+      "id": "imp-04",
+      "puesto": 4,
+      "aspecto": "Biblioteca técnica",
+      "importancia": 4.17,
+      "probabilidad": 3.71
+    },
+    {
+      "id": "imp-05",
+      "puesto": 5,
+      "aspecto": "Mantenimiento circular",
+      "importancia": 3.96,
+      "probabilidad": 3.58
+    },
+    {
+      "id": "imp-06",
+      "puesto": 6,
+      "aspecto": "Acceso cultural",
+      "importancia": 3.75,
+      "probabilidad": 3.45
+    },
+    {
+      "id": "imp-07",
+      "puesto": 7,
+      "aspecto": "Distribución editorial",
+      "importancia": 3.54,
+      "probabilidad": 3.32
+    },
+    {
+      "id": "imp-08",
+      "puesto": 8,
+      "aspecto": "Calidad de impresión",
+      "importancia": 3.33,
+      "probabilidad": 3.19
+    },
+    {
+      "id": "imp-09",
+      "puesto": 9,
+      "aspecto": "Trazabilidad de papel",
+      "importancia": 3.12,
+      "probabilidad": 3.06
+    },
+    {
+      "id": "imp-10",
+      "puesto": 10,
+      "aspecto": "Archivo digital",
+      "importancia": 2.91,
+      "probabilidad": 2.93
+    }
+  ],
+  "financiera_top": [
+    {
+      "id": "rentabilidad-01",
+      "variable": "rentabilidad",
+      "puesto": 1,
+      "aspecto": "Diseño modular",
+      "impacto_promedio": 4.5,
+      "probabilidad": 3.7,
+      "indice": 16.65
+    },
+    {
+      "id": "rentabilidad-02",
+      "variable": "rentabilidad",
+      "puesto": 2,
+      "aspecto": "Recuperación de piezas",
+      "impacto_promedio": 4.2,
+      "probabilidad": 3.7,
+      "indice": 15.54
+    },
+    {
+      "id": "rentabilidad-03",
+      "variable": "rentabilidad",
+      "puesto": 3,
+      "aspecto": "Aprendizaje creativo",
+      "impacto_promedio": 3.9,
+      "probabilidad": 3.7,
+      "indice": 14.43
+    },
+    {
+      "id": "rentabilidad-04",
+      "variable": "rentabilidad",
+      "puesto": 4,
+      "aspecto": "Biblioteca técnica",
+      "impacto_promedio": 3.6,
+      "probabilidad": 3.7,
+      "indice": 13.32
+    },
+    {
+      "id": "rentabilidad-05",
+      "variable": "rentabilidad",
+      "puesto": 5,
+      "aspecto": "Mantenimiento circular",
+      "impacto_promedio": 3.3,
+      "probabilidad": 3.7,
+      "indice": 12.21
+    },
+    {
+      "id": "gasto-01",
+      "variable": "gasto",
+      "puesto": 1,
+      "aspecto": "Diseño modular",
+      "impacto_promedio": 4.5,
+      "probabilidad": 3.2,
+      "indice": 14.4
+    },
+    {
+      "id": "gasto-02",
+      "variable": "gasto",
+      "puesto": 2,
+      "aspecto": "Recuperación de piezas",
+      "impacto_promedio": 4.2,
+      "probabilidad": 3.2,
+      "indice": 13.44
+    },
+    {
+      "id": "gasto-03",
+      "variable": "gasto",
+      "puesto": 3,
+      "aspecto": "Aprendizaje creativo",
+      "impacto_promedio": 3.9,
+      "probabilidad": 3.2,
+      "indice": 12.48
+    },
+    {
+      "id": "gasto-04",
+      "variable": "gasto",
+      "puesto": 4,
+      "aspecto": "Biblioteca técnica",
+      "impacto_promedio": 3.6,
+      "probabilidad": 3.2,
+      "indice": 11.52
+    },
+    {
+      "id": "gasto-05",
+      "variable": "gasto",
+      "puesto": 5,
+      "aspecto": "Mantenimiento circular",
+      "impacto_promedio": 3.3,
+      "probabilidad": 3.2,
+      "indice": 10.56
+    }
+  ],
+  "convergencia": [
+    {
+      "id": "conv-1",
+      "aspecto": "Diseño modular",
+      "grupos_interes": true,
+      "rentabilidad": false,
+      "gasto": false,
+      "dimensiones": 1
+    },
+    {
+      "id": "conv-2",
+      "aspecto": "Recuperación de piezas",
+      "grupos_interes": true,
+      "rentabilidad": true,
+      "gasto": false,
+      "dimensiones": 2
+    },
+    {
+      "id": "conv-3",
+      "aspecto": "Aprendizaje creativo",
+      "grupos_interes": true,
+      "rentabilidad": true,
+      "gasto": true,
+      "dimensiones": 3
+    },
+    {
+      "id": "conv-4",
+      "aspecto": "Biblioteca técnica",
+      "grupos_interes": true,
+      "rentabilidad": true,
+      "gasto": true,
+      "dimensiones": 3
+    }
+  ]
+}

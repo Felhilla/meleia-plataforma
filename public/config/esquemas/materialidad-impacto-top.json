@@ -1,0 +1,36 @@
+{
+  "titulo": "Top de impacto",
+  "campos": {
+    "id": {
+      "tipo": "texto",
+      "max": 80,
+      "obligatorio": true
+    },
+    "puesto": {
+      "tipo": "entero",
+      "etiqueta": "Puesto",
+      "min": 1,
+      "max": 10,
+      "obligatorio": true
+    },
+    "aspecto": {
+      "tipo": "texto",
+      "etiqueta": "Aspecto",
+      "obligatorio": true
+    },
+    "importancia": {
+      "tipo": "decimal",
+      "etiqueta": "Importancia",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "probabilidad": {
+      "tipo": "decimal",
+      "etiqueta": "Probabilidad",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    }
+  }
+}

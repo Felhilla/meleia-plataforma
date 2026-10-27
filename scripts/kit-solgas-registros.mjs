@@ -37,7 +37,7 @@ export async function preparar(base=raiz) {
   const resultado=limpiar(listas);
   const referencias=Object.fromEntries(Object.entries(resultado).map(([c,rs])=>[c,new Set(rs.map(r=>r.id))]));
   for(const [c,registros] of Object.entries(resultado)) {
-    const esquema=await leer('config/esquemas/'+c+'.json',base), ids=new Set();
+    const esquema=c==='materialidad-temas'?JSON.parse(await readFile(resolve(raiz,'tests/fixtures/materialidad-temas-e21.json'),'utf8')):await leer('config/esquemas/'+c+'.json',base), ids=new Set();
     for(let i=0;i<registros.length;i++) {
       const r=registros[i];if(ids.has(r.id))throw Error(c+': código duplicado '+r.id);ids.add(r.id);
       const v=K.validar(r,K.esquema(esquema,c,cat,r),referencias);

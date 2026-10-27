@@ -1,0 +1,47 @@
+{
+  "titulo": "Resumen",
+  "campos": {
+    "id": {
+      "tipo": "texto",
+      "max": 80,
+      "obligatorio": true
+    },
+    "fuente": {
+      "tipo": "texto",
+      "etiqueta": "Fuente",
+      "obligatorio": true
+    },
+    "umbral_impacto": {
+      "tipo": "decimal",
+      "etiqueta": "Umbral de impacto",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "umbral_financiero": {
+      "tipo": "decimal",
+      "etiqueta": "Umbral financiero",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "escala": {
+      "tipo": "texto",
+      "etiqueta": "Escala",
+      "obligatorio": true
+    },
+    "participantes_taller": {
+      "tipo": "entero",
+      "etiqueta": "Participantes del taller",
+      "min": 0,
+      "max": 100000,
+      "obligatorio": true
+    },
+    "notas": {
+      "tipo": "texto-largo",
+      "etiqueta": "Notas",
+      "obligatorio": false
+    }
+  },
+  "registroUnico": "resumen"
+}

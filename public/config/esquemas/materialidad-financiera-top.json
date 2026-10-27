@@ -1,0 +1,52 @@
+{
+  "titulo": "Top financiero",
+  "campos": {
+    "id": {
+      "tipo": "texto",
+      "max": 80,
+      "obligatorio": true
+    },
+    "variable": {
+      "tipo": "lista",
+      "etiqueta": "Variable",
+      "valores": [
+        "rentabilidad",
+        "gasto"
+      ],
+      "obligatorio": true
+    },
+    "puesto": {
+      "tipo": "entero",
+      "etiqueta": "Puesto",
+      "min": 1,
+      "max": 5,
+      "obligatorio": true
+    },
+    "aspecto": {
+      "tipo": "texto",
+      "etiqueta": "Aspecto",
+      "obligatorio": true
+    },
+    "impacto_promedio": {
+      "tipo": "decimal",
+      "etiqueta": "Impacto promedio",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "probabilidad": {
+      "tipo": "decimal",
+      "etiqueta": "Probabilidad",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "indice": {
+      "tipo": "decimal",
+      "etiqueta": "Índice",
+      "min": 0,
+      "max": 25,
+      "obligatorio": true
+    }
+  }
+}

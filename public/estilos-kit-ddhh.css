@@ -267,3 +267,9 @@ button.enlace:focus-visible { outline: 2px solid var(--principal); outline-offse
 
 /* Letrero de la evaluación de ejemplo */
 .dim-ejemplo { border-left: 3px solid var(--acento); padding: .5rem .75rem; margin: 0 0 1rem; background: var(--fondo-alterno); }
+
+/* Acciones de alimentación: conservar cada palabra completa en móvil. */
+.ke-tabla .boton,.ke-form .boton,.ke-confirmacion .boton,.ke-previa .boton {
+ white-space:nowrap; word-break:normal; overflow-wrap:normal; flex-shrink:0;
+}
+.ke-tabla td:last-child .boton { display:inline-block; margin:var(--e1); }

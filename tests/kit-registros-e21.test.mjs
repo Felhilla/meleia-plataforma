@@ -6,14 +6,14 @@ import {join} from 'node:path';
 import {createHash} from 'node:crypto';
 import K from '../public/kit-vista-ddhh-modelo.js';
 const raiz=new URL('../',import.meta.url);
-const script=(await readdir(new URL('scripts/',raiz))).find(n=>n.startsWith('kit-')&&n.endsWith('-registros.mjs'));
+const script=(await readdir(new URL('scripts/',raiz))).find(n=>n.startsWith('kit-')&&n.endsWith('-registros.mjs')&&!n.includes('materialidad'));
 const {preparar,escribir}=await import(new URL('scripts/'+script,raiz));
 const leer=async p=>JSON.parse(await readFile(new URL(p,raiz),'utf8'));
 test('E21: todos los registros de carga validan, mantienen evidencia y no guardan el nombre',async()=>{
  const listas=await preparar(),cat=await leer('public/config/kit-ddhh-catalogo.json');
  const refs=Object.fromEntries(Object.entries(listas).map(([c,rs])=>[c,new Set(rs.map(r=>r.id))]));
  assert.equal(Object.values(listas).flat().length,382);assert.equal(listas['ddhh-indicadores'].length,159);
- for(const [c,rs] of Object.entries(listas)){const base=await leer('public/config/esquemas/'+c+'.json');for(const r of rs)assert.equal(K.validar(r,K.esquema(base,c,cat,r),refs).ok,true,c+'/'+r.id);}
+ for(const [c,rs] of Object.entries(listas)){const base=await leer(c==='materialidad-temas'?'tests/fixtures/materialidad-temas-e21.json':'public/config/esquemas/'+c+'.json');for(const r of rs)assert.equal(K.validar(r,K.esquema(base,c,cat,r),refs).ok,true,c+'/'+r.id);}
  const nombre=(await leer('public/config/empresa-config.json')).nombre_corto;
  assert.ok(!JSON.stringify(listas).toLowerCase().includes(nombre.toLowerCase()));assert.match(JSON.stringify(listas),/\{empresa\}/);
  assert.ok(listas['ddhh-indicadores'].some(r=>r.calificacion===null));

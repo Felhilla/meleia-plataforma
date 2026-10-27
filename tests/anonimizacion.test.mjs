@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -23,7 +24,17 @@ test('sin términos prohibidos en contenido ni nombres de archivos y carpetas', 
     if (fs.statSync(ruta).isDirectory()) {
       fs.readdirSync(ruta).forEach(nombre => recorrer(path.join(ruta, nombre)));
     } else if (extensiones.has(path.extname(ruta))) {
-      comprobar(fs.readFileSync(ruta, 'utf8'), 'contenido público');
+      let contenido = fs.readFileSync(ruta, 'utf8');
+      // E22 autoriza exclusivamente el identificador de caso del Módulo III.
+      if (path.relative(root, ruta) === 'public/config/kit-modulos.json') {
+        const config = JSON.parse(contenido);
+        const modulo = config.modulos.find(m => m.id === 'materialidad');
+        assert.equal(modulo.casos.length, 1);
+        assert.equal(createHash('sha256').update(modulo.casos[0]).digest('hex'), '56430f5b7fb61dc8b60c2bbb16d3b6f2f4e5154aded422375cf77acf45b19ad5');
+        modulo.casos = [];
+        contenido = JSON.stringify(config);
+      }
+      comprobar(contenido, 'contenido público');
     }
   }
   ['public', 'scripts', 'docs', 'tests', 'README.md', 'package.json'].forEach(nombre => recorrer(path.join(root, nombre)));
