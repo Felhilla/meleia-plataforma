@@ -1,8 +1,8 @@
 # E20 · Carga por Excel (Módulos I y IV)
 
 **Responsable:** Sebastián · **Revisa e integra:** Felipe + Claude
-**Entrega:** pull request listo el **jueves 29-oct a las 12:00**. Avance (borrador de PR con el lector y sus pruebas) el **miércoles 28 en la tarde**.
-**Presentación a Germán:** viernes 30-oct.
+**Entrega:** pull request listo el **jueves 29-oct a las 17:00**. Avance (borrador de PR con el lector y sus pruebas) el **miércoles 28 en la tarde**.
+**Presentación a Germán:** viernes 30-oct en la tarde (Claude integra en la mañana). Si la carga no llega a tiempo, en la demo se muestran los formularios y la carga se presenta como «próximamente».
 **Antes de empezar, lee `AGENTS.md`** (regla del contrato). Si usas Claude Code o Codex, los dos la leen solos.
 
 ## 1. Qué es
@@ -100,7 +100,7 @@ Las reglas de detalle están en `docs/ficha-modulo-i.md` (secciones 3, 4.3 y 6) 
 - [ ] Subir dos veces el mismo archivo no duplica registros.
 - [ ] Un registro cargado por Excel es idéntico al del formulario (prueba).
 - [ ] Se usa a 390 px de ancho y con teclado. Funciona en tema claro y oscuro.
-- [ ] `npm test` está en verde y el PR está abierto el jueves a las 12:00.
+- [ ] `npm test` está en verde y el PR está abierto el jueves a las 17:00.
 
 **En la demo del viernes** la carga se muestra con un Excel inventado sobre una empresa de demostración, no sobre Libero ni Santa Ana. Las caracterizaciones reales pueden traer nombres de líderes comunitarios dentro del texto, y eso no se puede filtrar de forma automática.
 
