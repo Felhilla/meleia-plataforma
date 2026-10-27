@@ -15,7 +15,7 @@
     "sha256": "a87a69fc285be67801a4b5e048737dedcf4777fec76c433fe748ae7626a8bcca"
   },
   "public/config/kit-modulos.json": {
-    "identificadores": 2
+    "identificadores": 1
   },
   "tests/kit-armazon.test.mjs": {
     "identificadores": 5
