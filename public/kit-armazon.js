@@ -21,9 +21,14 @@
     if (sub && !tabs.includes(sub)) return portada;
     return { clave: modulo.id + (sub ? '/' + sub : ''), empresa, modulo, sub, hash: '#/' + modulo.id + '/' + empresa.id + (sub ? '/' + sub : '') };
   }
+      function tituloMarca(texto) {
+        const el = App.el;
+        const banda = el('div', null, 'kit-titulo'), arco = el('span', null, 'kit-titulo-arco');
+        arco.setAttribute('aria-hidden', 'true'); banda.append(el('h1', texto), arco); return banda;
+      }
   const vistas = new Map();
   const App = {
-    resolverRuta, pestanas, modulos, casos,
+    resolverRuta, pestanas, modulos, casos, tituloMarca,
     registrarVista(nombre, vista) { vistas.set(nombre, vista); },
     el(tag, texto, clase) { const n = root.document.createElement(tag); if (texto !== undefined && texto !== null) n.textContent = texto; if (clase) n.className = clase; return n; },
     numero(valor, opciones = {}) { return new Intl.NumberFormat('es-CO', opciones).format(valor); },
@@ -32,6 +37,7 @@
       const document = root.document, el = App.el;
       const contenido = document.getElementById('contenido'), cuenta = document.getElementById('kit-cuenta'), nav = document.getElementById('kit-nav');
       let usuario, empresas = [], revision = 0, limpieza;
+      const perfiles = new Map();
       const leer = k => { try { return root.localStorage.getItem(k); } catch (_) { return null; } };
       const guardar = (k, v) => { try { root.localStorage.setItem(k, v); } catch (_) { /* Comodidad opcional. */ } };
       const media = root.matchMedia?.('(prefers-color-scheme: dark)');
@@ -80,7 +86,7 @@
         const salir = el('button', 'Salir', 'boton secundario'); salir.type = 'button';
         salir.onclick = async () => {
           salir.disabled = true;
-          try { await datos.cerrarSesion(); usuario = null; empresas = []; await render(); }
+          try { await datos.cerrarSesion(); usuario = null; empresas = []; perfiles.clear(); await render(); }
           catch (error) { mostrarError(error); salir.disabled = false; }
         };
         cuenta.append(salir);
@@ -88,10 +94,6 @@
         modulos.forEach(m => { const a = enlace(`${m.numero} · ${m.corto || m.nombre}`, '#/' + m.id, ruta.modulo?.id === m.id); a.setAttribute('aria-label', `Módulo ${m.numero} · ${m.nombre}${casos(m, empresas).length ? '' : ' · Sin casos disponibles para tu cuenta'}`); a.title = `Módulo ${m.numero} · ${m.nombre}`; if (!casos(m, empresas).length) a.append(el('small', 'Sin casos disponibles para tu cuenta')); nav.append(a); });
       }
       // Formato de títulos del sitio: franja verde con el arco y el punto de la marca.
-      function tituloMarca(texto) {
-        const banda = el('div', null, 'kit-titulo'), arco = el('span', null, 'kit-titulo-arco');
-        arco.setAttribute('aria-hidden', 'true'); banda.append(el('h1', texto), arco); return banda;
-      }
       // Credenciales: botón que despliega el equipo. El contenido se pide solo al abrirlo.
       function credenciales() {
         const caja = el('section', null, 'kit-credenciales'), boton = el('button', 'Credenciales', 'kit-credenciales-boton'), panel = el('div', null, 'kit-credenciales-panel');
@@ -148,15 +150,24 @@
             zona.append(mensaje('Sin casos disponibles para tu cuenta'));
           } else {
             const disponibles = casos(ruta.modulo, empresas);
-            const selector = el(disponibles.length > 1 ? 'nav' : 'p', null, 'kit-casos');
-            selector.append(el('span', 'Caso:'));
-            if (disponibles.length > 1) {
-              selector.setAttribute('aria-label', 'Casos del módulo');
-              disponibles.forEach(e => { const sub = pestanas(ruta.modulo.id, datos.puedeEditar(e.id)).includes(ruta.sub) ? '/' + ruta.sub : ''; selector.append(enlace(e.nombre, '#/' + ruta.modulo.id + '/' + e.id + sub, e.id === ruta.empresa.id)); });
-            } else selector.append(el('strong', ruta.empresa.nombre));
-            zona.append(selector);
+            const selector = el('nav', null, 'kit-casos'); selector.setAttribute('aria-label','Casos del módulo');
+            const botonCaso = el('button','Caso','kit-credenciales-boton'), listaCasos = el('div',null,'kit-casos-lista');
+            botonCaso.type = 'button'; botonCaso.setAttribute('aria-expanded','false'); botonCaso.setAttribute('aria-controls','kit-lista-casos'); listaCasos.id = 'kit-lista-casos'; listaCasos.hidden = true;
+            const cerrarCasos = () => { listaCasos.hidden = true; botonCaso.setAttribute('aria-expanded','false'); botonCaso.focus(); };
+            botonCaso.onclick = () => { const abrir = listaCasos.hidden; listaCasos.hidden = !abrir; botonCaso.setAttribute('aria-expanded',String(abrir)); };
+            selector.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); cerrarCasos(); } };
+            disponibles.forEach(e => { const sub = pestanas(ruta.modulo.id, datos.puedeEditar(e.id)).includes(ruta.sub) ? '/' + ruta.sub : ''; const a = enlace(e.nombre, '#/' + ruta.modulo.id + '/' + e.id + sub, e.id === ruta.empresa.id); a.onclick = cerrarCasos; listaCasos.append(a); });
+            selector.append(botonCaso,el('span',ruta.empresa.nombre,'kit-caso-actual'),listaCasos); zona.append(selector);
+            // Caché por empresa y sesión; una respuesta tardía nunca modifica otra ruta.
+            if (!perfiles.has(ruta.empresa.id)) perfiles.set(ruta.empresa.id, datos.listar(ruta.empresa.id,'perfil').catch(e => { perfiles.delete(ruta.empresa.id); throw e; }));
+            perfiles.get(ruta.empresa.id).then(perfil => {
+              if (turno !== revision) return;
+              const logo = perfil.find(p => p.id === 'logo');
+              if (typeof logo?.imagen !== 'string' || logo.imagen.length > 45000 || !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(logo.imagen)) return;
+              const img = el('img'); img.src = logo.imagen; img.alt = logo.alt || 'Logo de la empresa'; img.className = 'kit-empresa-logo'; selector.append(img);
+            }).catch(e => { if (turno === revision && e.sesionCerrada) { usuario = null; empresas = []; perfiles.clear(); render().catch(mostrarError); } });
             const tabs = el('nav', null, 'kit-pestanas'); tabs.setAttribute('aria-label', 'Pestañas del módulo');
-            pestanas(ruta.modulo.id, datos.puedeEditar(ruta.empresa.id)).forEach(p => tabs.append(enlace(({alimentacion: 'Alimentación', resultados: 'Resultados obtenidos', estandares: 'Cruce de estándares', doble: 'Doble materialidad', impacto: 'Materialidad de impacto', financiera: 'Materialidad financiera'})[p] || p[0].toUpperCase() + p.slice(1), '#/' + ruta.modulo.id + '/' + ruta.empresa.id + '/' + p, p === ruta.sub)));
+            pestanas(ruta.modulo.id, datos.puedeEditar(ruta.empresa.id)).forEach(p => tabs.append(enlace(({mapa: 'Mapa de actores', alimentacion: 'Alimentación', resultados: 'Resultados obtenidos', estandares: 'Cruce de estándares', doble: 'Doble materialidad', impacto: 'Materialidad de impacto', financiera: 'Materialidad financiera'})[p] || p[0].toUpperCase() + p.slice(1), '#/' + ruta.modulo.id + '/' + ruta.empresa.id + '/' + p, p === ruta.sub)));
             zona.append(tabs);
             const cuerpo = el('div'); zona.append(cuerpo);
             const vista = vistas.get(ruta.clave);
@@ -167,11 +178,11 @@
           }
         } catch (error) {
           if (turno !== revision) return;
-          if (error.sesionCerrada) { usuario = null; empresas = []; await render(); contenido.querySelector('[role="status"]').textContent = error.message; }
+          if (error.sesionCerrada) { usuario = null; empresas = []; perfiles.clear(); await render(); contenido.querySelector('[role="status"]').textContent = error.message; }
           else mostrarError(error, zona);
         }
       }
-      datos.observarSesion?.(() => { usuario = null; empresas = []; render().catch(mostrarError); });
+      datos.observarSesion?.(() => { usuario = null; empresas = []; perfiles.clear(); render().catch(mostrarError); });
       App.actualizarVista = render;
       root.addEventListener('hashchange', () => { render().catch(mostrarError); });
       try { if (!modulos.length) { const respuesta = await root.fetch('config/kit-modulos.json'); if (!respuesta.ok) throw Error('No se pudo cargar el catálogo de módulos.'); const config = await respuesta.json(); modulos.push(...config.modulos); } usuario = await datos.usuarioActual(); if (usuario) empresas = await datos.empresas(); await render(); }

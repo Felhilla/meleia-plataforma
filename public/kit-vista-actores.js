@@ -2,6 +2,9 @@
   'use strict';
   const App = root.App, K = root.KitActores, el = App.el;
   const numero = n => new Intl.NumberFormat('es-CO', { maximumFractionDigits: 2 }).format(n);
+  const porciento = n => new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 }).format(n);
+  const orgs = n => `${numero(n)} ${n === 1 ? 'organización' : 'organizaciones'}`;
+  const NOTA_DATOS = 'Tratamiento de datos personales. Este instrumento es una muestra comercial. En cumplimiento de la Ley 1581 de 2012 y sus decretos reglamentarios, se presentan únicamente los nombres y canales de contacto de servidores públicos y de representantes de instituciones académicas y medios de comunicación obtenidos de fuentes de acceso público. Los datos de integrantes de comunidades, organizaciones sociales y demás grupos de interés se sustituyen por información de ejemplo, identificada como tal. Los datos reales se entregan únicamente al cliente, en el marco de la relación contractual y con las garantías de tratamiento que exige la ley.';
   const recursos = new Map();
   function json(ruta) {
     if (!recursos.has(ruta)) recursos.set(ruta, root.fetch(ruta).then(r => { if (!r.ok) throw Error('No se pudo cargar la configuración.'); return r.json(); }).catch(e => { recursos.delete(ruta); throw e; }));
@@ -25,45 +28,38 @@
     select.value = valor; label.append(select); n.append(label); return select;
   }
   function contexto(contenedor, datos, params, cfg) {
-    let cerrado = false, cerrarDialogo = () => {}, focoOrigen;
+    let cerrado = false, focoOrigen;
+    const pila = [];
     const activo = () => !cerrado && params.vigente();
     const error = (n, e) => { if (!activo()) return; if (e.sesionCerrada) { App.actualizarVista(); return; } mensaje(n, e.message || 'No se pudo completar la operación.'); };
     const ctx = { contenedor, datos, params, cfg, activo, error, listas: {} };
     ctx.cargar = async nombres => { await Promise.all(nombres.map(async c => { if (!ctx.listas[c]) ctx.listas[c] = await datos.listar(params.empresa, c); })); };
-    ctx.dialogo = titulo => {
-      const origen = focoOrigen?.isConnected ? focoOrigen : root.document.activeElement;
-      cerrarDialogo();
+    ctx.dialogo = (titulo, encima = false) => {
+      const origen = encima ? root.document.activeElement : focoOrigen?.isConnected ? focoOrigen : root.document.activeElement;
+      if (!encima) while (pila.length) pila.at(-1).cerrar();
       focoOrigen = origen;
       const anterior = origen, fondo = el('div', null, 'ka-fondo'), panel = el('section', null, 'ka-dialogo');
       panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-labelledby', 'ka-dialogo-titulo'); panel.tabIndex = -1;
-      const h = el('h2', titulo); h.id = 'ka-dialogo-titulo';
+      const h = App.tituloMarca ? App.tituloMarca(titulo) : el('h2', titulo); h.id = 'ka-dialogo-titulo-' + pila.length; panel.setAttribute('aria-labelledby', h.id);
       const regiones = [...root.document.body.children].map(n => [n, n.inert]); regiones.forEach(([n]) => { n.inert = true; });
-      const cerrar = () => { root.document.removeEventListener('keydown', teclado); fondo.remove(); regiones.forEach(([n, previo]) => { n.inert = previo; }); if (activo()) { if (anterior?.isConnected) anterior.focus(); else contenedor.focus(); } cerrarDialogo = () => {}; focoOrigen = null; };
+      const cerrar = () => { root.document.removeEventListener('keydown', teclado); fondo.remove(); regiones.forEach(([n, previo]) => { n.inert = previo; }); if (activo()) { if (anterior?.isConnected) anterior.focus(); else contenedor.focus(); } pila.pop(); ctx.panelActual = pila.at(-1)?.panel; focoOrigen = null; };
       const teclado = e => {
+        if (pila.at(-1)?.panel !== panel) return;
         if (e.key === 'Escape') { e.preventDefault(); cerrar(); }
         if (e.key === 'Tab') {
-          const focos = [...panel.querySelectorAll('button, input, select, textarea, a[href], [tabindex="0"]')].filter(n => !n.disabled && !n.hidden && !n.closest('[hidden]'));
+          const focos = [...panel.querySelectorAll('button, input, select, textarea, summary, a[href], [tabindex="0"]')].filter(n => !n.disabled && !n.hidden && !n.closest('[hidden]') && (n.tagName === 'SUMMARY' || !n.closest('details:not([open])')));
           const primero = focos[0], ultimo = focos.at(-1);
           if (e.shiftKey && (root.document.activeElement === primero || root.document.activeElement === panel)) { e.preventDefault(); ultimo?.focus(); }
           else if (!e.shiftKey && root.document.activeElement === ultimo) { e.preventDefault(); primero?.focus(); }
         }
       };
-      const b = boton('Cerrar', cerrar); panel.append(b, h); fondo.append(panel); root.document.body.append(fondo);
-      root.document.addEventListener('keydown', teclado); b.focus(); cerrarDialogo = cerrar;
+      const b = boton('×', cerrar); b.className = 'kit-credenciales-cerrar'; b.setAttribute('aria-label','Cerrar'); panel.append(b); if (!encima) panel.append(h); else { const etiqueta = el('span',titulo,'ka-sr'); etiqueta.id = h.id; panel.append(etiqueta); } fondo.append(panel); root.document.body.append(fondo);
+      root.document.addEventListener('keydown', teclado); pila.push({panel,cerrar}); b.focus();
       ctx.panelActual = panel;
       return panel;
     };
-    ctx.limpiar = () => { cerrado = true; cerrarDialogo(); };
+    ctx.limpiar = () => { cerrado = true; while (pila.length) pila.at(-1).cerrar(); };
     return ctx;
-  }
-  function ficha(ctx, a) {
-    const p = ctx.dialogo(a.institucion);
-    if (a.nombre_servidor && ctx.cfg.nombreServidor?.categorias.includes(a.categoria)) texto(p, `${ctx.esquema.campos.nombre_servidor.etiqueta}: ${a.nombre_servidor}${a.fecha_verificacion ? ` (verificado el ${a.fecha_verificacion})` : ''}`);
-    ['dependencia_area', 'cargo', 'categoria', 'subgrupo', 'orden', 'posicion', 'caracterizacion'].forEach(k => texto(p, `${ctx.esquema.campos[k].etiqueta}: ${a[k] || 'Sin información'}`));
-    Object.entries(ctx.cfg.escalas).forEach(([k, definiciones]) => texto(p, `${ctx.esquema.campos[k].etiqueta}: ${K.nivel(a[k]) ?? 'Sin calificar'} · ${definiciones[K.nivel(a[k]) - 1] || ''}`));
-    texto(p, 'Nivel calculado: ' + (K.nivelCalculado(a, ctx.cfg) || 'Sin calificar'));
-    if (a.nivel_ajustado) texto(p, `Ajustado a ${a.nivel_ajustado} · Motivo: ${a.motivo_ajuste} · Explicación: ${a.explicacion_ajuste}`);
-    texto(p, ctx.cfg.niveles.find(n => n.nombre === K.nivelFinal(a, ctx.cfg))?.descripcion || '');
   }
   async function preparar(contenedor, datos, params) {
     const [cfg, esquema] = await Promise.all([json('config/kit-actores-config.json'), json('config/esquemas/actores.json')]);
@@ -73,63 +69,148 @@
     await ctx.cargar(['actores']); if (!ctx.activo()) return;
     contenedor.classList.add('ka'); return ctx;
   }
+  const categorias = [
+    ['Instituciones gubernamentales', 'Autoridades', 'autoridades'],
+    ['Comunidades y asociaciones', 'Comunidades y asociaciones', 'comunidades'],
+    ['Empresas y gremios', 'Gremios', 'gremios'], ['Academia', 'Academia', 'academia'],
+    ['Empleados, contratistas y proveedores', 'Proveedores', 'proveedores'],
+    ['Medios de comunicación', 'Medios de comunicación', 'medios']
+  ];
+  const posiciones = ['Favorable', 'Neutral', 'Desfavorable'];
+  const plurales = ['Favorables', 'Neutrales', 'Desfavorables'];
+  const unicos = xs => [...new Set(xs.filter(Boolean))];
+  const posicion = registros => unicos(registros.map(a => a.posicion)).length === 1 ? registros[0].posicion : 'Mixta';
+  function agrupar(registros) {
+    const grupos = new Map();
+    registros.forEach(a => { const nombre = (a.institucion || '').trim(); if (!grupos.has(nombre)) grupos.set(nombre, { nombre, registros: [] }); grupos.get(nombre).registros.push(a); });
+    return [...grupos.values()];
+  }
+  function etiqueta(valor) { return el('span', valor, 'ka-etiqueta ka-' + valor.toLowerCase()); }
+  function logo(ctx, org) {
+    const img = el('img'), dato = (ctx.listas['actores-logos'] || []).find(l => l.institucion?.trim() === org.nombre && typeof l.id === 'string' && l.id.length <= 80 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(l.id));
+    const segura = v => typeof v === 'string' && v.length <= 45000 && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(v);
+    img.src = segura(dato?.imagen) ? dato.imagen : 'img/actores/' + (categorias.find(c => c[0] === org.registros[0].categoria)?.[2] || 'gremios') + '.svg';
+    img.alt = ''; img.className = 'ka-logo'; return img;
+  }
+  function intensidad(registros, campo) {
+    const valores = unicos(registros.map(a => K.nivel(a[campo]))).sort((a,b) => a-b);
+    const n = valores.at(-1), span = el('span', valores.length > 1 ? `${numero(valores[0])} a ${numero(n)}` : n ? `${numero(n)} · ${['Muy baja','Baja','Media','Alta','Muy alta'][n-1]}` : 'Sin calificar', 'ka-intensidad');
+    span.dataset.valor = n || 1; if (campo === 'tension') span.className += ' ka-tension'; return span;
+  }
+  // Esta tabla es exclusiva de las fichas; la tabla de Alimentación conserva su contrato.
+  function tablaFicha(n, columnas, filas, ctx) {
+    const marco = el('div', null, 'ka-tabla ka-tabla-ficha'), t = el('table'), head = el('thead'), tr = el('tr'), body = el('tbody'), ayudas = el('div',null,'ka-escalas');
+    columnas.forEach(([nombre,campo]) => {
+      const th = el('th', nombre); th.scope = 'col';
+      if (ctx.cfg.escalas[campo]) {
+        th.tabIndex = 0; const ayuda = ctx.cfg.escalas[campo].map((d,i) => `${i+1}: ${d}`).join(' ');
+        th.title = ayuda; const descripcion = el('p',ayuda,'ka-escala-ayuda');
+        descripcion.id = 'ka-escala-' + campo; th.setAttribute('aria-describedby',descripcion.id); ayudas.append(descripcion);
+        const mostrar = () => { descripcion.className = 'ka-escala-visible'; };
+        const ocultar = () => { descripcion.className = 'ka-escala-ayuda'; };
+        th.onfocus = mostrar; th.onmouseenter = mostrar; th.onblur = ocultar; th.onmouseleave = ocultar;
+      }
+      tr.append(th);
+    }); head.append(tr);
+    filas.forEach(fila => { const row = el('tr'); fila.forEach((valor,i) => { const td = el('td'); td.dataset.etiqueta = columnas[i][0]; td.append(typeof valor === 'object' ? valor : el('span', valor || 'No registrado')); row.append(td); }); body.append(row); });
+    t.append(head,body); marco.append(t,ayudas); n.append(marco);
+  }
+  function fichaOrganizacion(ctx, org) {
+    if (!ctx.activo()) return;
+    const p = ctx.dialogo(org.nombre, true), registros = org.registros;
+    p.classList.add('ka-ficha');
+    const cabecera = el('div', null, 'ka-ficha-cabecera'), info = el('div');
+    info.append(el('h2', org.nombre, 'ka-franja-verde'));
+    const ordenes = unicos(registros.map(a => a.orden)); if (ordenes.length) texto(info, 'Orden: ' + ordenes.join(' · '));
+    const cajas = el('div', null, 'ka-cajas');
+    ['impacto','influencia'].forEach(c => { const caja = el('div'); caja.append(el('strong', ctx.esquema.campos[c].etiqueta), intensidad(registros,c)); cajas.append(caja); });
+    const pos = el('div'); pos.append(el('strong', 'Posición'), etiqueta(posicion(registros)));
+    if (posicion(registros) === 'Mixta') texto(pos, posiciones.map((v,i) => { const n = registros.filter(a => a.posicion === v).length; return n ? `${numero(n)} ${n === 1 ? v.toLowerCase() : plurales[i].toLowerCase()}` : ''; }).filter(Boolean).join(' · '));
+    cajas.append(pos); info.append(cajas); cabecera.append(logo(ctx,org), info); p.append(cabecera);
+    p.append(el('h3','CARACTERIZACIÓN','ka-franja-gris'));
+    const textos = unicos(registros.map(a => a.caracterizacion?.trim()));
+    (textos.length ? textos : ['Sin caracterización registrada.']).forEach(t => texto(p,t));
+    p.append(el('h3','Listado de actores identificados'));
+    tablaFicha(p, [['Nombre'],['Cargo'],['Posición'],['Impacto','impacto'],['Influencia','influencia'],['Contacto']], registros.map(a => {
+      const contacto = ctx.listas['actores-contactos'].find(c => c.id === a.id) || {}, nombre = el('div', contacto.nombre || 'No registrado'), datos = el('div');
+      if (contacto.ejemplo === true) nombre.append(el('small','Dato de ejemplo','ka-ejemplo'));
+      if (contacto.telefono) texto(datos,contacto.telefono);
+      const correo = typeof contacto.correo === 'string' && contacto.correo.length <= 160 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contacto.correo) ? contacto.correo : '';
+      if (correo) texto(datos,correo); if (!contacto.telefono && !correo) texto(datos,'No registrado');
+      return [nombre,a.cargo,etiqueta(a.posicion),intensidad([a],'impacto'),intensidad([a],'influencia'),datos];
+    }),ctx);
+    p.lastChild.append(el('p', NOTA_DATOS, 'ka-nota-datos'));
+    const detalle = el('details'); detalle.append(el('summary','MÁS DETALLE','ka-franja-gris'));
+    tablaFicha(detalle, [['Cargo'],['Dependencia','dependencia'],['Tensión','tension'],['Responsabilidad','responsabilidad'],['Cuadrante']], registros.map(a => {
+      const nivel = el('div',K.nivelFinal(a,ctx.cfg) || 'Sin calificar');
+      if (a.nivel_ajustado) nivel.append(el('small','Ajustado: ' + a.motivo_ajuste));
+      if (K.alerta(a,ctx.cfg)) nivel.append(el('strong','⚠ Alerta'));
+      return [a.cargo,intensidad([a],'dependencia'),intensidad([a],'tension'),intensidad([a],'responsabilidad'),nivel];
+    }),ctx); p.append(detalle);
+  }
+  async function abrirPanel(ctx, nivel) {
+    if (!ctx.activo()) return;
+    const p = ctx.dialogo(nivel.nombre); mensaje(p,'Cargando organizaciones…');
+    try { await ctx.logos(); if (!ctx.activo() || ctx.panelActual !== p) return;
+      p.lastChild.remove();
+      const grupos = agrupar(ctx.listas.actores.filter(a => K.nivelFinal(a,ctx.cfg) === nivel.nombre)), activos = new Set(), filtros = el('div',null,'ka-posiciones'), lista = el('div');
+      posiciones.forEach((pos,i) => {
+        const b = boton(`${numero(grupos.filter(o => o.registros.some(a => a.posicion === pos)).length)} ${plurales[i]}`, () => { activos.has(pos) ? activos.delete(pos) : activos.add(pos); b.setAttribute('aria-pressed',String(activos.has(pos))); pintar(); });
+        b.className = 'ka-filtro ka-' + pos.toLowerCase(); b.setAttribute('aria-pressed','false'); filtros.append(b);
+      });
+      p.append(filtros);
+      const presentes = unicos(grupos.flatMap(o => o.registros.map(a => a.categoria)));
+      const select = seleccionar(p,'Filtrar por grupo de interés',[{id:'',nombre:'Todos'},...categorias.filter(c => presentes.includes(c[0])).map(c => ({id:c[0],nombre:c[1]}))]);
+      function pintar() {
+        lista.replaceChildren(); let total = 0;
+        categorias.forEach(([categoria,nombre]) => {
+          if (select.value && select.value !== categoria) return;
+          const visibles = grupos.filter(o => o.registros.some(a => a.categoria === categoria) && (!activos.size || o.registros.some(a => activos.has(a.posicion))));
+          const rango = o => Math.min(...o.registros.map(a => { const i = ['Internacional','Nacional','Regional','Local'].indexOf(a.orden); return i < 0 ? 4 : i; }));
+          visibles.sort((a,b) => (categoria === categorias[0][0] ? rango(a)-rango(b) : 0) || a.nombre.localeCompare(b.nombre,'es'));
+          if (!visibles.length) return; total += visibles.length;
+          const seccion = el('section',null,'ka-categoria'), rejilla = el('div',null,'ka-organizaciones'); seccion.append(el('h3',nombre),rejilla);
+          visibles.forEach(o => { const b = boton(null,() => fichaOrganizacion(ctx,ctx.organizaciones.find(g => g.nombre === o.nombre))); b.className = 'ka-organizacion'; b.setAttribute('aria-label',o.nombre + ' · ' + posicion(o.registros)); b.title = o.nombre; b.append(logo(ctx,o),el('span',o.nombre,'ka-nombre'),etiqueta(posicion(o.registros))); rejilla.append(b); }); lista.append(seccion);
+        });
+        if (!total) mensaje(lista,'No hay organizaciones con estos filtros.');
+      }
+      select.onchange = pintar; p.append(lista); pintar();
+    } catch(e) { ctx.error(p,e); }
+  }
+  async function abrirResumen(ctx) {
+    if (!ctx.activo()) return;
+    const p = ctx.dialogo(`${numero(ctx.organizaciones.length)} organizaciones`); p.classList.add('ka-resumen-dialogo');
+    try { await ctx.logos(); if (!ctx.activo() || ctx.panelActual !== p) return;
+      const columnas = el('div',null,'ka-resumen-columnas'), izquierda = el('div'), derecha = el('div');
+      categorias.forEach(([categoria,nombre]) => { const actores = ctx.listas.actores.filter(a => a.categoria === categoria); const fila = el('p', null, 'ka-resumen-fila'); fila.append(el('strong', numero(agrupar(actores).length)), el('span', `${nombre} · ${actores.length === 1 ? '1 actor' : numero(actores.length) + ' actores'}`)); izquierda.append(fila); });
+      posiciones.forEach((pos,i) => { const caja = el('p',null,'ka-etiqueta ka-' + pos.toLowerCase()); caja.append(el('strong',numero(ctx.organizaciones.filter(o => o.registros.some(a => a.posicion === pos)).length)),el('span',plurales[i])); derecha.append(caja); });
+      { const mixtas = ctx.organizaciones.filter(o => posicion(o.registros) === 'Mixta').length; if (mixtas) derecha.append(el('small',`${orgs(mixtas)} con cargos de distinta posición; por eso cuentan en más de una caja.`)); }
+      columnas.append(izquierda,derecha); p.append(columnas);
+    } catch(e) { ctx.error(p,e); }
+  }
   async function mapa(contenedor, datos, params) {
     const ctx = await preparar(contenedor, datos, params); if (!ctx) return;
-    const actores = ctx.listas.actores;
+    await ctx.cargar(['actores-contactos','actores-resumen']); if (!ctx.activo()) return ctx.limpiar;
+    let logos;
+    ctx.logos = () => logos || (logos = ctx.cargar(['actores-logos']).catch(e => { logos = null; throw e; }));
+    const actores = ctx.listas.actores; ctx.organizaciones = agrupar(actores);
     if (!actores.length) { texto(contenedor, 'Esta empresa aún no tiene actores registrados. Agrega su institución, cargo y calificaciones para construir el mapa.'); if (params.puedeEditar) enlace(contenedor, params.empresa); return ctx.limpiar; }
-    const filtros = el('div', null, 'ka-filtros'), controlesLista = el('div', null, 'ka-controles-lista'), selects = {};
-    ['categoria', 'orden', 'posicion', 'subgrupo'].forEach(k => { selects[k] = seleccionar(k === 'subgrupo' ? controlesLista : filtros, ctx.esquema.campos[k].etiqueta, [{ id: '', nombre: 'Todos' }, ...[...new Set(actores.map(a => a[k]).filter(Boolean))].sort()]); });
-    const soloLabel = el('label', null, 'ka-solo-alertas'), solo = el('input'); solo.type = 'checkbox'; soloLabel.append(solo, el('span', 'Solo alertas')); filtros.append(soloLabel);
-    const resumen = el('div', null, 'ka-resumen'), mapa = el('div', null, 'ka-mapa'), lista = el('div'), distribucion = el('div', null, 'ka-distribucion');
-    resumen.setAttribute('aria-live', 'polite');
-    mapa.setAttribute('aria-label', 'Mapa 360°: influencia alta arriba, impacto alto a la derecha');
-    const orden = seleccionar(controlesLista, 'Ordenar lista por', ['institucion', 'cargo', 'categoria', 'nivel', 'posicion'].map((id, i) => ({ id, nombre: ['Institución', 'Cargo', 'Categoría', 'Nivel final', 'Posición'][i] })), 'institucion');
-    const sentido = seleccionar(controlesLista, 'Sentido', ['Ascendente', 'Descendente'], 'Ascendente');
-    function pintar() {
-      const visibles = actores.filter(a => Object.entries(selects).every(([k,s]) => !s.value || a[k] === s.value) && (!solo.checked || K.alerta(a, ctx.cfg)));
-      resumen.replaceChildren(); mapa.replaceChildren(); lista.replaceChildren();
-      const ind = K.indicadores(visibles, ctx.cfg);
-      const estrategicos = ind.cuadrantes.find(v => v.nombre === 'Involucramiento estratégico')?.cantidad || 0;
-      const desfavorables = ind.posiciones.find(v => v.nombre === 'Desfavorable')?.cantidad || 0;
-      [[ind.total, 'Actores visibles'], [estrategicos, 'Involucramiento estratégico'], [desfavorables, 'Desfavorables'], [ind.alertas, 'Alertas']].forEach(([valor, etiqueta]) => {
-        const dato = el('div', null, 'ka-dato'); dato.append(el('strong', numero(valor)), el('span', etiqueta)); resumen.append(dato);
-      });
-      distribucion.replaceChildren();
-      for (const [titulo, valores] of [['Por categoría', ind.categorias], ['Por posición', ind.posiciones]]) {
-        const s = bloque(distribucion, titulo); valores.forEach(v => {
-          const fila = el('div', null, 'ka-distribucion-fila'), pista = el('div', null, 'ka-barra'), relleno = el('span');
-          relleno.style.width = v.porcentaje + '%'; pista.setAttribute('aria-hidden', 'true'); pista.append(relleno);
-          fila.append(el('span', v.nombre), el('span', `${v.cantidad} · ${numero(v.porcentaje)} %`), pista); s.append(fila);
-        });
-      }
-      ctx.cfg.niveles.forEach(n => {
-        const q = el('section', null, 'ka-cuadrante'); q.dataset.cuadrante = n.nombre; q.style.gridRow = n.fila; q.style.gridColumn = n.columna;
-        q.dataset.intensidad = n.fila === 1 && n.columna === 2 ? 'estrategico' : n.fila === 2 && n.columna === 1 ? 'periferico' : 'intermedio';
-        q.append(el('h3', n.nombre), el('p', n.descripcion, 'ka-relacionamiento'));
-        const fichas = el('div', null, 'ka-fichas'); fichas.tabIndex = 0; fichas.setAttribute('role', 'region'); fichas.setAttribute('aria-label', 'Actores de ' + n.nombre);
-        const miembros = visibles.filter(a => K.nivelFinal(a, ctx.cfg) === n.nombre);
-        const cantidad = el('p', null, 'ka-cantidad'); cantidad.append(el('strong', numero(miembros.length)), el('span', ` ${miembros.length === 1 ? 'actor' : 'actores'} · ${numero(ind.total ? miembros.length / ind.total * 100 : 0)} %`)); q.append(cantidad);
-        miembros.forEach(a => {
-          const alerta = K.alerta(a, ctx.cfg), b = boton(null, () => ficha(ctx, a));
-          b.className = 'ka-actor'; b.title = [a.institucion, a.cargo, a.posicion, alerta && 'Alerta'].filter(Boolean).join(' · '); b.setAttribute('aria-label', b.title);
-          const punto = el('span', null, 'ka-punto ka-' + a.posicion.toLowerCase()); punto.setAttribute('aria-hidden', 'true');
-          b.append(punto, el('span', a.institucion, 'ka-institucion'));
-          if (alerta) { const icono = el('span', '⚠', 'ka-alerta'); icono.setAttribute('aria-hidden', 'true'); b.append(icono); } fichas.append(b);
-        });
-        if (!miembros.length) texto(fichas, 'Sin actores en este cuadrante.'); q.append(fichas); mapa.append(q);
-      });
-      const valor = a => orden.value === 'nivel' ? K.nivelFinal(a, ctx.cfg) : a[orden.value];
-      visibles.sort((a,b) => String(valor(a) || '').localeCompare(String(valor(b) || ''), 'es') * (sentido.value === 'Descendente' ? -1 : 1));
-      tabla(lista, ['Institución', 'Cargo', 'Categoría', 'Nivel final', 'Posición'], visibles.map(a => [boton(a.institucion, () => ficha(ctx,a)), a.cargo, a.categoria, K.nivelFinal(a, ctx.cfg) || 'Sin calificar', a.posicion]));
-      if (!visibles.length) texto(lista, 'No hay actores con estos filtros.');
-    }
-    [...Object.values(selects), solo, orden, sentido].forEach(s => { s.onchange = pintar; });
-    const marco = el('div', null, 'ka-marco-mapa');
-    marco.append(el('span', 'Influencia ↑', 'ka-eje-influencia'), mapa, el('span', 'Impacto →', 'ka-eje-impacto'));
-    const leyenda = el('div', null, 'ka-leyenda'); leyenda.setAttribute('aria-label', 'Leyenda del mapa');
-    ['Favorable', 'Neutral', 'Desfavorable'].forEach(p => { const item = el('span'); item.append(el('span', null, 'ka-punto ka-' + p.toLowerCase()), el('span', p)); leyenda.append(item); }); leyenda.append(el('span', '⚠ Alerta de atención'));
-    const detalle = el('details', null, 'ka-distribucion-detalle'); detalle.append(el('summary', 'Ver distribución'), distribucion);
-    contenedor.append(resumen, el('h2', 'Mapa 360°'), marco, leyenda, detalle, el('h2', 'Lista de actores'), filtros, controlesLista, lista); pintar(); return ctx.limpiar;
+    const mapa = el('div',null,'ka-mapa-e24');
+    ctx.cfg.niveles.forEach(n => {
+      const miembros = ctx.organizaciones.filter(o => o.registros.some(a => K.nivelFinal(a,ctx.cfg) === n.nombre));
+      const porcentaje = porciento(miembros.length / ctx.organizaciones.length * 100), q = boton(null,() => abrirPanel(ctx,n));
+      q.className = 'ka-cuadro'; q.dataset.cuadrante = n.nombre; q.style.gridRow = n.fila; q.style.gridColumn = n.columna;
+      q.dataset.color = n.nombre === 'Gestión activa' ? 'azul' : n.nombre === 'Involucramiento estratégico' ? 'verde' : 'naranja';
+      q.setAttribute('aria-label',`${n.nombre}: ${orgs(miembros.length)}, ${porcentaje} %`);
+      q.append(el('strong',n.nombre),el('span',n.descripcion),el('span',`${orgs(miembros.length)} · ${porcentaje} %`,'ka-cifra'));
+      const compartidas = miembros.filter(o => unicos(o.registros.map(a => K.nivelFinal(a,ctx.cfg))).length > 1).length;
+      if (compartidas) q.append(el('small',`Incluye ${orgs(compartidas)} que también ${compartidas === 1 ? 'está' : 'están'} en otro cuadrante`)); mapa.append(q);
+    });
+    const centro = boton(null,() => abrirResumen(ctx)); centro.className = 'ka-centro'; centro.setAttribute('aria-label',`${numero(actores.length)} Actores identificados`); centro.append(el('strong',numero(actores.length)),el('span','Actores identificados')); mapa.append(centro); contenedor.append(mapa);
+    const fecha = ctx.listas['actores-resumen'].find(r => r.id === 'resumen')?.fecha_corte;
+    const valida = typeof fecha === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(fecha) && !Number.isNaN(Date.parse(fecha)) && new Date(fecha).toISOString().slice(0,10) === fecha;
+    texto(contenedor,'Metodología AA1000SES (AccountAbility).' + (valida ? ` Mapeo con corte a ${new Intl.DateTimeFormat('es-CO',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(fecha))}.` : '') + ' Los datos de contacto de comunidades y organizaciones sociales son de ejemplo (Ley 1581 de 2012).');
+    contenedor.lastChild.className = 'ka-nota-tecnica'; return ctx.limpiar;
   }
   function formulario(ctx, n, original, alGuardar) {
     const form = el('form', null, 'ka-form'), controles = {}, errores = {}; form.noValidate = true;

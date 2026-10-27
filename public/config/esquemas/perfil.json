@@ -1,0 +1,25 @@
+{
+  "titulo": "perfil",
+  "campos": {
+    "id": {
+      "tipo": "lista",
+      "valores": [
+        "logo"
+      ],
+      "etiqueta": "Identificador",
+      "obligatorio": true
+    },
+    "imagen": {
+      "tipo": "texto",
+      "etiqueta": "Imagen",
+      "max": 45000,
+      "obligatorio": true
+    },
+    "alt": {
+      "tipo": "texto",
+      "etiqueta": "Texto alternativo",
+      "max": 250,
+      "obligatorio": false
+    }
+  }
+}

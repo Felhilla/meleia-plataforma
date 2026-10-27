@@ -1,0 +1,23 @@
+{
+  "titulo": "actores-logos",
+  "campos": {
+    "id": {
+      "tipo": "texto",
+      "max": 80,
+      "etiqueta": "Identificador",
+      "obligatorio": true
+    },
+    "institucion": {
+      "tipo": "texto",
+      "etiqueta": "Institución",
+      "max": 250,
+      "obligatorio": true
+    },
+    "imagen": {
+      "tipo": "texto",
+      "etiqueta": "Imagen",
+      "max": 45000,
+      "obligatorio": true
+    }
+  }
+}

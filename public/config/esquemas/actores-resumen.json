@@ -1,0 +1,23 @@
+{
+  "titulo": "actores-resumen",
+  "campos": {
+    "id": {
+      "tipo": "lista",
+      "valores": [
+        "resumen"
+      ],
+      "etiqueta": "Identificador",
+      "obligatorio": true
+    },
+    "fecha_corte": {
+      "tipo": "fecha",
+      "etiqueta": "Fecha de corte",
+      "obligatorio": true
+    },
+    "nota": {
+      "tipo": "texto-largo",
+      "etiqueta": "Nota",
+      "max": 4000
+    }
+  }
+}
