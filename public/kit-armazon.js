@@ -84,8 +84,44 @@
           catch (error) { mostrarError(error); salir.disabled = false; }
         };
         cuenta.append(salir);
-        nav.append(enlace('Portada', '#/', ruta.clave === 'portada'));
+        nav.append(enlace('Home', '#/', ruta.clave === 'portada'));
         modulos.forEach(m => { const a = enlace(`${m.numero} · ${m.corto || m.nombre}`, '#/' + m.id, ruta.modulo?.id === m.id); a.setAttribute('aria-label', `Módulo ${m.numero} · ${m.nombre}${casos(m, empresas).length ? '' : ' · Sin casos disponibles para tu cuenta'}`); a.title = `Módulo ${m.numero} · ${m.nombre}`; if (!casos(m, empresas).length) a.append(el('small', 'Sin casos disponibles para tu cuenta')); nav.append(a); });
+      }
+      // Formato de títulos del sitio: franja verde con el arco y el punto de la marca.
+      function tituloMarca(texto) {
+        const banda = el('div', null, 'kit-titulo'), arco = el('span', null, 'kit-titulo-arco');
+        arco.setAttribute('aria-hidden', 'true'); banda.append(el('h1', texto), arco); return banda;
+      }
+      // Credenciales: botón que despliega el equipo. El contenido se pide solo al abrirlo.
+      function credenciales() {
+        const caja = el('section', null, 'kit-credenciales'), boton = el('button', 'Credenciales', 'kit-credenciales-boton'), panel = el('div', null, 'kit-credenciales-panel');
+        boton.type = 'button'; boton.setAttribute('aria-expanded', 'false'); boton.setAttribute('aria-controls', 'kit-credenciales-panel'); panel.id = 'kit-credenciales-panel'; panel.hidden = true;
+        let cargado = false;
+        const cerrar = () => { panel.hidden = true; boton.setAttribute('aria-expanded', 'false'); boton.focus(); };
+        boton.onclick = async () => {
+          if (!panel.hidden) { cerrar(); return; }
+          panel.hidden = false; boton.setAttribute('aria-expanded', 'true');
+          if (cargado) return;
+          panel.replaceChildren(el('p', 'Cargando…', 'nota'));
+          try {
+            const r = await root.fetch('config/kit-credenciales.json'); if (!r.ok) throw Error('No se pudo cargar el equipo.');
+            const cfg = await r.json(); cargado = true;
+            const x = el('button', '×', 'kit-credenciales-cerrar'); x.type = 'button'; x.setAttribute('aria-label', 'Cerrar credenciales'); x.onclick = cerrar;
+            const lista = el('div', null, 'kit-rejilla kit-equipo');
+            cfg.personas.forEach(p => {
+              const ficha = el('article', null, 'kit-persona');
+              if (p.foto) { const img = el('img'); img.src = p.foto; img.alt = 'Foto de ' + p.nombre; img.loading = 'lazy'; ficha.append(img); }
+              else { const vacio = el('div', null, 'kit-persona-foto-vacia'); vacio.setAttribute('aria-hidden', 'true'); ficha.append(vacio); }
+              ficha.append(el('h3', p.nombre));
+              if (p.cargo) ficha.append(el('p', p.cargo, 'kit-persona-cargo'));
+              if (p.experiencia) ficha.append(el('p', p.experiencia, 'kit-persona-experiencia'));
+              lista.append(ficha);
+            });
+            panel.replaceChildren(x, lista);
+          } catch (e) { panel.replaceChildren(mensaje(e.message || 'No se pudo cargar el equipo.', true)); }
+        };
+        panel.onkeydown = e => { if (e.key === 'Escape') cerrar(); };
+        caja.append(boton, panel); return caja;
       }
       async function render() {
         const turno = ++revision;
@@ -95,16 +131,18 @@
         if (root.location.hash !== ruta.hash) root.history.replaceState(null, '', ruta.hash);
         cabecera(ruta);
         if (!usuario) { ingresar(); contenido.focus(); return; }
-        contenido.append(el('h1', ruta.modulo ? `Módulo ${ruta.modulo.numero} · ${ruta.modulo.nombre}` : 'GH Studio × Meleia'));
+        contenido.append(tituloMarca(ruta.modulo ? `Módulo ${ruta.modulo.numero} · ${ruta.modulo.nombre}` : 'GH Estudio × Meleia'));
         const zona = el('section', null, 'kit-vista'); contenido.append(zona); contenido.focus();
         try {
           if (ruta.clave === 'portada') {
-            zona.append(el('p', 'Herramientas para la gestión social, ambiental y de derechos humanos de proyectos', 'kit-presentacion'));
-            const credenciales = el('section', null, 'kit-credenciales'); credenciales.append(el('h2', 'Credenciales'), el('p', 'Próximamente')); zona.append(credenciales);
-            const tarjetas = el('div', null, 'kit-modulos');
+            zona.append(el('p', 'Laboratorio de ideas para la gestión en sostenibilidad.', 'kit-presentacion'));
+            zona.append(credenciales());
+            const tarjetas = el('div', null, 'kit-modulos kit-rejilla');
             modulos.forEach(m => {
-              const disponibles = casos(m, empresas), tarjeta = el('article', null, 'tarjeta');
-              tarjeta.append(el('p', 'Módulo ' + m.numero, 'antetitulo'), el('h2', m.nombre), el('p', m.descripcion), el('p', disponibles.length ? 'Casos: ' + disponibles.map(e => e.nombre).join(' · ') : 'Sin casos disponibles para tu cuenta', 'nota'), enlace('Abrir módulo →', '#/' + m.id)); tarjetas.append(tarjeta);
+              const disponibles = casos(m, empresas), tarjeta = el('a', null, 'kit-modulo');
+              tarjeta.href = '#/' + m.id;
+              tarjeta.append(el('span', 'Módulo ' + m.numero, 'kit-modulo-numero'), el('h2', m.nombre), el('p', m.descripcion), el('p', disponibles.length ? 'Casos: ' + disponibles.map(e => e.nombre).join(' · ') : 'Sin casos disponibles para tu cuenta', 'nota'));
+              tarjetas.append(tarjeta);
             }); zona.append(tarjetas);
           } else if (ruta.clave === 'sin-casos') {
             zona.append(mensaje('Sin casos disponibles para tu cuenta'));
