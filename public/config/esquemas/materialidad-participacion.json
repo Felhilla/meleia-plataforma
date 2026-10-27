@@ -1,0 +1,50 @@
+{
+  "titulo": "Participación",
+  "campos": {
+    "id": {
+      "tipo": "texto",
+      "etiqueta": "Código",
+      "max": 80,
+      "obligatorio": true
+    },
+    "grupo": {
+      "tipo": "lista",
+      "etiqueta": "Grupo de interés",
+      "valores": [
+        "gi-colaboradores",
+        "gi-distribuidores",
+        "gi-proveedores",
+        "gi-clientes",
+        "gi-comunidades",
+        "gi-autoridades"
+      ],
+      "multiple": false,
+      "obligatorio": true
+    },
+    "mecanismo": {
+      "tipo": "texto",
+      "etiqueta": "Mecanismo",
+      "obligatorio": false
+    },
+    "participantes": {
+      "tipo": "entero",
+      "etiqueta": "Participantes",
+      "min": 0
+    },
+    "descripcion": {
+      "tipo": "texto-largo",
+      "etiqueta": "Descripción"
+    },
+    "origen": {
+      "tipo": "lista",
+      "etiqueta": "Origen",
+      "valores": [
+        "ilustrativo",
+        "fuente",
+        "cargada"
+      ],
+      "multiple": false,
+      "obligatorio": true
+    }
+  }
+}

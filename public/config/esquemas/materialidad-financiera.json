@@ -1,0 +1,44 @@
+{
+  "titulo": "Calificaciones financieras",
+  "campos": {
+    "id": {
+      "tipo": "texto",
+      "etiqueta": "Código",
+      "max": 80,
+      "obligatorio": true
+    },
+    "tema": {
+      "tipo": "referencia",
+      "etiqueta": "Tema",
+      "coleccion": "materialidad-temas",
+      "obligatorio": true
+    },
+    "evaluador": {
+      "tipo": "lista",
+      "etiqueta": "Área del comité",
+      "valores": [
+        "ef-finanzas",
+        "ef-comercial",
+        "ef-operaciones",
+        "ef-sostenibilidad",
+        "ef-personas"
+      ],
+      "multiple": false,
+      "obligatorio": true
+    },
+    "rentabilidad": {
+      "tipo": "decimal",
+      "etiqueta": "Rentabilidad",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "gasto_operativo": {
+      "tipo": "decimal",
+      "etiqueta": "Gasto operativo",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    }
+  }
+}

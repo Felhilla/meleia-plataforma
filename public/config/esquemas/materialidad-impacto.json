@@ -1,0 +1,59 @@
+{
+  "titulo": "Calificaciones de impacto",
+  "campos": {
+    "id": {
+      "tipo": "texto",
+      "etiqueta": "Código",
+      "max": 80,
+      "obligatorio": true
+    },
+    "tema": {
+      "tipo": "referencia",
+      "etiqueta": "Tema",
+      "coleccion": "materialidad-temas",
+      "obligatorio": true
+    },
+    "grupo": {
+      "tipo": "lista",
+      "etiqueta": "Grupo de interés",
+      "valores": [
+        "gi-colaboradores",
+        "gi-distribuidores",
+        "gi-proveedores",
+        "gi-clientes",
+        "gi-comunidades",
+        "gi-autoridades"
+      ],
+      "multiple": false,
+      "obligatorio": true
+    },
+    "escala": {
+      "tipo": "decimal",
+      "etiqueta": "Escala",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "alcance": {
+      "tipo": "decimal",
+      "etiqueta": "Alcance",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "irremediabilidad": {
+      "tipo": "decimal",
+      "etiqueta": "Irremediabilidad",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "probabilidad": {
+      "tipo": "decimal",
+      "etiqueta": "Probabilidad",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    }
+  }
+}

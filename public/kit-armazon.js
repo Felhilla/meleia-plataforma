@@ -1,7 +1,7 @@
 (function (root) {
   'use strict';
   const modulos = typeof module !== 'undefined' && module.exports ? require('./config/kit-modulos.json').modulos : [];
-  const tabsModulo = { actores: ['mapa', 'alimentacion'], ddhh: [], materialidad: [], riesgos: ['matriz', 'medidas', 'alimentacion'] };
+  const tabsModulo = { actores: ['mapa', 'alimentacion'], ddhh: ['resultados', 'estandares', 'alimentacion'], materialidad: ['doble', 'impacto', 'financiera', 'alimentacion'], riesgos: ['matriz', 'medidas', 'alimentacion'] };
   const roles = { admin: 'Soporte GH', responsable: 'Responsable', demostrador: 'Demostración' };
   function pestanas(modulo, permiso) { return (tabsModulo[modulo] || []).filter(p => p !== 'alimentacion' || permiso === true || ['admin', 'responsable'].includes(permiso)); }
   function casos(modulo, empresas) { return empresas.filter(e => e.muestra_comercial === false || (e.muestra_comercial === true && modulo.casos.includes(e.id))); }
@@ -118,7 +118,7 @@
             } else selector.append(el('strong', ruta.empresa.nombre));
             zona.append(selector);
             const tabs = el('nav', null, 'kit-pestanas'); tabs.setAttribute('aria-label', 'Pestañas del módulo');
-            pestanas(ruta.modulo.id, datos.puedeEditar(ruta.empresa.id)).forEach(p => tabs.append(enlace(p === 'alimentacion' ? 'Alimentación' : p[0].toUpperCase() + p.slice(1), '#/' + ruta.modulo.id + '/' + ruta.empresa.id + '/' + p, p === ruta.sub)));
+            pestanas(ruta.modulo.id, datos.puedeEditar(ruta.empresa.id)).forEach(p => tabs.append(enlace(({alimentacion: 'Alimentación', resultados: 'Resultados obtenidos', estandares: 'Cruce de estándares', doble: 'Doble materialidad', impacto: 'Materialidad de impacto', financiera: 'Materialidad financiera'})[p] || p[0].toUpperCase() + p.slice(1), '#/' + ruta.modulo.id + '/' + ruta.empresa.id + '/' + p, p === ruta.sub)));
             zona.append(tabs);
             const cuerpo = el('div'); zona.append(cuerpo);
             const vista = vistas.get(ruta.clave);

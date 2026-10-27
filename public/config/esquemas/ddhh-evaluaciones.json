@@ -1,0 +1,144 @@
+{
+  "titulo": "Evaluaciones",
+  "campos": {
+    "id": {
+      "tipo": "texto",
+      "etiqueta": "Código",
+      "max": 80,
+      "obligatorio": true
+    },
+    "nombre": {
+      "tipo": "texto",
+      "etiqueta": "Nombre",
+      "obligatorio": true
+    },
+    "fecha": {
+      "tipo": "fecha",
+      "etiqueta": "Fecha",
+      "obligatorio": true
+    },
+    "origen": {
+      "tipo": "lista",
+      "etiqueta": "Origen",
+      "valores": [
+        "fuente",
+        "ejemplo",
+        "cargada"
+      ],
+      "multiple": false,
+      "obligatorio": true
+    },
+    "etapa-ocde-1": {
+      "tipo": "decimal",
+      "etiqueta": "Incorporar la debida diligencia en las políticas y sistemas de gestión",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "etapa-ocde-2": {
+      "tipo": "decimal",
+      "etiqueta": "Identificar los impactos potenciales o reales",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "etapa-ocde-3": {
+      "tipo": "decimal",
+      "etiqueta": "Cesar, prevenir o mitigar  los impactos adversos",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "etapa-ocde-4": {
+      "tipo": "decimal",
+      "etiqueta": "Seguimiento de implementación y resultados",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "etapa-ocde-5": {
+      "tipo": "decimal",
+      "etiqueta": "Comunicación sobre como se abordan los impactos en DDHH",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "etapa-ocde-6": {
+      "tipo": "decimal",
+      "etiqueta": "Proveer o cooperar en la remediación cuando sea apropiado",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "tema-ddhh-1": {
+      "tipo": "decimal",
+      "etiqueta": "Trabajo forzoso",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "tema-ddhh-2": {
+      "tipo": "decimal",
+      "etiqueta": "Trabajo infantil",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "tema-ddhh-3": {
+      "tipo": "decimal",
+      "etiqueta": "Discriminación, acoso y violencia",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "tema-ddhh-4": {
+      "tipo": "decimal",
+      "etiqueta": "Igualdad de género",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "tema-ddhh-5": {
+      "tipo": "decimal",
+      "etiqueta": "Libertad de asociación y negociación colectiva",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "tema-ddhh-6": {
+      "tipo": "decimal",
+      "etiqueta": "Salud y seguridad ocupacional",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "tema-ddhh-7": {
+      "tipo": "decimal",
+      "etiqueta": "Remuneración y evaluación de la brecha de salario digno",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "tema-ddhh-8": {
+      "tipo": "decimal",
+      "etiqueta": "Horario de trabajo",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "tema-ddhh-9": {
+      "tipo": "decimal",
+      "etiqueta": "Condiciones laborales",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    },
+    "tema-ddhh-10": {
+      "tipo": "decimal",
+      "etiqueta": "Derechos Ambientales",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    }
+  }
+}
