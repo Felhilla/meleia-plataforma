@@ -19,10 +19,12 @@
     if(!p.puedeEditar){c.append(el('p','Solo el responsable puede modificar estos datos.'));return;}
     let activo=true,revision=0;
     const vigente=()=>activo&&p.vigente();
-    const nombres=K.colecciones[modulo], esquemas=await Promise.all(nombres.map(n=>config('config/esquemas/'+n+'.json')));
+    const nombres=modulo==='materialidad'?KitMaterialidad.colecciones:K.colecciones[modulo], esquemas=await Promise.all(nombres.map(n=>config('config/esquemas/'+n+'.json')));
     const cat=await config('config/kit-ddhh-catalogo.json');
-    const mat=modulo==='materialidad'?await config('config/kit-materialidad-catalogo.json'):null;
-    const etiquetas=new Map([...cat.ejes,...cat.indicadores.map(i=>({...i,nombre:i.pregunta})),...cat.dimensiones.grandes.map(g=>({...g,nombre:g.titulo})),...cat.ejes.flatMap(e=>e.componentes),...(mat?.grupos||[]),...(mat?.evaluadores_financieros||[])].map(x=>[x.id,x.nombre]));
+    const etiquetas=new Map([...cat.ejes,...cat.indicadores.map(i=>({...i,nombre:i.pregunta})),...cat.dimensiones.grandes.map(g=>({...g,nombre:g.titulo})),...cat.ejes.flatMap(e=>e.componentes)].map(x=>[x.id,x.nombre]));
+    if(!vigente())return;
+    const fuente=modulo==='materialidad'?el('p','Fuente: No disponible','nota'):null;
+    const nombreEmpresa=fuente?await nombre(p):'';
     if(!vigente())return;
     const tabs=el('nav',null,'ke-tabs'), cuerpo=el('section'), estado=el('div');tabs.setAttribute('aria-label','Colecciones');
     c.append(tabs,estado,cuerpo,el('p','Carga por Excel (próximamente)','nota'));
@@ -36,6 +38,7 @@
         if(!h.flat().length)cuerpo.append(el('p','No hay cambios registrados.'));
       }catch(e){if(vigente()&&v===revision)error(cuerpo,e);}
     }));
+    if(fuente)c.append(fuente);
     async function abrir(coleccion) {
       const version=++revision;estado.replaceChildren();cuerpo.replaceChildren(el('p','Cargando registros…'));
       const actual=()=>vigente()&&version===revision, base=esquemas[nombres.indexOf(coleccion)];
@@ -44,11 +47,16 @@
         if(!actual())return;
         for(const [k,rs] of Object.entries(listas))referencias[k]=new Set(rs.map(r=>r.id));
         const registros=listas[coleccion];
+        if(base.registroUnico){
+          if(registros.length>1||registros.some(r=>r.id!==base.registroUnico))throw Error('El resumen debe tener un único registro con código resumen.');
+          fuente.textContent='Fuente: '+K.empresa(registros[0]?.fuente||'No disponible',nombreEmpresa);
+        }
         function tabla() {
-          cuerpo.replaceChildren(el('h2',base.titulo),boton('Agregar',()=>formulario()));
+          cuerpo.replaceChildren(el('h2',base.titulo));
+          if(!base.registroUnico||!registros.length)cuerpo.append(boton('Agregar',()=>formulario()));
           if(!registros.length)cuerpo.append(el('p','Aún no hay registros. Usa Agregar para comenzar.','nota'));
           const tabla=el('table'),head=el('thead'),tr=el('tr');['Registro','Acciones'].forEach(t=>tr.append(el('th',t)));head.append(tr);tabla.append(head);
-          const tb=el('tbody');registros.forEach(r=>{const fila=el('tr'),acciones=el('td');fila.append(el('th',r.nombre||r.titulo||r.id));acciones.append(boton('Editar',()=>formulario(r)),boton('Borrar',()=>borrar(r)));fila.append(acciones);tb.append(fila);});tabla.append(tb);
+          const tb=el('tbody');registros.forEach(r=>{const fila=el('tr'),acciones=el('td');fila.append(el('th',r.nombre||r.titulo||r.aspecto||r.id));acciones.append(boton('Editar',()=>formulario(r)),boton('Borrar',()=>borrar(r)));fila.append(acciones);tb.append(fila);});tabla.append(tb);
           const scroll=el('div',null,'ke-tabla');scroll.append(tabla);cuerpo.append(scroll);
         }
         async function borrar(r) {
@@ -57,18 +65,18 @@
             const dependientes=nombres.filter((n,i)=>Object.values(esquemas[i].campos).some(f=>f.tipo==='referencia'&&f.coleccion===coleccion));
             const deps=await cargar(p,dependientes);if(!actual())return;
             if(dependientes.some(n=>deps[n].some(x=>Object.entries(esquemas[nombres.indexOf(n)].campos).some(([k,f])=>f.coleccion===coleccion&&x[k]===r.id)))){estado.append(el('p','Este registro tiene referencias. Retira primero los registros vinculados.','kit-error'));return;}
-            const caja=el('section',null,'tarjeta ke-confirmacion');caja.append(el('p','¿Borrar '+(r.nombre||r.titulo||r.id)+'? Esta acción queda en el historial.'));
+            const caja=el('section',null,'tarjeta ke-confirmacion');caja.append(el('p','¿Borrar '+(r.nombre||r.titulo||r.aspecto||r.id)+'? Esta acción queda en el historial.'));
             const confirmar=boton('Confirmar borrado',async()=>{if(!actual()||confirmar.disabled)return;confirmar.disabled=true;try{await App.datos.borrar(p.empresa,coleccion,r.id);if(actual())await abrir(coleccion);}catch(e){if(actual()){error(caja,e);confirmar.disabled=false;}}});
             caja.append(confirmar,boton('Cancelar',()=>caja.remove()));estado.append(caja);confirmar.focus();
           }catch(e){if(actual())error(estado,e);}
         }
         function formulario(existente) {
           if(!actual())return;estado.replaceChildren();
-          const entrada=existente?{...existente}:{id:'r-'+crypto.randomUUID(),...(base.campos.origen?{origen:'cargada'}:{})};
-          let s=K.esquema(base,coleccion,cat,entrada), controles=new Map();
+          const entrada=existente?{...existente}:{id:base.registroUnico||'r-'+crypto.randomUUID(),...(base.campos.origen?{origen:'cargada'}:{})};
+          let s=modulo==='materialidad'?base:K.esquema(base,coleccion,cat,entrada), controles=new Map();
           const form=el('form',null,'ke-form'),previa=el('section',null,'ke-previa');form.noValidate=true;
           cuerpo.replaceChildren(el('h2',(existente?'Editar · ':'Agregar · ')+base.titulo),form,previa);
-          function opciones(regla) {return regla.tipo==='referencia'?(listas[regla.coleccion]||[]).map(r=>[r.id,r.nombre||r.titulo||r.id]):(regla.valores||[]).map(v=>[v,etiquetas.get(v)||v]);}
+          function opciones(regla) {return regla.tipo==='referencia'?(listas[regla.coleccion]||[]).map(r=>[r.id,r.nombre||r.titulo||r.aspecto||r.id]):(regla.valores||[]).map(v=>[v,etiquetas.get(v)||v]);}
           function crearCampo(k,regla,padre=form) {
             const label=el('label',regla.etiqueta||k),input=el(regla.tipo==='texto-largo'?'textarea':['lista','referencia'].includes(regla.tipo)?'select':'input'),err=el('span','','kit-error');
             input.name=k;input.id='ke-'+k;input.required=!!regla.obligatorio;input.multiple=!!regla.multiple;
@@ -76,7 +84,7 @@
             else {input.type=regla.tipo==='fecha'?'date':'text';if(regla.tipo==='decimal'){input.inputMode='decimal';input.setAttribute('role','spinbutton');input.setAttribute('aria-valuemin',regla.min);input.setAttribute('aria-valuemax',regla.max);
               input.onkeydown=e=>{if(!['ArrowUp','ArrowDown','Home','End'].includes(e.key))return;e.preventDefault();const n=Number(input.value.replace(',','.'))||0;input.value=String(e.key==='Home'?regla.min:e.key==='End'?regla.max:Math.max(regla.min,Math.min(regla.max,n+(e.key==='ArrowUp'?.1:-.1)))).replace('.',',');input.oninput();};}}
             if(!regla.multiple)input.value=entrada[k]??'';
-            if(k==='id'&&existente)input.disabled=true;
+            if(k==='id'&&(existente||base.registroUnico))input.disabled=true;
             err.id=input.id+'-error';input.setAttribute('aria-describedby',err.id);label.append(input,err);padre.append(label);controles.set(k,{input,err});
             input.oninput=()=>{previa.replaceChildren();};input.onchange=()=>{
               previa.replaceChildren();
@@ -92,7 +100,7 @@
           form.onsubmit=e=>{
             e.preventDefault();if(!actual())return;previa.replaceChildren();const raw={...entrada};
             controles.forEach(({input},k)=>{raw[k]=s.campos[k].multiple?Array.from(input.options).filter(o=>o.selected).map(o=>o.value):input.value;});
-            const resultado=K.validar(raw,s,referencias);
+            const resultado=modulo==='materialidad'?KitMaterialidad.validar(raw,s,referencias):K.validar(raw,s,referencias);
             if(!existente&&registros.some(r=>r.id===raw.id))resultado.errores.push({campo:'id',mensaje:'Ya existe este registro. Usa Editar.'});
             const claves={'ddhh-indicadores':['evaluacion','indicador'],'ddhh-componentes':['evaluacion','componente'],'ddhh-dimensiones':['evaluacion','dimension'],'materialidad-impacto':['tema','grupo'],'materialidad-financiera':['tema','evaluador'],'materialidad-participacion':['grupo']}[coleccion];
             if(claves&&registros.some(r=>r.id!==existente?.id&&claves.every(k=>r[k]===raw[k])))resultado.errores.push({campo:claves.at(-1),mensaje:'Ya existe una calificación o registro para esta combinación. Usa Editar.'});

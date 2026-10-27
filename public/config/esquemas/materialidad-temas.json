@@ -3,8 +3,14 @@
   "campos": {
     "id": {
       "tipo": "texto",
-      "etiqueta": "Código",
       "max": 80,
+      "obligatorio": true
+    },
+    "orden": {
+      "tipo": "entero",
+      "etiqueta": "Orden",
+      "min": 1,
+      "max": 10000,
       "obligatorio": true
     },
     "nombre": {
@@ -12,60 +18,40 @@
       "etiqueta": "Nombre",
       "obligatorio": true
     },
-    "dimension_esg": {
+    "dimension": {
       "tipo": "lista",
       "etiqueta": "Dimensión ESG",
       "valores": [
-        "ambiental",
-        "social",
-        "gobernanza"
+        "Ambiental",
+        "Social",
+        "Gobernanza"
       ],
-      "multiple": false,
+      "obligatorio": true
+    },
+    "tipo": {
+      "tipo": "lista",
+      "etiqueta": "Tipo",
+      "valores": [
+        "Doble",
+        "Impacto",
+        "Financiera"
+      ],
+      "obligatorio": true
+    },
+    "estandar_gri": {
+      "tipo": "texto",
+      "etiqueta": "Estándar GRI",
       "obligatorio": true
     },
     "descripcion": {
       "tipo": "texto-largo",
-      "etiqueta": "Descripción"
-    },
-    "ejes": {
-      "tipo": "lista",
-      "etiqueta": "Ejes de estándares",
-      "valores": [
-        "etapa-ocde-1",
-        "etapa-ocde-2",
-        "etapa-ocde-3",
-        "etapa-ocde-4",
-        "etapa-ocde-5",
-        "etapa-ocde-6",
-        "tema-ddhh-1",
-        "tema-ddhh-2",
-        "tema-ddhh-3",
-        "tema-ddhh-4",
-        "tema-ddhh-5",
-        "tema-ddhh-6",
-        "tema-ddhh-7",
-        "tema-ddhh-8",
-        "tema-ddhh-9",
-        "tema-ddhh-10"
-      ],
-      "multiple": true,
+      "etiqueta": "Descripción",
       "obligatorio": false
     },
-    "sasb": {
-      "tipo": "texto",
-      "etiqueta": "Referencia SASB",
+    "indicadores": {
+      "tipo": "texto-largo",
+      "etiqueta": "Indicadores",
       "obligatorio": false
-    },
-    "origen": {
-      "tipo": "lista",
-      "etiqueta": "Origen",
-      "valores": [
-        "ilustrativo",
-        "fuente",
-        "cargada"
-      ],
-      "multiple": false,
-      "obligatorio": true
     }
   }
 }

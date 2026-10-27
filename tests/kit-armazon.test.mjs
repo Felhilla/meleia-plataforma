@@ -121,3 +121,12 @@ test('DOM: error de vista visible y sesión revocada vuelve al ingreso', async (
   assert.match(m.nodos.contenido.querySelector('[role="alert"]').textContent,/No hay conexión/);
   m.datos.salir(); assert.equal(m.root.location.hash,'#/ingresar');
 });
+
+test('E22: el Módulo III ofrece exclusivamente el caso configurado y sus rutas', () => {
+  const modulo=App.modulos.find(m=>m.id==='materialidad');
+  assert.equal(modulo.casos.length,1);
+  assert.notEqual(modulo.casos[0],'empresa-demo');
+  const casos=[{id:modulo.casos[0],nombre:'Caso de muestra',rol:'demostrador',muestra_comercial:true}];
+  assert.equal(App.resolverRuta('#/materialidad',{},casos).hash,'#/materialidad/'+casos[0].id+'/doble');
+  assert.deepEqual(App.casos(modulo,[...muestras,...casos]).map(e=>e.id),[casos[0].id]);
+});
