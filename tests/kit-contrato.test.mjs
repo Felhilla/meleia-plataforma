@@ -53,3 +53,17 @@ test('Nombres: en otra categoría la carga los descarta y el formulario los rech
   assert.equal(c.ok, true); assert.equal('nombre_servidor' in c.registro, false); assert.equal('fecha_verificacion' in c.registro, false); assert.equal(c.avisos.length, 1);
   assert.equal(A.validar(comunidad, cfgA, esqA, 'manual').ok, false);
 });
+
+import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
+test('SheetJS: versión fija 0.20.3, sin cambios no revisados', () => {
+  const archivo = readFileSync(new URL('../public/vendor/xlsx.full.min.js', import.meta.url));
+  assert.equal(createHash('sha256').update(archivo).digest('hex'), 'cc015130aa8521e7f088f88898eba949ccdcbfb38df0bd129b44b7273c3a6f41');
+});
+test('SheetJS lee los Excel de muestra', () => {
+  const XLSX = createRequire(import.meta.url)('../public/vendor/xlsx.full.min.js');
+  const mapeo = XLSX.read(readFileSync(new URL('./fixtures/mapeo-gh-muestra.xlsx', import.meta.url)));
+  assert.deepEqual(mapeo.SheetNames, ['Índice', 'Metodología', 'Comp. Ins. Gub', 'Com. Aso', 'Ins. Gub']);
+  const iv = XLSX.read(readFileSync(new URL('./fixtures/plantilla-iv-muestra.xlsx', import.meta.url)));
+  assert.deepEqual(iv.SheetNames, ['Riesgos', 'Calificación técnica', 'Grupos', 'Validaciones', 'Medidas']);
+});
