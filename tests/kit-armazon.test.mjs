@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import App from '../public/kit-armazon.js';
 const empresas = [{ id: 'uno', nombre: 'Cliente uno', rol: 'responsable', muestra_comercial: false }, { id: 'dos', nombre: 'Cliente dos', rol: 'demostrador', muestra_comercial: false }];
-const muestras = [{id:'libero-cobre',nombre:'Libero Cobre',rol:'demostrador',muestra_comercial:true}, {id:'minerales-santa-ana',nombre:'Minerales Santa Ana',rol:'responsable',muestra_comercial:true}, {id:'solgas',nombre:'Solgas',rol:'demostrador',muestra_comercial:true}];
+const casosActores = App.modulos.find(m => m.id === 'actores').casos;
+const casoDDHH = App.modulos.find(m => m.id === 'ddhh').casos[0];
+const muestras = [{id:casosActores[0],nombre:'Caso de prueba A',rol:'demostrador',muestra_comercial:true}, {id:casosActores[1],nombre:'Caso de prueba B',rol:'responsable',muestra_comercial:true}, {id:casoDDHH,nombre:'Caso de prueba C',rol:'demostrador',muestra_comercial:true}];
 const resolver = (hash, usuario = { id: 'u' }) => App.resolverRuta(hash, usuario, empresas);
 test('sin sesión cualquier ruta lleva a ingresar', () => {
   for (const hash of ['#/', '#/actores/uno/mapa', '#/inexistente']) assert.equal(resolver(hash, null).hash, '#/ingresar');
@@ -19,8 +21,8 @@ test('rutas nuevas, primer caso y redirecciones antiguas', () => {
     const [modulo,sub] = ruta.split('/'), nueva = '#/' + modulo + '/uno' + (sub ? '/' + sub : '');
     assert.equal(resolver(nueva).clave, ruta); assert.equal(resolver('#/e/uno/' + ruta).hash, nueva);
   }
-  assert.equal(App.resolverRuta('#/actores', {}, muestras).hash, '#/actores/libero-cobre/mapa');
-  assert.equal(App.resolverRuta('#/ddhh', {}, muestras).hash, '#/ddhh/solgas/resultados');
+  assert.equal(App.resolverRuta('#/actores', {}, muestras).hash, '#/actores/' + casosActores[0] + '/mapa');
+  assert.equal(App.resolverRuta('#/ddhh', {}, muestras).hash, '#/ddhh/' + casoDDHH + '/resultados');
 });
 test('casos: muestras configuradas y clientes reales visibles en todos los módulos', () => {
   for (const m of App.modulos) {
@@ -28,7 +30,7 @@ test('casos: muestras configuradas y clientes reales visibles en todos los módu
     assert.deepEqual(App.casos(m, [{id:'ajena',muestra_comercial:true}]), []);
     assert.equal(App.resolverRuta('#/' + m.id, {}, []).clave, 'sin-casos');
   }
-  assert.equal(App.resolverRuta('#/actores/solgas', {}, muestras).hash, '#/');
+  assert.equal(App.resolverRuta('#/actores/' + casoDDHH, {}, muestras).hash, '#/');
 });
 test('Alimentación exige permiso sobre la empresa del caso', () => {
   for (const modulo of ['actores','ddhh','materialidad','riesgos']) {
@@ -51,7 +53,8 @@ class Nodo {
   constructor(tag) { this.tag = tag; this.children = []; this.attrs = {}; this.dataset = {}; this._texto = ''; }
   set textContent(v) { this._texto = String(v); this.children = []; }
   get textContent() { return this._texto + this.children.map(n => n.textContent).join(' '); }
-  append(...n) { this.children.push(...n); }
+  append(...n) { n.forEach(x => { x.parent = this; this.children.push(x); }); }
+  after(n) { n.parent = this.parent; this.parent.children.splice(this.parent.children.indexOf(this)+1,0,n); }
   replaceChildren(...n) { this._texto = ''; this.children = n; }
   setAttribute(k, v) { this.attrs[k] = v; }
   focus() { this.enfocado = true; }
@@ -90,16 +93,23 @@ test('DOM: portada global no consulta colecciones ni muestra selector global', a
   assert.equal(m.consultas.length, 0); assert.equal(m.nodos['kit-cuenta'].querySelector('select'), undefined);
   assert.match(m.nodos['kit-cuenta'].textContent, /Responsable/);
 });
-test('DOM: un caso solo muestra nombre; múltiples casos tienen enlaces segmentados', async () => {
+test('DOM E24: selector accesible con uno o varios casos y pestaña Mapa de actores', async () => {
   const una = await montar({ empresas: muestras, hash:'#/ddhh' });
-  assert.match(una.nodos.contenido.textContent, /Caso: Solgas/);
-  assert.equal(una.nodos.contenido.todos().find(n => n.attrs['aria-label'] === 'Casos del módulo'), undefined);
+  assert.match(una.nodos.contenido.textContent, /Caso Caso de prueba C/);
+  assert.ok(una.nodos.contenido.todos().find(n => n.attrs['aria-label'] === 'Casos del módulo'));
   const varias = await montar({ empresas:muestras, hash:'#/actores' });
   const selector = varias.nodos.contenido.todos().find(n => n.attrs['aria-label'] === 'Casos del módulo');
   assert.equal(selector.todos().filter(n => n.tag === 'a').length, 2);
+  const boton = selector.todos().find(n => n.tag === 'button'), lista = selector.todos().find(n => n.id === 'kit-lista-casos');
+  assert.equal(lista.hidden,true); boton.onclick(); assert.equal(lista.hidden,false); assert.equal(boton.attrs['aria-expanded'],'true');
+  selector.onkeydown({key:'Escape',preventDefault(){}}); assert.equal(lista.hidden,true); assert.equal(boton.enfocado,true);
+  boton.onclick(); const enlace = lista.children[1]; enlace.onclick(); assert.equal(lista.hidden,true);
+  assert.equal(lista.children[0].attrs['aria-current'],'page'); assert.equal(enlace.href,'#/actores/' + casosActores[1] + '/mapa');
+  varias.root.location.hash = enlace.href; await varias.eventos.hashchange();
+  assert.match(varias.nodos.contenido.textContent,/Mapa de actores/);
   assert.doesNotMatch(varias.nodos.contenido.textContent, /Alimentación/);
   assert.match(varias.nodos['kit-cuenta'].textContent, /Responsable/);
-  varias.root.location.hash = '#/actores/minerales-santa-ana'; varias.datos.puedeEditar = id => id === 'minerales-santa-ana'; await varias.root.App.actualizarVista();
+  varias.root.location.hash = '#/actores/' + casosActores[1]; varias.datos.puedeEditar = id => id === casosActores[1]; await varias.root.App.actualizarVista();
   assert.match(varias.nodos.contenido.textContent, /Alimentación/);
   const soporte = await montar({ empresas:[...empresas,{id:'tres',rol:'admin',muestra_comercial:false}] }); assert.match(soporte.nodos['kit-cuenta'].textContent,/Soporte GH/);
 });
@@ -132,4 +142,26 @@ test('E22: el Módulo III ofrece exclusivamente el caso configurado y sus rutas'
   const casos=[{id:modulo.casos[0],nombre:'Caso de muestra',rol:'demostrador',muestra_comercial:true}];
   assert.equal(App.resolverRuta('#/materialidad',{},casos).hash,'#/materialidad/'+casos[0].id+'/doble');
   assert.deepEqual(App.casos(modulo,[...muestras,...casos]).map(e=>e.id),[casos[0].id]);
+});
+
+test('DOM E24: perfil en memoria por empresa, logo válido sin hueco cuando falta', async () => {
+  for (const imagen of [undefined,'https://example.test/logo.png','data:image/svg+xml;base64,YQ==','data:image/png;base64,YQ==']) {
+    const m = await montar({hash:'#/actores/uno',listar:async () => imagen ? [{id:'logo',imagen,alt:'Empresa de prueba'}] : []});
+    const logos = () => m.nodos.contenido.todos().filter(n => n.className === 'kit-empresa-logo');
+    assert.equal(logos().length,imagen === 'data:image/png;base64,YQ==' ? 1 : 0);
+    if (logos().length) assert.equal(logos()[0].alt,'Empresa de prueba');
+    m.root.location.hash = '#/riesgos/uno'; await m.root.App.actualizarVista();
+    assert.equal(m.consultas.filter(c => c[0] === 'uno' && c[1] === 'perfil').length,1);
+    m.root.location.hash = '#/riesgos/dos'; await m.root.App.actualizarVista();
+    assert.equal(m.consultas.filter(c => c[1] === 'perfil').length,2);
+  }
+});
+
+test('DOM E24: una respuesta de perfil tardía no inserta el logo de otra empresa', async () => {
+  let resolver;
+  const m = await montar({hash:'#/actores/uno',listar:async e => e === 'uno' ? new Promise(r => { resolver = r; }) : []});
+  m.root.location.hash = '#/riesgos/dos'; await m.root.App.actualizarVista();
+  resolver([{id:'logo',imagen:'data:image/png;base64,YQ==',alt:'Logo anterior'}]);
+  for (let i=0;i<5;i++) await Promise.resolve();
+  assert.ok(!m.nodos.contenido.todos().some(n => n.className === 'kit-empresa-logo'));
 });

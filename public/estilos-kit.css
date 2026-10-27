@@ -77,3 +77,13 @@ button:disabled { opacity: .65; cursor: wait; }
 @media (prefers-reduced-motion: reduce) { .kit-modulo { transition: none; } .kit-modulo:hover { transform: none; } }
 @media (max-width: 960px) { .kit-rejilla, .kit-modulos.kit-rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kit-equipo .kit-persona:nth-child(odd) { border-left: 0; padding-left: 0; } }
 @media (max-width: 560px) { .kit-rejilla, .kit-modulos.kit-rejilla { grid-template-columns: 1fr; } .kit-equipo .kit-persona + .kit-persona { border-left: 0; padding-left: 0; border-top: 2px dashed var(--kit-desplegable-borde); padding-top: var(--e4); } .kit-titulo { padding: var(--e4); padding-right: 96px; } .kit-titulo-arco { width: 72px; height: 36px; right: 12px; } }
+
+/* E24 · Selector compartido y logo opcional, sin reserva de espacio. */
+.kit-casos { position: relative; display: flex; align-items: center; gap: var(--e3); margin: var(--e3) 0; }
+.kit-casos-lista { position: absolute; top: 0; left: 90px; z-index: 20; width: min(420px, calc(100% - 90px)); padding: var(--e2) var(--e3); background: var(--kit-desplegable-fondo); border: 1px solid var(--kit-desplegable-borde); border-radius: var(--radio-chico); box-shadow: var(--sombra); }
+.kit-casos-lista[hidden] { display: none; }
+.kit-casos-lista a { display: block; padding: var(--e2); color: var(--texto); }
+.kit-casos-lista a + a { border-top: 1px solid var(--kit-desplegable-borde); }
+.kit-casos-lista a[aria-current] { font-weight: 700; text-decoration-thickness: 2px; }
+.kit-empresa-logo { display: block; width: auto; max-width: 200px; height: 64px; margin-left: auto; padding: 4px 8px; object-fit: contain; background: #fff; border: 1px solid var(--borde); border-radius: var(--radio-chico); }
+@media (max-width: 560px) { .kit-empresa-logo { height: 48px; max-width: 120px; } }

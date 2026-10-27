@@ -1,0 +1,37 @@
+{
+  "titulo": "actores-contactos",
+  "campos": {
+    "id": {
+      "tipo": "referencia",
+      "coleccion": "actores",
+      "etiqueta": "Identificador",
+      "obligatorio": true
+    },
+    "nombre": {
+      "tipo": "texto",
+      "etiqueta": "Nombre",
+      "max": 120,
+      "obligatorio": false
+    },
+    "telefono": {
+      "tipo": "texto",
+      "etiqueta": "Teléfono",
+      "max": 40,
+      "obligatorio": false
+    },
+    "correo": {
+      "tipo": "texto",
+      "etiqueta": "Correo",
+      "max": 160,
+      "obligatorio": false
+    },
+    "ejemplo": {
+      "tipo": "lista",
+      "etiqueta": "Dato de ejemplo",
+      "valores": [
+        true,
+        false
+      ]
+    }
+  }
+}

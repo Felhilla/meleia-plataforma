@@ -10,6 +10,7 @@ class Nodo {
   replaceChildren(...ns) { this.children.forEach(n => { n.parent = null; }); this.children = []; this.append(...ns); }
   setAttribute(k, v) { this.attrs[k] = v; }
   get isConnected() { return this === this.doc.body || !!this.parent?.isConnected; }
+  get lastChild() { return this.children.at(-1); }
   get options() { return this.children; }
   todos() { return this.children.flatMap(n => [n, ...n.todos()]); }
   focus() { this.doc.activeElement = this; }
@@ -20,42 +21,24 @@ class Nodo {
 const read = p => readFileSync(new URL('../public/' + p, import.meta.url), 'utf8');
 const cfg = JSON.parse(read('config/kit-actores-config.json')), esquema = JSON.parse(read('config/esquemas/actores.json'));
 const [activa, estrategico, periferico, cautelosa] = cfg.niveles.map(n => n.nombre);
-function actores() { return [[5,4,'Alcaldía'],[4,2,'Emisora'],[3,5,'JAC'],[2,1,'Universidad'],[3,1,'Gobernación']].map(([influencia,impacto,institucion],i) => ({ id:'act-'+i,influencia,impacto,institucion,cargo:'Cargo institucional',categoria:'Academia',subgrupo:'Educación',orden:'Local',posicion:i === 2 ? 'Desfavorable' : 'Neutral',tension:i === 2 ? 4 : 1,dependencia:2,responsabilidad:2,...(i === 4 ? {nivel_ajustado:activa,motivo_ajuste:esquema.campos.motivo_ajuste.valores[0],explicacion_ajuste:'Capacidad de convocatoria cercana a alta.'} : {})})); }
+function actores() { return [[5,4,'Entidad de prueba A'],[4,2,'Entidad de prueba B'],[3,5,'Entidad de prueba C'],[2,1,'Entidad de prueba D'],[3,1,'Entidad de prueba E']].map(([influencia,impacto,institucion],i) => ({ id:'act-'+i,influencia,impacto,institucion,cargo:'Cargo institucional',categoria:'Academia',subgrupo:'Educación',orden:'Local',posicion:i === 2 ? 'Desfavorable' : 'Neutral',tension:i === 2 ? 4 : 1,dependencia:2,responsabilidad:2,...(i === 4 ? {nivel_ajustado:activa,motivo_ajuste:esquema.campos.motivo_ajuste.valores[0],explicacion_ajuste:'Capacidad de convocatoria cercana a alta.'} : {})})); }
 async function montar(vista = 'mapa', editar = true, extras = {}) {
-  const document = { eventos: {}, addEventListener(k, fn) { this.eventos[k] = fn; }, removeEventListener(k) { delete this.eventos[k]; }, createElement(t) { return new Nodo(t, this); } };
+  const document = { eventos: {}, listeners: {}, addEventListener(k, fn) { (this.listeners[k] ||= []).push(fn); this.eventos[k] = e => [...this.listeners[k]].forEach(f => f(e)); }, removeEventListener(k,fn) { this.listeners[k] = this.listeners[k].filter(f => f !== fn); if (!this.listeners[k].length) delete this.eventos[k]; }, createElement(t) { return new Nodo(t, this); } };
   document.body = new Nodo('body', document); const contenedor = new Nodo('main', document); document.body.append(contenedor);
   const consultas = [], guardados = [], borrados = [], historial = [], vistas = {};
-  const registros = { actores: actores(), ...extras };
+  const registros = { actores: actores(), 'actores-contactos': [], 'actores-resumen': [], 'actores-logos': [], ...extras };
   const datos = { listar: async (empresa, c) => { consultas.push([empresa, c]); return structuredClone(registros[c]); }, guardar: async (...args) => { guardados.push(args); return args[3]; }, borrar: async (...args) => borrados.push(args), historial: async (...args) => { historial.push(args); return []; } };
   const root = { document, Intl, crypto: { randomUUID: () => 'nuevo' }, fetch: async p => ({ ok: true, json: async () => JSON.parse(read(p)) }), App: { el: (tag, txt, clase) => { const n = new Nodo(tag, document); if (txt != null) n.textContent = txt; n.className = clase; return n; }, registrarVista: (k, v) => { vistas[k] = v; }, actualizarVista() {} } };
   for (const f of ['kit-validacion.js', 'kit-actores.js', 'kit-vista-actores.js']) vm.runInNewContext(read(f), root);
   let vigente = true; const params = { empresa: 'empresa-1', puedeEditar: editar, rol: editar ? 'responsable' : 'demostrador', vigente: () => vigente };
   const limpiar = await vistas['actores/' + vista].render(contenedor, datos, params);
-  return { root, document, contenedor, consultas, guardados, borrados, historial, limpiar, salir: () => { vigente = false; limpiar?.(); } };
+  return { root, document, datos, contenedor, consultas, guardados, borrados, historial, limpiar, salir: () => { vigente = false; limpiar?.(); } };
 }
 const buscar = (n, texto) => n.todos().find(x => x.tagName === 'BUTTON' && x.textContent === texto);
 const campo = (n, nombre) => n.todos().find(x => x.name === nombre);
 const form = n => n.todos().find(x => x.tagName === 'FORM');
 const tick = async () => { for (let i = 0; i < 15; i++) await Promise.resolve(); };
-const panel = m => m.document.body.todos().find(x => x.attrs.role === 'dialog');
-test('Mapa: cinco actores en sus cuadrantes finales; solo ficha muestra ajuste; foco y limpieza', async () => {
-  const m = await montar();
-  for (const [nombre,nivel] of [['Alcaldía',estrategico],['Emisora',activa],['JAC',cautelosa],['Universidad',periferico],['Gobernación',activa]]) {
-    const q = m.contenedor.todos().find(n => n.dataset.cuadrante === nivel); assert.match(q.textContent,new RegExp(nombre));
-  }
-  assert.doesNotMatch(m.contenedor.textContent,/Ajustado|ajuste|Capacidad de convocatoria/);
-  assert.deepEqual(m.consultas,[['empresa-1','actores']]);
-  const b = buscar(m.contenedor,'Gobernación'); b.focus(); b.onclick();
-  assert.match(panel(m).textContent,/Nivel calculado: Seguimiento periférico/); assert.match(panel(m).textContent,/Ajustado a Gestión activa · Motivo:.*Explicación:/);
-  assert.equal(m.contenedor.inert,true); const cerrar = buscar(panel(m),'Cerrar'); cerrar.focus(); let prevented = false;
-  m.document.eventos.keydown({key:'Tab',shiftKey:true,preventDefault(){prevented=true;}}); assert.equal(prevented,true);
-  m.document.eventos.keydown({key:'Escape',preventDefault(){}}); assert.equal(m.document.activeElement,b); assert.equal(panel(m),undefined);
-  b.onclick(); m.salir(); assert.equal(panel(m),undefined); assert.equal(m.document.eventos.keydown,undefined);
-});
-test('Demostrador no ve edición y alimentación no consulta datos', async () => {
-  const m = await montar('mapa',false); assert.ok(!buscar(m.contenedor,'Agregar')); buscar(m.contenedor,'Alcaldía').onclick(); assert.ok(!buscar(panel(m),'Editar'));
-  const a = await montar('alimentacion',false); assert.equal(a.consultas.length,0); assert.ok(!form(a.contenedor));
-});
+const panel = m => m.document.body.todos().filter(x => x.attrs.role === 'dialog').at(-1);
 test('Formulario rechaza Alto medio, muestra definiciones y solo admite subidas', async () => {
   const m = await montar('alimentacion'); buscar(m.contenedor,'Editar').onclick();
   assert.match(m.contenedor.textContent,/no cuenta con recursos o capacidad para incidir/); campo(m.contenedor,'influencia').value = 'Alto medio'; campo(m.contenedor,'influencia').oninput();
@@ -77,36 +60,117 @@ test('Borrado requiere confirmación propia e historial filtra actores', async (
   buscar(m.contenedor,'Borrar').onclick(); await buscar(m.contenedor,'Confirmar borrado').onclick(); assert.deepEqual(m.borrados[0],['empresa-1','actores','act-0']);
   await buscar(m.contenedor,'Historial de cambios').onclick(); assert.equal(m.historial[0][0],'empresa-1'); assert.equal(m.historial[0][1].coleccion,'actores'); assert.match(m.contenedor.textContent,/Todavía no hay cambios/);
 });
-test('Filtros afectan mapa, lista e indicadores; estados vacíos según permiso', async () => {
-  const m = await montar(); const atencion = m.contenedor.todos().find(n => n.tagName === 'INPUT' && n.type === 'checkbox');
-  atencion.checked = true; atencion.onchange(); assert.deepEqual(m.contenedor.todos().filter(n => n.className === 'ka-dato').map(n => n.children[0].textContent), ['1','0','1','1']); assert.ok(buscar(m.contenedor,'JAC')); assert.ok(!buscar(m.contenedor,'Alcaldía'));
-  for (const permiso of [true,false]) { const v = await montar('mapa',permiso,{actores:[]}); assert.match(v.contenedor.textContent,/aún no tiene actores/); assert.equal(v.contenedor.todos().some(n => n.tagName === 'A'),permiso); }
+
+const cuadro = (m,nombre = activa) => m.contenedor.todos().find(n => n.dataset.cuadrante === nombre);
+const tarjetas = m => panel(m).todos().filter(n => n.className === 'ka-organizacion');
+const centro = m => m.contenedor.todos().find(n => n.className === 'ka-centro');
+const escape = m => m.document.eventos.keydown({key:'Escape',preventDefault(){}});
+function muestra() {
+  const base = {...actores()[1],influencia:4,impacto:2,categoria:'Instituciones gubernamentales'};
+  return [
+    {...base,id:'a',institucion:'Organización Nube',orden:'Nacional',posicion:'Favorable',caracterizacion:'Texto único'},
+    {...base,id:'b',institucion:' Organización Nube ',orden:'Nacional',posicion:'Neutral',impacto:3,caracterizacion:'Texto único'},
+    {...base,id:'c',institucion:'Organización Nube',orden:'Nacional',posicion:'Desfavorable',impacto:5,tension:5},
+    {...base,id:'d',institucion:'Organización Local',orden:'Local',posicion:'Neutral'},
+    {...base,id:'e',institucion:'Organización Regional',orden:'Regional',posicion:'Desfavorable'},
+    {...base,id:'f',institucion:'Organización Internacional',orden:'Internacional',posicion:'Favorable'},
+    {...base,id:'g',institucion:'Organización Sin orden',orden:'',posicion:'Neutral'},
+    {...base,id:'h',institucion:'Organización Aula',categoria:'Academia',posicion:'Neutral'}
+  ];
+}
+test('E24: agrupa instituciones exactas, cuenta organizaciones por cuadrante y registros en círculo', async () => {
+  const m = await montar('mapa',true,{actores:muestra()});
+  assert.match(cuadro(m).attrs['aria-label'],/6 organizaciones, 100 %/);
+  assert.match(cuadro(m,estrategico).textContent,/1 organización · .*Incluye 1 organización que también está en otro cuadrante/);
+  assert.match(cuadro(m).textContent,/Incluye 1 organización que también está en otro cuadrante/);
+  assert.match(centro(m).textContent,/8 Actores identificados/);
+  assert.deepEqual(m.consultas.map(c => c[1]),['actores','actores-contactos','actores-resumen']);
+  assert.equal(m.contenedor.todos().filter(n => n.tagName === 'BUTTON').length,5);
+  const exacta = await montar('mapa',true,{actores:[...muestra(),{...muestra()[0],id:'i',institucion:'organización Nube'}]});
+  await centro(exacta).onclick(); assert.match(panel(exacta).textContent,/7 organizaciones/);
 });
-test('180 actores conservan botones y texto seguro', async () => {
-  const lista = Array.from({length:180},(_,i) => ({...actores()[0],id:'act-'+i,institucion:'<script>Actor '+i+'</script>'}));
-  const m = await montar('mapa',false,{actores:lista}); const q = m.contenedor.todos().find(n => n.dataset.cuadrante === estrategico);
-  assert.equal(q.todos().filter(n => n.tagName === 'BUTTON').length,180); assert.ok(!m.contenedor.todos().some(n => n.tagName === 'SCRIPT'));
+test('E24: filtros combinables, posiciones mixtas y autoridades ordenadas', async () => {
+  const m = await montar('mapa',true,{actores:muestra()}); await cuadro(m).onclick();
+  const nombres = () => tarjetas(m).map(n => n.children[1].textContent);
+  assert.deepEqual(nombres(),['Organización Internacional','Organización Nube','Organización Regional','Organización Local','Organización Sin orden','Organización Aula']);
+  const favorable = buscar(panel(m),'2 Favorables'), neutral = buscar(panel(m),'4 Neutrales');
+  favorable.onclick(); assert.equal(favorable.attrs['aria-pressed'],'true'); assert.deepEqual(nombres(),['Organización Internacional','Organización Nube']);
+  neutral.onclick(); assert.equal(nombres().length,5);
+  favorable.onclick(); assert.ok(nombres().includes('Organización Nube')); assert.equal(nombres().length,4);
+  const select = panel(m).todos().find(n => n.tagName === 'SELECT'); select.value = 'Academia'; select.onchange(); assert.deepEqual(nombres(),['Organización Aula']);
+  neutral.onclick(); assert.deepEqual(nombres(),['Organización Aula']);
+  favorable.onclick(); assert.equal(nombres().length,0); assert.match(panel(m).textContent,/No hay organizaciones/);
+  select.value = ''; select.onchange(); assert.equal(nombres().length,2);
+});
+test('E24: ficha completa, contactos, intensidad, detalle plegado y foco de ventanas apiladas', async () => {
+  const lista = muestra(); lista[0].nivel_ajustado = activa; lista[0].motivo_ajuste = 'Decisión de prueba';
+  const m = await montar('mapa',true,{actores:lista,'actores-contactos':[{id:'a',nombre:'Persona de ejemplo',telefono:'000000',correo:'persona@example.test',ejemplo:true}]});
+  const q = cuadro(m); q.focus(); await q.onclick(); const lateral = panel(m);
+  const tarjeta = tarjetas(m).find(n => n.textContent.includes('Organización Nube')); tarjeta.focus(); tarjeta.onclick();
+  const ficha = panel(m); assert.notEqual(ficha,lateral); assert.equal(lateral.parent.inert,true);
+  assert.match(ficha.textContent,/2 a 5/); assert.match(ficha.textContent,/4 · Alta/); assert.match(ficha.textContent,/Mixta/);
+  assert.match(ficha.textContent,/1 favorable · 1 neutral · 1 desfavorable/);
+  assert.equal(ficha.textContent.split('Texto único').length-1,1);
+  assert.match(ficha.textContent,/Persona de ejemplo.*Dato de ejemplo/); assert.match(ficha.textContent,/No registrado/); assert.match(ficha.textContent,/000000 persona@example.test/);
+  const detalle = ficha.todos().find(n => n.tagName === 'DETAILS'); assert.ok(!detalle.open); assert.match(detalle.textContent,/Ajustado: Decisión de prueba/); assert.match(detalle.textContent,/⚠ Alerta/);
+  assert.ok(detalle.todos().some(n => n.tagName === 'TH' && n.title?.includes('1:')));
+  let atrapado = false; m.document.eventos.keydown({key:'Tab',shiftKey:true,preventDefault(){atrapado=true;}}); assert.equal(atrapado,true);
+  escape(m); assert.equal(panel(m),lateral); assert.equal(m.document.activeElement,tarjeta); assert.equal(lateral.parent.inert,undefined);
+  escape(m); assert.equal(panel(m),undefined); assert.equal(m.document.activeElement,q); assert.equal(m.contenedor.inert,undefined);
+  await q.onclick(); m.salir(); assert.equal(panel(m),undefined); assert.equal(m.document.eventos.keydown,undefined);
+});
+test('E24: resumen conserva seis categorías y posiciones superpuestas', async () => {
+  const m = await montar('mapa',false,{actores:muestra()}); await centro(m).onclick();
+  assert.match(panel(m).textContent,/6 organizaciones/);
+  for (const nombre of ['Autoridades','Comunidades y asociaciones','Gremios','Academia','Proveedores','Medios de comunicación']) assert.match(panel(m).textContent,new RegExp(nombre));
+  assert.match(panel(m).textContent,/0\s*Gremios · 0 actores/); assert.match(panel(m).textContent,/1\s*Academia · 1 actor\b/);
+  assert.match(panel(m).textContent,/2\s*Favorables/); assert.match(panel(m).textContent,/4 Neutrales/); assert.match(panel(m).textContent,/2 Desfavorables/); assert.match(panel(m).textContent,/1 organización con cargos de distinta posición/);
+});
+test('E24: logos se piden bajo demanda una vez, rechazan SVG y URL', async () => {
+  for (const imagen of ['data:image/svg+xml;base64,PHN2Zz4=','https://example.test/logo.png','data:image/png;base64,YQ==']) {
+    const m = await montar('mapa',true,{actores:muestra(),'actores-logos':[{id:'organizacion-nube',institucion:'Organización Nube',imagen}]});
+    assert.ok(!m.consultas.some(c => c[1] === 'actores-logos')); await cuadro(m).onclick();
+    const img = tarjetas(m).find(n => n.textContent.includes('Organización Nube')).children[0];
+    assert.equal(img.src,imagen.startsWith('data:image/png') ? imagen : 'img/actores/autoridades.svg');
+    escape(m); await centro(m).onclick(); escape(m); await cuadro(m).onclick(); assert.equal(m.consultas.filter(c => c[1] === 'actores-logos').length,1);
+  }
+});
+test('E24: fecha técnica, vacíos, demostrador y DOM seguro', async () => {
+  const m = await montar('mapa',false,{'actores-resumen':[{id:'resumen',fecha_corte:'2026-10-27'}]}); assert.match(m.contenedor.textContent,/Mapeo con corte a octubre de 2026\./); assert.doesNotMatch(m.contenedor.textContent,/27 de octubre/); assert.match(m.contenedor.textContent,/Ley 1581 de 2012/);
+  const sin = await montar(); assert.doesNotMatch(sin.contenedor.textContent,/Mapeo con corte/);
+  for (const permiso of [true,false]) { const v = await montar('mapa',permiso,{actores:[]}); assert.match(v.contenedor.textContent,/aún no tiene actores/); assert.equal(v.contenedor.todos().some(n => n.tagName === 'A'),permiso); }
+  const a = await montar('alimentacion',false); assert.equal(a.consultas.length,0); assert.ok(!form(a.contenedor));
+  const masivo = await montar('mapa',false,{actores:Array.from({length:180},(_,i) => ({...actores()[1],id:'a'+i,institucion:'<script>Ejemplo '+i+'</script>'}))});
+  await cuadro(masivo).onclick(); assert.equal(tarjetas(masivo).length,180); assert.ok(!masivo.document.body.todos().some(n => n.tagName === 'SCRIPT'));
 });
 
-test('Mapa primero, resumen compacto, fichas con tooltip y distribución plegable', async () => {
-  const m = await montar(); const nodos = m.contenedor.todos();
-  assert.equal(m.contenedor.children[0].className,'ka-resumen');
-  assert.ok(nodos.findIndex(n => n.className === 'ka-mapa') < nodos.findIndex(n => n.className === 'ka-filtros'));
-  const q = nodos.find(n => n.dataset.cuadrante === cautelosa), b = q.todos().find(n => n.tagName === 'BUTTON');
-  assert.match(b.title,/JAC · Cargo institucional · Desfavorable · Alerta/);
-  assert.doesNotMatch(b.textContent,/Cargo institucional|Desfavorable|Ajustado/);
-  assert.ok(nodos.some(n => n.tagName === 'SUMMARY' && n.textContent === 'Ver distribución'));
-  assert.equal(nodos.filter(n => n.className === 'ka-eje-influencia').length,1);
-});
-test('Categoría, orden, posición y subgrupo conservan el filtro compartido', async () => {
-  for (const etiqueta of ['Categoría','Orden o alcance','Posición','Subgrupo']) {
-    const m = await montar();
-    const label = m.contenedor.todos().find(n => n.tagName === 'LABEL' && n.textContent.startsWith(etiqueta));
-    assert.ok(label, etiqueta);
-    const select = label.children.find(n => n.tagName === 'SELECT');
-    select.value = 'Sin coincidencias'; select.onchange();
-    assert.equal(m.contenedor.todos().find(n => n.className === 'ka-dato').children[0].textContent,'0');
-    assert.equal(m.contenedor.todos().filter(n => n.className === 'ka-actor').length,0);
-    assert.match(m.contenedor.textContent,/No hay actores con estos filtros/);
+test('E24: esquemas nuevos usan tipos existentes, límites y referencias', async () => {
+  const { default: V } = await import('../public/kit-validacion.js');
+  const nuevo = n => JSON.parse(read('config/esquemas/' + n + '.json'));
+  const contactos = nuevo('actores-contactos');
+  const refs = {actores:new Set(['act-001'])};
+  assert.equal(V.validar({id:'act-001',nombre:'Persona inventada',ejemplo:true},contactos,refs).ok,true);
+  assert.equal(V.validar({id:'act-002'},contactos,refs).ok,false);
+  for (const [campo,max] of [['nombre',120],['telefono',40],['correo',160]]) assert.equal(V.validar({id:'act-001',[campo]:'x'.repeat(max+1)},contactos,refs).ok,false);
+  assert.equal(V.validar({id:'act-001',ejemplo:'sí'},contactos,refs).ok,false);
+  assert.equal(V.validar({id:'resumen',fecha_corte:'2026-02-30'},nuevo('actores-resumen')).ok,false);
+  assert.equal(V.validar({id:'otro',fecha_corte:'2026-10-27'},nuevo('actores-resumen')).ok,false);
+  for (const nombre of ['actores-logos','perfil']) {
+    const e = nuevo(nombre), registro = {id:nombre === 'perfil' ? 'logo' : 'organizacion-ficticia',institucion:'Organización ficticia',imagen:'data:image/png;base64,YQ=='};
+    assert.equal(V.validar(registro,e).ok,true);
+    assert.equal(V.validar({...registro,imagen:'x'.repeat(45001)},e).ok,false);
   }
+});
+
+test('E24: una carga de logos concurrente se comparte y se descarta al salir', async () => {
+  const m = await montar(); let liberar, llamadas = 0;
+  m.datos.listar = async () => { llamadas++; return new Promise(r => { liberar = r; }); };
+  const primero = cuadro(m).onclick(); escape(m); const segundo = centro(m).onclick();
+  assert.equal(llamadas,1); m.salir(); liberar([]); await Promise.all([primero,segundo]);
+  assert.equal(panel(m),undefined); assert.equal(m.document.eventos.keydown,undefined);
+});
+test('E24: ficha de un solo cargo muestra valores únicos y caracterización vacía', async () => {
+  const m = await montar('mapa',true,{actores:[actores()[1]]}); await cuadro(m).onclick(); tarjetas(m)[0].onclick();
+  assert.match(panel(m).textContent,/Impacto 2 · Baja Influencia 4 · Alta Posición Neutral/);
+  assert.match(panel(m).textContent,/Sin caracterización registrada/); assert.doesNotMatch(panel(m).textContent,/Mixta/);
 });
