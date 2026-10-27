@@ -76,7 +76,9 @@ Las reglas de detalle están en `docs/ficha-modulo-i.md` (secciones 3, 4.3 y 6) 
 
 **Datos de prueba:** `tests/fixtures/mapeo-gh-muestra.xlsx` (estructura de Libero), `mapeo-gh-muestra-b.xlsx` (estructura de Santa Ana) y `plantilla-iv-muestra.xlsx`, con datos **inventados** y la estructura real. El resultado esperado está en `tests/fixtures/ESPERADO.md` y el generador en `scripts/generar-fixtures-excel.py`. Úsalos en tus pruebas de contrato y agrega los tuyos.
 
-**Para el desarrollo no necesitas acceso a la base de datos.** Prueba con un `KitDatos` falso en Node o en el navegador. La prueba con la base real la hace Claude al integrar.
+**Tu cuenta:** eres **responsable solo de «Empresa de demostración»** (`empresa-demo`), con datos inventados. La base no te deja leer ni escribir en las demás empresas; eso lo controla la base de datos (RLS), no la pantalla. Así ves la pestaña Alimentación de los Módulos I y IV y pruebas cargas reales sin riesgo. No necesitas claves de Supabase: el sitio usa la clave pública que ya está en `public/config.js`.
+
+**Correrlo en tu computador:** `npm test` para las pruebas, y `python3 -m http.server 8000 -d public` para el sitio, que se abre en http://localhost:8000. Ingresa con tu cuenta, elige el Módulo I o IV y el caso «Empresa de demostración».
 
 ## 4. Cómo se trabaja
 
