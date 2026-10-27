@@ -19,6 +19,16 @@ Nombres y contactos:
 - En «Com. Aso», el nombre se descarta y la vista previa muestra el aviso.
 - Contacto, Correo y Número no aparecen en ningún registro.
 
+## mapeo-gh-muestra-b.xlsx (Módulo I, estructura de Santa Ana)
+
+En esta variante no hay columna «Cargo» (queda vacío, por decisión del 27-oct). La persona está en la columna «Actor». «Dependencia» aparece dos veces: la primera es el área (`dependencia_area`) y la segunda, con escala debajo, es el criterio de 1 a 5.
+
+| Hoja, fila | Institución | Resultado esperado |
+|---|---|---|
+| Ins. Gub., fila 14 | Concejo Municipal de Ejemplo | Orden «Local». Área «Concejal - Partido Inventado». `nombre_servidor` = «Persona Inventada Cinco». Influencia 4 e impacto 3 → Gestión activa calculada; el archivo dice Involucramiento estratégico (un paso arriba) → ajuste con el motivo 5. |
+| Empleados, Contratistas y prove, fila 11 | Transportes Ficticios S.A.S. | Encabezado en la fila 9. Categoría «Empleados, contratistas y proveedores». Subgrupo «Contratistas». 2/3 → Seguimiento periférico. Nombre descartado, con aviso. |
+| Medios de comunicación, fila 14 | Emisora Inventada Estéreo | «Alcance» se guarda en `orden` = «Regional». 3/4 → Gestión cautelosa. Nombre descartado, con aviso. |
+
 ## plantilla-iv-muestra.xlsx (Módulo IV)
 
 | Hoja | Resultado esperado |

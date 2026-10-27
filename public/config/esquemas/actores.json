@@ -46,7 +46,7 @@
     "cargo": {
       "tipo": "texto",
       "etiqueta": "Cargo o rol",
-      "obligatorio": true,
+      "obligatorio": false,
       "max": 250
     },
     "nombre_servidor": {

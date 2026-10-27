@@ -22,7 +22,13 @@ Criterio clave: **mismo resultado por las dos vías.** Un registro cargado por E
 - El encabezado **no** está en la fila 1. Está entre la fila 12 y la 13, según la hoja, y debajo lleva una fila con la escala («Muy Baja(1); Baja(2)…» o «(1-5)»). Hay que buscarlo, no suponerlo.
 - La categoría sale del **nombre de la hoja**, que viene abreviado: «Ins. Gub», «Com. Aso», «Gre. Inv. Sec», «Aca. Ldo», «Proveedores», «Medios de comunicación». Esa equivalencia va en `kit-carga-excel.json`. Las hojas que empiezan por «Comp.» son comparativas y se ignoran.
 - Influencia e Impacto ocupan **dos columnas** bajo un encabezado combinado: el texto («Alta») y el número (4). Si están las dos, manda el número; si no coinciden, es error.
-- No todas las hojas tienen las mismas columnas. Algunas no tienen «Cargo» y otras dividen «Contacto» en Correo y Número. Subgrupo y Orden no existen en el archivo de GH; quedan vacíos.
+- **Cada archivo de GH es distinto, y también cada hoja.** Revisamos dos (Libero y Santa Ana); la muestra `-b` imita el de Santa Ana:
+  - La persona aparece como «Nombre» (Libero) o como «Actor» (Santa Ana). Las dos van a `nombre_servidor`, con la regla de nombres de abajo.
+  - «Cargo» existe en algunas hojas y en otras no. **Si no está, queda vacío** (decisión del 27-oct; ya no es obligatorio).
+  - «Orden» y «Alcance» van a `orden`. «Subgrupo de interés» va a `subgrupo`. «Nivel educativo» (Academia) se ignora.
+  - «Contacto» se divide a veces en Correo y Número, o en Correo y Teléfono. Se descarta siempre.
+  - Los nombres de hoja vienen con punto final o recortados: «Ins. Gub.», «Emp. Gre.», «Empleados, Contratistas y prove». Compáralos sin tildes, sin puntos y sin mayúsculas.
+  - El encabezado puede estar en la fila 9, 12 o 13.
 - Hay celdas combinadas en Institución, cuando una institución abarca varias filas. La celda combinada aplica a todas sus filas.
 - «Nivel de relacionamiento» es el nivel que puso GH. Se compara con el calculado según la regla de ajuste de abajo.
 - Lo que se espera de cada fila de la muestra está en `tests/fixtures/ESPERADO.md`.
@@ -68,7 +74,7 @@ Las reglas de detalle están en `docs/ficha-modulo-i.md` (secciones 3, 4.3 y 6) 
 - `KitRiesgos.esquema(base, coleccion, { derechos, riesgos, cfg, empresa })` y `KitRiesgos.preparar(coleccion, registro, { esquema, cfg, listas, modo: 'carga', fila })`. Ya están en `kit-riesgos.js`, y el formulario usa las mismas. `preparar` devuelve `{ ok, registro, errores, existe }`; `existe` te dice si es nuevo o una actualización. Ver `tests/kit-contrato.test.mjs`.
 - `KitDatos.guardarVarios(empresa, coleccion, registros)`
 
-**Datos de prueba:** `tests/fixtures/mapeo-gh-muestra.xlsx` y `plantilla-iv-muestra.xlsx`, con datos **inventados** y la estructura real. El resultado esperado está en `tests/fixtures/ESPERADO.md` y el generador en `scripts/generar-fixtures-excel.py`. Úsalos en tus pruebas de contrato y agrega los tuyos.
+**Datos de prueba:** `tests/fixtures/mapeo-gh-muestra.xlsx` (estructura de Libero), `mapeo-gh-muestra-b.xlsx` (estructura de Santa Ana) y `plantilla-iv-muestra.xlsx`, con datos **inventados** y la estructura real. El resultado esperado está en `tests/fixtures/ESPERADO.md` y el generador en `scripts/generar-fixtures-excel.py`. Úsalos en tus pruebas de contrato y agrega los tuyos.
 
 **Para el desarrollo no necesitas acceso a la base de datos.** Prueba con un `KitDatos` falso en Node o en el navegador. La prueba con la base real la hace Claude al integrar.
 
@@ -86,12 +92,14 @@ Las reglas de detalle están en `docs/ficha-modulo-i.md` (secciones 3, 4.3 y 6) 
 
 ## 5. Listo significa
 
-- [ ] Un Excel de mapeo de muestra carga en el Módulo I y produce exactamente los registros esperados (prueba de contrato).
+- [ ] Los dos Excel de mapeo de muestra cargan en el Módulo I y producen exactamente los registros esperados (prueba de contrato).
 - [ ] La plantilla del Módulo IV se descarga desde Alimentación, se llena y carga sus 5 hojas, respetando las referencias entre hojas: una validación apunta a un riesgo y a un grupo que existen en la base o en el mismo archivo.
 - [ ] Los errores se muestran por hoja y fila, y nada se guarda sin confirmar.
 - [ ] Subir dos veces el mismo archivo no duplica registros.
 - [ ] Un registro cargado por Excel es idéntico al del formulario (prueba).
 - [ ] Se usa a 390 px de ancho y con teclado. Funciona en tema claro y oscuro.
 - [ ] `npm test` está en verde y el PR está abierto el jueves a las 12:00.
+
+**En la demo del viernes** la carga se muestra con un Excel inventado sobre una empresa de demostración, no sobre Libero ni Santa Ana. Las caracterizaciones reales pueden traer nombres de líderes comunitarios dentro del texto, y eso no se puede filtrar de forma automática.
 
 **Fuera de alcance:** exportar a Excel, cargas en los Módulos II y III, y editar el Excel dentro de la plataforma.

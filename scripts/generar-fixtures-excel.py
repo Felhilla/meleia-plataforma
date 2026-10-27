@@ -52,6 +52,30 @@ def mapeo_gh():
     ws.merge_cells('D12:E12'); ws.merge_cells('K12:L12'); ws.merge_cells('M12:N12')
     wb.save(SALIDA / 'mapeo-gh-muestra.xlsx')
 
+def mapeo_gh_variante_b():
+    """Estructura del mapeo de Santa Ana: sin «Cargo», la persona en «Actor», «Dependencia» dos veces,
+    «Orden»/«Alcance» y «Subgrupo de interés», encabezado en la fila 9 o 12 y nombres de hoja con punto o recortados."""
+    wb = Workbook(); wb.active.title = 'Índice'; wb.create_sheet('Metodología')
+    escala = [('Dependencia', ESCALA_15), ('Tensión', ESCALA_15), ('Responsabilidad', ESCALA_15),
+              ('Influencia', 'Muy Baja; Baja; Media; Alta; Muy Alta'), (None, '(1-5)'), ('Impacto', 'Muy Bajo; Bajo; Medio; Alto; Muy Alto'), (None, '(1-5)'), ('Nivel de relacionamiento', None)]
+    def hoja(titulo, fila, columnas, filas):
+        ws = wb.create_sheet(titulo)
+        for i, (cab, sub) in enumerate(columnas, start=2):
+            if cab: ws.cell(fila, i, cab)
+            if sub: ws.cell(fila + 1, i, sub)
+        for j, f in enumerate(filas, start=fila + 2):
+            for i, v in enumerate(f, start=2): ws.cell(j, i, v)
+    hoja('Ins. Gub.', 12, [('Orden', None), ('Institución', None), ('Dependencia', None), ('Actor', None), ('Contacto', 'Correo'), (None, 'Teléfono'), ('Caracterización', None), ('Posición', None)] + escala, [
+        ['Local', 'Concejo Municipal de Ejemplo', 'Concejal - Partido Inventado', 'Persona Inventada Cinco', 'concejal@ejemplo.test', '3000000002', 'Corporación municipal.', 'Neutral', 'Baja(2)', 'Baja(2)', 'Alta(4)', 'Alta', 4, 'Medio', 3, 'Involucramiento Estratégico'],
+    ])
+    hoja('Empleados, Contratistas y prove', 9, [('Subgrupo de interés', None), ('Institución', None), ('Dependencia', None), ('Actor', None), ('Caracterización', None), ('Posición', None)] + escala, [
+        ['Contratistas', 'Transportes Ficticios S.A.S.', 'Operaciones', 'Persona Inventada Seis', 'Contratista de transporte.', 'Favorable', 'Alta(4)', 'Muy Baja(1)', 'Media(3)', 'Baja', 2, 'Medio', 3, 'Seguimiento Periférico'],
+    ])
+    hoja('Medios de comunicación', 12, [('Alcance', None), ('Institución', None), ('Actor', None), ('Caracterización', None), ('Posición', None)] + escala, [
+        ['Regional', 'Emisora Inventada Estéreo', 'Persona Inventada Siete', 'Emisora regional.', 'Neutral', 'Baja(2)', 'Baja(2)', 'Baja(2)', 'Media', 3, 'Alto', 4, 'Gestión Cautelosa'],
+    ])
+    wb.save(SALIDA / 'mapeo-gh-muestra-b.xlsx')
+
 def plantilla_iv():
     hojas = [('Riesgos', 'riesgos'), ('Calificación técnica', 'riesgos-calificacion'), ('Grupos', 'riesgos-grupos'), ('Validaciones', 'riesgos-validaciones'), ('Medidas', 'riesgos-medidas')]
     derechos = list(json.loads((RAIZ / 'public/data/derechos.json').read_text())['derechos'])
@@ -72,4 +96,4 @@ def plantilla_iv():
     wb.save(SALIDA / 'plantilla-iv-muestra.xlsx')
 
 if __name__ == '__main__':
-    SALIDA.mkdir(parents=True, exist_ok=True); mapeo_gh(); plantilla_iv(); print('OK', SALIDA)
+    SALIDA.mkdir(parents=True, exist_ok=True); mapeo_gh(); mapeo_gh_variante_b(); plantilla_iv(); print('OK', SALIDA)
