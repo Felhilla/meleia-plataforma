@@ -1,0 +1,41 @@
+{
+  "titulo": "Resultados",
+  "campos": {
+    "id": {
+      "tipo": "texto",
+      "etiqueta": "Código",
+      "max": 80,
+      "obligatorio": true
+    },
+    "tipo": {
+      "tipo": "lista",
+      "etiqueta": "Tipo",
+      "valores": [
+        "titular",
+        "mensaje"
+      ],
+      "multiple": false,
+      "obligatorio": true
+    },
+    "tema": {
+      "tipo": "texto",
+      "etiqueta": "Tema",
+      "obligatorio": false
+    },
+    "titulo": {
+      "tipo": "texto",
+      "etiqueta": "Título",
+      "obligatorio": true
+    },
+    "texto": {
+      "tipo": "texto-largo",
+      "etiqueta": "Mensaje"
+    },
+    "orden": {
+      "tipo": "entero",
+      "etiqueta": "Orden",
+      "min": 0,
+      "obligatorio": true
+    }
+  }
+}

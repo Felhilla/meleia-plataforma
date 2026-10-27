@@ -15,12 +15,12 @@ test('portada global y rutas desconocidas sin empresa', () => {
   assert.equal(App.resolverRuta('#/', {}, []).clave, 'portada');
 });
 test('rutas nuevas, primer caso y redirecciones antiguas', () => {
-  for (const ruta of ['actores/mapa', 'actores/alimentacion', 'ddhh', 'materialidad', 'riesgos/matriz', 'riesgos/medidas', 'riesgos/alimentacion']) {
+  for (const ruta of ['actores/mapa', 'actores/alimentacion', 'ddhh/resultados', 'ddhh/estandares', 'ddhh/alimentacion', 'materialidad/doble', 'materialidad/impacto', 'materialidad/financiera', 'materialidad/alimentacion', 'riesgos/matriz', 'riesgos/medidas', 'riesgos/alimentacion']) {
     const [modulo,sub] = ruta.split('/'), nueva = '#/' + modulo + '/uno' + (sub ? '/' + sub : '');
     assert.equal(resolver(nueva).clave, ruta); assert.equal(resolver('#/e/uno/' + ruta).hash, nueva);
   }
   assert.equal(App.resolverRuta('#/actores', {}, muestras).hash, '#/actores/libero-cobre/mapa');
-  assert.equal(App.resolverRuta('#/ddhh', {}, muestras).hash, '#/ddhh/solgas');
+  assert.equal(App.resolverRuta('#/ddhh', {}, muestras).hash, '#/ddhh/solgas/resultados');
 });
 test('casos: muestras configuradas y clientes reales visibles en todos los módulos', () => {
   for (const m of App.modulos) {
@@ -31,7 +31,7 @@ test('casos: muestras configuradas y clientes reales visibles en todos los módu
   assert.equal(App.resolverRuta('#/actores/solgas', {}, muestras).hash, '#/');
 });
 test('Alimentación exige permiso sobre la empresa del caso', () => {
-  for (const modulo of ['actores','riesgos']) {
+  for (const modulo of ['actores','ddhh','materialidad','riesgos']) {
     assert.ok(!App.pestanas(modulo, 'demostrador').includes('alimentacion'));
     assert.equal(resolver('#/' + modulo + '/dos/alimentacion').hash, '#/');
     assert.equal(App.resolverRuta('#/' + modulo + '/uno/alimentacion', {}, empresas, () => false).hash, '#/');
@@ -42,7 +42,7 @@ test('entrada del Kit no carga el relato, conserva SDK fijo y orden defer', () =
   assert.match(html, /<title>GH Studio × Meleia · Kit<\/title>/);
   assert.doesNotMatch(html, /src="vista-|caso\.json|src="app.js"|api-supabase.js/);
   const scripts = [...html.matchAll(/<script defer src="([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'kit-armazon.js', 'kit-riesgos.js', 'kit-vista-riesgos.js', 'kit-actores.js', 'kit-vista-actores.js']);
+  assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'kit-armazon.js', 'kit-riesgos.js', 'kit-vista-riesgos.js', 'kit-actores.js', 'kit-vista-actores.js', 'kit-vista-ddhh-modelo.js', 'kit-vista-ddhh-motor.js', 'kit-vista-ddhh-comun.js', 'kit-vista-ddhh.js', 'kit-vista-materialidad-motor.js', 'kit-vista-materialidad.js']);
 });
 
 // DOM mínimo: prueba los flujos reales del armazón sin red ni dependencias de navegador.
@@ -116,7 +116,7 @@ test('DOM: contrato de vistas, limpieza y respuesta tardía de otra empresa', as
   assert.equal(limpiado,true); assert.equal(params.vigente(),false); assert.doesNotMatch(m.nodos.contenido.textContent,/NO MOSTRAR/);
 });
 test('DOM: error de vista visible y sesión revocada vuelve al ingreso', async () => {
-  const m = await montar(); m.root.App.registrarVista('ddhh',{render(){throw Error('No hay conexión con la base de datos');}});
+  const m = await montar(); m.root.App.registrarVista('ddhh/resultados',{render(){throw Error('No hay conexión con la base de datos');}});
   m.root.location.hash = '#/ddhh/uno'; await m.root.App.actualizarVista();
   assert.match(m.nodos.contenido.querySelector('[role="alert"]').textContent,/No hay conexión/);
   m.datos.salir(); assert.equal(m.root.location.hash,'#/ingresar');

@@ -1,0 +1,44 @@
+{
+  "titulo": "Componentes",
+  "campos": {
+    "id": {
+      "tipo": "texto",
+      "etiqueta": "Código",
+      "max": 80,
+      "obligatorio": true
+    },
+    "evaluacion": {
+      "tipo": "referencia",
+      "etiqueta": "Evaluación",
+      "coleccion": "ddhh-evaluaciones",
+      "obligatorio": true
+    },
+    "componente": {
+      "tipo": "lista",
+      "etiqueta": "Componente",
+      "valores": [
+        "etapa-ocde-1-c1",
+        "etapa-ocde-1-c2",
+        "etapa-ocde-2-c1",
+        "etapa-ocde-2-c2",
+        "etapa-ocde-2-c3",
+        "etapa-ocde-2-c4",
+        "etapa-ocde-3-c1",
+        "etapa-ocde-3-c2",
+        "etapa-ocde-4-c1",
+        "etapa-ocde-4-c2",
+        "etapa-ocde-5-c1",
+        "etapa-ocde-6-c1"
+      ],
+      "multiple": false,
+      "obligatorio": true
+    },
+    "calificacion": {
+      "tipo": "decimal",
+      "etiqueta": "Calificación",
+      "min": 0,
+      "max": 5,
+      "obligatorio": true
+    }
+  }
+}

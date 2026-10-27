@@ -1,0 +1,23 @@
+{
+  "public/config/empresa-config.json": {
+    "sha256": "559655341ce686f57a8d1bc88ea02f5147aa12d42348f2c9e16829e97510f2c7"
+  },
+  "public/data/riesgos.json": {
+    "sha256": "0650eaba4ae4661a3d7f69ffb0bbc3cabe6ecf0ae5d19f6cb185472e83959d8b"
+  },
+  "public/data/caso.json": {
+    "sha256": "65fc185169380e8a5b7fa1ed8c073d186bf1f9c9fcc551db9bacf17192b5e096"
+  },
+  "public/data/estandares.json": {
+    "sha256": "5efa91a877028bba6b9c09a9fa3a18115978930807178c9c165a3f82a03d4f33"
+  },
+  "public/data/plan.json": {
+    "sha256": "a87a69fc285be67801a4b5e048737dedcf4777fec76c433fe748ae7626a8bcca"
+  },
+  "public/config/kit-modulos.json": {
+    "identificadores": 2
+  },
+  "tests/kit-armazon.test.mjs": {
+    "identificadores": 5
+  }
+}

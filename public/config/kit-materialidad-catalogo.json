@@ -1,0 +1,141 @@
+{
+  "marco": "GRI 3: Temas Materiales 2021",
+  "sasb": "SASB · Gas Utilities & Distributors",
+  "escala": {
+    "minimo": 0,
+    "maximo": 5,
+    "niveles": [
+      {
+        "valor": 0,
+        "etiqueta": "Nulo",
+        "descripcion": "No existe afectación o no es probable que se produzca",
+        "origen": "ilustrativo"
+      },
+      {
+        "valor": 1,
+        "etiqueta": "Muy bajo",
+        "descripcion": "La afectación o probabilidad es mínima o insignificante",
+        "origen": "ilustrativo"
+      },
+      {
+        "valor": 2,
+        "etiqueta": "Bajo",
+        "descripcion": "La afectación o probabilidad es limitada y manejable",
+        "origen": "ilustrativo"
+      },
+      {
+        "valor": 3,
+        "etiqueta": "Medio",
+        "descripcion": "La afectación o probabilidad es moderada y requiere atención",
+        "origen": "ilustrativo"
+      },
+      {
+        "valor": 4,
+        "etiqueta": "Alto",
+        "descripcion": "La afectación o probabilidad es significativa y exige gestión prioritaria",
+        "origen": "ilustrativo"
+      },
+      {
+        "valor": 5,
+        "etiqueta": "Muy alto",
+        "descripcion": "La afectación o probabilidad es crítica y demanda acción inmediata",
+        "origen": "ilustrativo"
+      }
+    ]
+  },
+  "impacto": {
+    "severidad": [
+      "escala",
+      "alcance",
+      "irremediabilidad"
+    ],
+    "agregacion_severidad": "promedio",
+    "importancia": "promedio(severidad, probabilidad)",
+    "agregacion_grupos": "promedio"
+  },
+  "financiera": {
+    "variables": [
+      "rentabilidad",
+      "gasto_operativo"
+    ],
+    "agregacion": "promedio",
+    "agregacion_evaluadores": "promedio"
+  },
+  "umbral": {
+    "metodo": "promedio_universo",
+    "valor_fijo": null,
+    "regla": "doble_entrada",
+    "nota": "El umbral de cada dimensión es el promedio de los puntajes de todos los temas evaluados. Un tema es material si supera el umbral en al menos una dimensión."
+  },
+  "cuadrantes": [
+    {
+      "id": "doble",
+      "etiqueta": "Material en ambas dimensiones",
+      "origen": "ilustrativo"
+    },
+    {
+      "id": "impacto",
+      "etiqueta": "Material por impacto",
+      "origen": "ilustrativo"
+    },
+    {
+      "id": "financiera",
+      "etiqueta": "Material financiero",
+      "origen": "ilustrativo"
+    },
+    {
+      "id": "no-material",
+      "etiqueta": "No material",
+      "origen": "ilustrativo"
+    }
+  ],
+  "origen": "ilustrativo",
+  "grupos": [
+    {
+      "id": "gi-colaboradores",
+      "nombre": "Colaboradores de planta y administrativos"
+    },
+    {
+      "id": "gi-distribuidores",
+      "nombre": "Distribuidores y transportistas"
+    },
+    {
+      "id": "gi-proveedores",
+      "nombre": "Proveedores y contratistas"
+    },
+    {
+      "id": "gi-clientes",
+      "nombre": "Clientes de hogares y comerciales"
+    },
+    {
+      "id": "gi-comunidades",
+      "nombre": "Comunidades vecinas a plantas y rutas"
+    },
+    {
+      "id": "gi-autoridades",
+      "nombre": "Autoridades del sector y locales"
+    }
+  ],
+  "evaluadores_financieros": [
+    {
+      "id": "ef-finanzas",
+      "nombre": "Finanzas"
+    },
+    {
+      "id": "ef-comercial",
+      "nombre": "Comercial"
+    },
+    {
+      "id": "ef-operaciones",
+      "nombre": "Operaciones"
+    },
+    {
+      "id": "ef-sostenibilidad",
+      "nombre": "Sostenibilidad"
+    },
+    {
+      "id": "ef-personas",
+      "nombre": "Gerencia de Personas"
+    }
+  ]
+}
