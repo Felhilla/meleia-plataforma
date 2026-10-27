@@ -64,6 +64,13 @@ test('SheetJS lee los Excel de muestra', () => {
   const XLSX = createRequire(import.meta.url)('../public/vendor/xlsx.full.min.js');
   const mapeo = XLSX.read(readFileSync(new URL('./fixtures/mapeo-gh-muestra.xlsx', import.meta.url)));
   assert.deepEqual(mapeo.SheetNames, ['Índice', 'Metodología', 'Comp. Ins. Gub', 'Com. Aso', 'Ins. Gub']);
+  const b = XLSX.read(readFileSync(new URL('./fixtures/mapeo-gh-muestra-b.xlsx', import.meta.url)));
+  assert.deepEqual(b.SheetNames, ['Índice', 'Metodología', 'Ins. Gub.', 'Empleados, Contratistas y prove', 'Medios de comunicación']);
   const iv = XLSX.read(readFileSync(new URL('./fixtures/plantilla-iv-muestra.xlsx', import.meta.url)));
   assert.deepEqual(iv.SheetNames, ['Riesgos', 'Calificación técnica', 'Grupos', 'Validaciones', 'Medidas']);
+});
+
+test('Cargo es opcional: un actor sin cargo es válido', () => {
+  const { cargo, ...sinCargo } = actor;
+  assert.equal(A.validar(sinCargo, cfgA, esqA, 'carga').ok, true);
 });

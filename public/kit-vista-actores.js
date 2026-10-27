@@ -111,7 +111,7 @@
         const cantidad = el('p', null, 'ka-cantidad'); cantidad.append(el('strong', numero(miembros.length)), el('span', ` ${miembros.length === 1 ? 'actor' : 'actores'} · ${numero(ind.total ? miembros.length / ind.total * 100 : 0)} %`)); q.append(cantidad);
         miembros.forEach(a => {
           const alerta = K.alerta(a, ctx.cfg), b = boton(null, () => ficha(ctx, a));
-          b.className = 'ka-actor'; b.title = `${a.institucion} · ${a.cargo} · ${a.posicion}${alerta ? ' · Alerta' : ''}`; b.setAttribute('aria-label', b.title);
+          b.className = 'ka-actor'; b.title = [a.institucion, a.cargo, a.posicion, alerta && 'Alerta'].filter(Boolean).join(' · '); b.setAttribute('aria-label', b.title);
           const punto = el('span', null, 'ka-punto ka-' + a.posicion.toLowerCase()); punto.setAttribute('aria-hidden', 'true');
           b.append(punto, el('span', a.institucion, 'ka-institucion'));
           if (alerta) { const icono = el('span', '⚠', 'ka-alerta'); icono.setAttribute('aria-hidden', 'true'); b.append(icono); } fichas.append(b);
