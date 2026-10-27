@@ -19,5 +19,8 @@
   },
   "tests/kit-armazon.test.mjs": {
     "identificadores": 5
+  },
+  "public/config/kit-credenciales.json": {
+    "identificadores": 1
   }
 }

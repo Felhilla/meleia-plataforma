@@ -39,7 +39,7 @@ test('Alimentación exige permiso sobre la empresa del caso', () => {
 });
 test('entrada del Kit no carga el relato, conserva SDK fijo y orden defer', () => {
   const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
-  assert.match(html, /<title>GH Studio × Meleia · Kit<\/title>/);
+  assert.match(html, /<title>GH Estudio × Meleia · Kit<\/title>/);
   assert.doesNotMatch(html, /src="vista-|caso\.json|src="app.js"|api-supabase.js/);
   const scripts = [...html.matchAll(/<script defer src="([^"]+)"/g)].map(m => m[1]);
   assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'kit-armazon.js', 'kit-riesgos.js', 'kit-vista-riesgos.js', 'kit-actores.js', 'kit-vista-actores.js', 'kit-vista-ddhh-modelo.js', 'kit-vista-ddhh-motor.js', 'kit-vista-ddhh-comun.js', 'kit-vista-ddhh.js', 'kit-vista-materialidad-motor.js', 'kit-vista-materialidad.js']);
@@ -81,9 +81,12 @@ test('DOM: ingreso accesible, soporte, autenticación y salida', async () => {
 });
 test('DOM: portada global no consulta colecciones ni muestra selector global', async () => {
   const m = await montar();
-  assert.match(m.nodos.contenido.textContent, /GH Studio × Meleia/);
-  assert.match(m.nodos.contenido.textContent, /Credenciales.*Próximamente/);
-  assert.equal(m.nodos.contenido.todos().filter(n => n.tag === 'article').length, 4);
+  assert.match(m.nodos.contenido.textContent, /GH Estudio × Meleia/);
+  assert.match(m.nodos.contenido.textContent, /Laboratorio de ideas para la gestión en sostenibilidad\./);
+  // Home (boceto 27-oct): Credenciales es un botón cerrado; las cuatro tarjetas son enlaces a los módulos.
+  const boton = m.nodos.contenido.todos().find(n => n.className === 'kit-credenciales-boton');
+  assert.equal(boton.attrs['aria-expanded'], 'false');
+  assert.deepEqual(m.nodos.contenido.todos().filter(n => n.className === 'kit-modulo').map(n => n.href), ['#/actores', '#/ddhh', '#/materialidad', '#/riesgos']);
   assert.equal(m.consultas.length, 0); assert.equal(m.nodos['kit-cuenta'].querySelector('select'), undefined);
   assert.match(m.nodos['kit-cuenta'].textContent, /Responsable/);
 });

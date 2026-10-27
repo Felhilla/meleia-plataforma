@@ -1,0 +1,24 @@
+{
+  "titulo": "Credenciales",
+  "personas": [
+    {
+      "nombre": "Germán Hillón",
+      "foto": "img/equipo/german.jpg",
+      "cargo": "Asesor sénior en sostenibilidad y ESG",
+      "experiencia": "Abogado y magíster en Derecho con énfasis en Recursos Naturales (Universidad Externado de Colombia). Más de 16 años liderando procesos de sostenibilidad, debida diligencia empresarial y gestión ESG. Ha trabajado con más de 300 organizaciones públicas y privadas en Colombia y el exterior, como Ecopetrol, BID, PNUD, GIZ, USAID, Argos y Promigas."
+    },
+    {
+      "nombre": "Julio Raúl Ochoa",
+      "foto": "img/equipo/julio.jpg",
+      "cargo": "Coordinador de proyectos de sostenibilidad",
+      "experiencia": "Más de 15 años articulando gestión pública, cooperación internacional y sector privado. Ha estructurado proyectos de ciencia, tecnología e innovación por más de 50.000 millones de pesos y gestionado alianzas con actores nacionales e internacionales."
+    },
+    {
+      "nombre": "Felipe Hillón",
+      "foto": "img/equipo/felipe.jpg",
+      "cargo": "Profesional en sostenibilidad y comunicación",
+      "experiencia": "Comunicador social y periodista (Universidad Externado de Colombia), con experiencia en sostenibilidad, debida diligencia empresarial y derechos humanos: relacionamiento comunitario, estándares internacionales, materialidad e informes de sostenibilidad. Ha acompañado a organizaciones como Solgas, Sociedad Portuaria El Dique, Proeléctrica, Cementos Pacasmayo y la Universidad EAN."
+    },
+    { "nombre": "Sebastián Hillón" }
+  ]
+}
