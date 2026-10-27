@@ -14,7 +14,10 @@ Hojas ignoradas: «Índice», «Metodología» y «Comp. Ins. Gub» (todas las q
 | Ins. Gub, fila 14 | Alcaldía Municipal de Ejemplo | 5/4 → Involucramiento estratégico. **Sin columna Cargo**: ver la decisión pendiente en la ficha E20. |
 | Ins. Gub, fila 15 | Gobernación Ficticia | 3/2 → Seguimiento periférico calculado. El archivo dice «Gestión Activa», un paso arriba: entra como ajuste con el motivo 5 («Ajuste del mapeo original»). |
 
-En todos los registros guardados **no** aparecen Nombre, Contacto, Correo ni Número.
+Nombres y contactos:
+- En «Ins. Gub» (servidores públicos), la columna Nombre se guarda en `nombre_servidor`: «Persona Inventada Tres» y «Persona Inventada Cuatro».
+- En «Com. Aso», el nombre se descarta y la vista previa muestra el aviso.
+- Contacto, Correo y Número no aparecen en ningún registro.
 
 ## plantilla-iv-muestra.xlsx (Módulo IV)
 

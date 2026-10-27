@@ -34,7 +34,10 @@ Las reglas de detalle están en `docs/ficha-modulo-i.md` (secciones 3, 4.3 y 6) 
 - **Módulo I:** «Dependencia» aparece dos veces en algunas hojas (el área de la institución y el criterio de 1 a 5). Se distinguen por la fila de escala que va debajo del encabezado.
 - **Módulo I:** los niveles se aceptan como texto («Muy Baja», «medio», «Alta») o como número del 1 al 5. Eso ya lo resuelve `KitValidacion`; no lo reprogrames.
 - **Módulo I:** si el nivel del archivo está un paso arriba del calculado, entra como ajuste con el motivo 5 (origen `'carga'`). Si está más de un paso arriba, o más abajo, la vista previa lo señala y se usa el nivel calculado.
-- **Módulo I:** las columnas de nombres y contactos de personas **se descartan siempre**. `KitActores.validar` ya filtra con una lista permitida; no la saltes.
+- **Módulo I · nombres (decisión del 27-oct):**
+  - La columna «Nombre» solo se conserva en la categoría **Instituciones gubernamentales** (servidores públicos), en el campo `nombre_servidor`. En cualquier otra categoría, `KitActores.validar(..., 'carga')` la descarta y devuelve un aviso en `avisos`; muéstralo en la vista previa.
+  - Los **contactos** (Contacto, Correo, Número) se descartan siempre. No mapees esas columnas.
+  - `fecha_verificacion` no viene en el Excel de GH. Se llena después, al verificar el nombre.
 - **Volver a subir el mismo archivo no duplica.**
   - Actores: un actor ya existente (misma categoría + institución + cargo, sin importar tildes ni mayúsculas) conserva su `id` y se actualiza. Uno nuevo recibe `act-` + UUID.
   - Riesgos y medidas: el `id` sale del código, como en el formulario.

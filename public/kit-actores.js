@@ -27,6 +27,13 @@
     if (actor.id !== undefined) limpio.id = actor.id;
     const r = V.validar(limpio, esquema);
     r.errores.push(...validarAjuste(r.registro, cfg, esquema, origen).errores);
+    r.avisos = [];
+    // Solo los servidores públicos llevan nombre. En la carga se descarta en silencio; en el formulario es error.
+    if ((r.registro.nombre_servidor || r.registro.fecha_verificacion) && !(cfg.nombreServidor?.categorias || []).includes(r.registro.categoria)) {
+      if (origen === 'carga') { delete r.registro.nombre_servidor; delete r.registro.fecha_verificacion; r.avisos.push('Nombre descartado: solo se registra el de servidores públicos.'); }
+      else r.errores.push({ campo: 'nombre_servidor', mensaje: 'Solo se registra el nombre de servidores públicos (Instituciones gubernamentales).' });
+    }
+    if (r.registro.fecha_verificacion && !r.registro.nombre_servidor) r.errores.push({ campo: 'fecha_verificacion', mensaje: 'La fecha de verificación va solo con un nombre.' });
     if (actor.id !== undefined && !/^act-[a-z0-9]+(?:-[a-z0-9]+)*$/.test(actor.id)) r.errores.push({ campo: 'institucion', mensaje: 'El identificador del actor no es válido.' });
     r.ok = !r.errores.length; return r;
   }

@@ -39,3 +39,17 @@ test('Contrato: errores con hoja y fila, y referencias que no existen', () => {
   assert.ok(r.errores.every(e => e.mensaje.includes(', fila 12: ')));
   assert.ok(r.errores.some(e => e.campo === 'riesgo'));
 });
+
+import A from '../public/kit-actores.js';
+const cfgA = leer('config/kit-actores-config.json'), esqA = leer('config/esquemas/actores.json');
+const actor = { categoria: 'Instituciones gubernamentales', institucion: 'Alcaldía de Ejemplo', cargo: 'Alcalde', posicion: 'Neutral', dependencia: 3, tension: 2, responsabilidad: 5, influencia: 5, impacto: 4, nombre_servidor: 'Persona Inventada', fecha_verificacion: '2026-10-28' };
+test('Nombres: se conservan solo en servidores públicos', () => {
+  const r = A.validar(actor, cfgA, esqA, 'carga');
+  assert.equal(r.ok, true); assert.equal(r.registro.nombre_servidor, 'Persona Inventada');
+});
+test('Nombres: en otra categoría la carga los descarta y el formulario los rechaza', () => {
+  const comunidad = { ...actor, categoria: 'Comunidades y asociaciones', institucion: 'JAC Ejemplo', cargo: 'Presidente' };
+  const c = A.validar(comunidad, cfgA, esqA, 'carga');
+  assert.equal(c.ok, true); assert.equal('nombre_servidor' in c.registro, false); assert.equal('fecha_verificacion' in c.registro, false); assert.equal(c.avisos.length, 1);
+  assert.equal(A.validar(comunidad, cfgA, esqA, 'manual').ok, false);
+});

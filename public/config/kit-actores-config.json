@@ -96,5 +96,11 @@
     "Ajuste del mapeo original (criterio experto GH)"
   ],
   "categoriasPorEmpresa": {},
-  "escalasFuente": "Hoja «Metodología» de los mapeos de actores de GH (AA1000SES), redacción genérica."
+  "escalasFuente": "Hoja «Metodología» de los mapeos de actores de GH (AA1000SES), redacción genérica.",
+  "nombreServidor": {
+    "categorias": [
+      "Instituciones gubernamentales"
+    ],
+    "nota": "Decisión 27-oct (opción A): solo servidores públicos, verificados; comunidades, medios, academia, gremios y proveedores nunca llevan nombre."
+  }
 }

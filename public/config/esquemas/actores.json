@@ -49,6 +49,17 @@
       "obligatorio": true,
       "max": 250
     },
+    "nombre_servidor": {
+      "tipo": "texto",
+      "etiqueta": "Nombre del servidor público",
+      "obligatorio": false,
+      "max": 250
+    },
+    "fecha_verificacion": {
+      "tipo": "fecha",
+      "etiqueta": "Nombre verificado el",
+      "obligatorio": false
+    },
     "caracterizacion": {
       "tipo": "texto-largo",
       "etiqueta": "Caracterización",
