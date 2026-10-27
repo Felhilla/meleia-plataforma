@@ -58,6 +58,7 @@
   }
   function ficha(ctx, a) {
     const p = ctx.dialogo(a.institucion);
+    if (a.nombre_servidor && ctx.cfg.nombreServidor?.categorias.includes(a.categoria)) texto(p, `${ctx.esquema.campos.nombre_servidor.etiqueta}: ${a.nombre_servidor}${a.fecha_verificacion ? ` (verificado el ${a.fecha_verificacion})` : ''}`);
     ['dependencia_area', 'cargo', 'categoria', 'subgrupo', 'orden', 'posicion', 'caracterizacion'].forEach(k => texto(p, `${ctx.esquema.campos[k].etiqueta}: ${a[k] || 'Sin información'}`));
     Object.entries(ctx.cfg.escalas).forEach(([k, definiciones]) => texto(p, `${ctx.esquema.campos[k].etiqueta}: ${K.nivel(a[k]) ?? 'Sin calificar'} · ${definiciones[K.nivel(a[k]) - 1] || ''}`));
     texto(p, 'Nivel calculado: ' + (K.nivelCalculado(a, ctx.cfg) || 'Sin calificar'));

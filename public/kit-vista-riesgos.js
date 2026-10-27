@@ -142,10 +142,8 @@
     [derecho, ambito, prio, validado].forEach(s => { s.onchange = pintar; }); contenedor.append(el('h2', 'Lista priorizada'), filtros, lista); pintar(); return ctx.limpiar;
   }
   async function esquema(ctx, coleccion) {
-    const s = await json('config/esquemas/' + coleccion + '.json');
-    if (coleccion === 'riesgos') s.campos.derecho_humano.valores = Object.keys((await json('data/derechos.json')).derechos);
-    if (coleccion === 'riesgos-medidas') { s.campos.riesgos.valores = ctx.listas.riesgos.map(r => r.id); s.campos.componente.valores = K.componentes(ctx.cfg, ctx.params.empresa).map(c => c.id); }
-    return s;
+    const derechos = coleccion === 'riesgos' ? await json('data/derechos.json') : undefined;
+    return K.esquema(await json('config/esquemas/' + coleccion + '.json'), coleccion, { derechos, riesgos: ctx.listas.riesgos, cfg: ctx.cfg, empresa: ctx.params.empresa });
   }
   function validarRegistro(registro, s, referencias, coleccion, fila = 1) {
     const resultado = V.validar(registro, s, referencias);
@@ -203,20 +201,8 @@
     form.onsubmit = async e => {
       e.preventDefault(); if (!ctx.activo() || !ctx.params.puedeEditar) return;
       Object.keys(errores).forEach(k => { errores[k].textContent = ''; controles[k].setAttribute('aria-invalid', 'false'); }); preview.replaceChildren();
-      const referencias = Object.fromEntries(Object.entries(ctx.listas).map(([k, lista]) => [k, new Set(lista.map(r => r.id))]));
-      const resultado = validarRegistro(leer(), s, referencias, coleccion);
+      const resultado = K.preparar(coleccion, leer(), { esquema: s, cfg: ctx.cfg, listas: ctx.listas, original });
       const r = resultado.registro;
-      const agregarError = (campo, mensaje) => resultado.errores.push({ campo, mensaje });
-      if (['riesgos', 'riesgos-medidas'].includes(coleccion)) {
-        const prefijo = coleccion === 'riesgos' ? 'R' : 'A';
-        if (!new RegExp('^' + prefijo + '-[0-9]{2,}$', 'i').test(r.codigo || '')) agregarError('codigo', `Usa un código como ${prefijo}-01.`);
-        r.codigo = r.codigo?.toUpperCase(); r.id = r.codigo?.toLowerCase();
-      } else if (coleccion === 'riesgos-calificacion') r.id = r.riesgo;
-      else if (coleccion === 'riesgos-validaciones') {
-        r.id = `${r.riesgo}--${r.grupo}`;
-        if (propuestaVisible(r, ctx.cfg) && !Object.entries(r).some(([k, v]) => k.startsWith('propuesta_') && v !== '' && v != null)) agregarError('resultado', 'Indica al menos un valor propuesto.');
-      } else r.id = original?.id || 'g-' + root.crypto.randomUUID();
-      if (nuevo && ctx.listas[coleccion]?.some(x => x.id === r.id)) agregarError(coleccion === 'riesgos-validaciones' ? 'grupo' : coleccion === 'riesgos-calificacion' ? 'riesgo' : 'codigo', 'Ya existe este registro. Abre Editar para modificarlo.');
       if (resultado.errores.length) {
         resultado.errores.forEach(e => { if (errores[e.campo]) { errores[e.campo].textContent = e.mensaje; controles[e.campo].setAttribute('aria-invalid', 'true'); } else aviso.textContent = e.mensaje; });
         controles[resultado.errores[0].campo]?.focus(); return;
