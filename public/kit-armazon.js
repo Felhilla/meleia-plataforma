@@ -2,6 +2,7 @@
   'use strict';
   const modulos = typeof module !== 'undefined' && module.exports ? require('./config/kit-modulos.json').modulos : [];
   const tabsModulo = { actores: ['mapa', 'alimentacion'], ddhh: ['resultados', 'estandares', 'alimentacion'], materialidad: ['doble', 'impacto', 'financiera', 'alimentacion'], riesgos: ['matriz', 'medidas', 'alimentacion'] };
+  const ocultas = { ddhh: ['alimentacion'] };
   const roles = { admin: 'Soporte GH', responsable: 'Responsable', demostrador: 'Demostración' };
   function pestanas(modulo, permiso) { return (tabsModulo[modulo] || []).filter(p => p !== 'alimentacion' || permiso === true || ['admin', 'responsable'].includes(permiso)); }
   function casos(modulo, empresas) { return empresas.filter(e => e.muestra_comercial === false || (e.muestra_comercial === true && modulo.casos.includes(e.id))); }
@@ -149,16 +150,20 @@
             zona.append(mensaje('Sin casos disponibles para tu cuenta'));
           } else {
             const disponibles = casos(ruta.modulo, empresas);
-            const selector = el('nav', null, 'kit-casos'); selector.setAttribute('aria-label','Casos del módulo');
-            const botonCaso = el('button','Caso','kit-credenciales-boton'), listaCasos = el('div',null,'kit-casos-lista');
-            botonCaso.type = 'button'; botonCaso.setAttribute('aria-expanded','false'); botonCaso.setAttribute('aria-controls','kit-lista-casos'); listaCasos.id = 'kit-lista-casos'; listaCasos.hidden = true;
-            const cerrarCasos = () => { listaCasos.hidden = true; botonCaso.setAttribute('aria-expanded','false'); botonCaso.focus(); };
-            botonCaso.onclick = () => { const abrir = listaCasos.hidden; listaCasos.hidden = !abrir; botonCaso.setAttribute('aria-expanded',String(abrir)); };
-            selector.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); cerrarCasos(); } };
-            disponibles.forEach(e => { const sub = pestanas(ruta.modulo.id, datos.puedeEditar(e.id)).includes(ruta.sub) ? '/' + ruta.sub : ''; const a = enlace(e.nombre, '#/' + ruta.modulo.id + '/' + e.id + sub, e.id === ruta.empresa.id); a.onclick = cerrarCasos; listaCasos.append(a); });
-            selector.append(botonCaso,el('span',ruta.empresa.nombre,'kit-caso-actual'),listaCasos); zona.append(selector);
+            if (disponibles.length === 1) {
+              const caso = el('p', null, 'kit-caso-unico'); caso.append(el('span', 'Caso'), el('strong', ruta.empresa.nombre)); zona.append(caso);
+            } else {
+              const selector = el('nav', null, 'kit-casos'); selector.setAttribute('aria-label','Casos del módulo');
+              const botonCaso = el('button','Caso','kit-credenciales-boton'), listaCasos = el('div',null,'kit-casos-lista');
+              botonCaso.type = 'button'; botonCaso.setAttribute('aria-expanded','false'); botonCaso.setAttribute('aria-controls','kit-lista-casos'); listaCasos.id = 'kit-lista-casos'; listaCasos.hidden = true;
+              const cerrarCasos = () => { listaCasos.hidden = true; botonCaso.setAttribute('aria-expanded','false'); botonCaso.focus(); };
+              botonCaso.onclick = () => { const abrir = listaCasos.hidden; listaCasos.hidden = !abrir; botonCaso.setAttribute('aria-expanded',String(abrir)); };
+              selector.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); cerrarCasos(); } };
+              disponibles.forEach(e => { const sub = pestanas(ruta.modulo.id, datos.puedeEditar(e.id)).includes(ruta.sub) ? '/' + ruta.sub : ''; const a = enlace(e.nombre, '#/' + ruta.modulo.id + '/' + e.id + sub, e.id === ruta.empresa.id); a.onclick = cerrarCasos; listaCasos.append(a); });
+              selector.append(botonCaso,el('span',ruta.empresa.nombre,'kit-caso-actual'),listaCasos); zona.append(selector);
+            }
             const tabs = el('nav', null, 'kit-pestanas'); tabs.setAttribute('aria-label', 'Pestañas del módulo');
-            pestanas(ruta.modulo.id, datos.puedeEditar(ruta.empresa.id)).forEach(p => tabs.append(enlace(({mapa: 'Mapa de actores', alimentacion: 'Alimentación', resultados: 'Resultados obtenidos', estandares: 'Cruce de estándares', doble: 'Doble materialidad', impacto: 'Materialidad de impacto', financiera: 'Materialidad financiera'})[p] || p[0].toUpperCase() + p.slice(1), '#/' + ruta.modulo.id + '/' + ruta.empresa.id + '/' + p, p === ruta.sub)));
+            pestanas(ruta.modulo.id, datos.puedeEditar(ruta.empresa.id)).filter(p => !(ocultas[ruta.modulo.id] || []).includes(p)).forEach(p => tabs.append(enlace(({mapa: 'Mapa de actores', alimentacion: 'Alimentación', resultados: 'Resultados', estandares: 'Cruce de estándares', doble: 'Doble materialidad', impacto: 'Materialidad de impacto', financiera: 'Materialidad financiera'})[p] || p[0].toUpperCase() + p.slice(1), '#/' + ruta.modulo.id + '/' + ruta.empresa.id + '/' + p, p === ruta.sub)));
             zona.append(tabs);
             const cuerpo = el('div'); zona.append(cuerpo);
             const vista = vistas.get(ruta.clave);

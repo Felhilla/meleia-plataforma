@@ -1370,7 +1370,7 @@
     "grandes": [
       {
         "id": "etapas-ocde",
-        "titulo": "Proceso de debida diligencia (Guía OCDE)",
+        "titulo": "Integración de la debida diligencia",
         "pregunta": "¿La empresa tiene un proceso para identificar, prevenir y remediar impactos?",
         "estandares": [
           "Guía OCDE de Debida Diligencia",
@@ -1381,7 +1381,7 @@
       },
       {
         "id": "temas-ddhh",
-        "titulo": "Gestión de los derechos humanos",
+        "titulo": "Gestión de DDHH",
         "pregunta": "¿Cómo gestiona la empresa cada derecho en su operación y su cadena?",
         "estandares": [
           "Convenios de la OIT",

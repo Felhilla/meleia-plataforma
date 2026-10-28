@@ -273,3 +273,35 @@ button.enlace:focus-visible { outline: 2px solid var(--principal); outline-offse
  white-space:nowrap; word-break:normal; overflow-wrap:normal; flex-shrink:0;
 }
 .ke-tabla td:last-child .boton { display:inline-block; margin:var(--e1); }
+
+/* E27 · Tablero de la dimensión elegida. */
+.dim-tablero { display: grid; grid-template-columns: 18.5rem minmax(0, 1fr); }
+.dim-lateral { min-width: 0; background: var(--kit-tarjeta-gris); border-right: 1px solid var(--borde); }
+.dim-lateral .dim-barra { display: grid; gap: var(--e3); padding: var(--e4); margin: 0; border: 0; border-radius: 0; background: transparent; }
+.dim-lateral label { display: grid; gap: var(--e2); min-width: 0; font-size: var(--t-chico); }
+.dim-lateral select { width: 100%; min-width: 0; box-sizing: border-box; }
+.dim-lateral .dim-pie { display: grid; padding: var(--e4); background: transparent; }
+.dim-lateral .dim-pie .antetitulo { font-size: var(--t-micro); }
+.dim-lateral .dim-pie .antetitulo::before { display: none; }
+.dim-lateral .dim-estandares { display: grid; gap: var(--e3); overflow-wrap: anywhere; }
+.dim-resultado { min-width: 0; }
+.dim-tablero .dim-cabeza { align-items: center; padding: var(--e3) var(--e4); gap: var(--e3); }
+.dim-tablero .cifra { display: inline; font-size: var(--t-display); font-weight: 700; }
+.dim-tablero .cifra-etiqueta { display: inline; font-size: var(--t-cuerpo); margin-left: var(--e1); }
+.dim-tablero .dim-centro { padding: var(--e3) var(--e4); }
+.dim-tablero .dim-arana { display: block; width: 100%; max-height: 560px; }
+.dim-tablero .dim-leyenda-poligonos { justify-content: center; flex-wrap: wrap; margin: var(--e2) 0 0; }
+.dim-observaciones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--borde); }
+.dim-observaciones .dim-col { padding: var(--e4); }
+.dim-observaciones .dim-col + .dim-col { border-left: 1px solid var(--borde); }
+.dim-tablero .dim-escala { grid-column: 1 / -1; padding: var(--e3) var(--e4); margin: 0; border-top: 1px solid var(--borde); }
+.dim-tablero .dim-tabla table { table-layout: fixed; overflow-wrap: anywhere; }
+.dim-general + .boton { margin-top: var(--e3); }
+@media (max-width: 759px) {
+ .dim-tablero { grid-template-columns: minmax(0, 1fr); }
+ .dim-lateral { border-right: 0; border-bottom: 1px solid var(--borde); }
+ .dim-tablero .dim-cabeza { flex-direction: row; align-items: center; flex-wrap: wrap; }
+ .dim-observaciones { grid-template-columns: minmax(0, 1fr); }
+ .dim-observaciones .dim-col + .dim-col { border-left: 0; border-top: 1px solid var(--borde); }
+ .dim-tablero .dim-tabla table { margin: 0 var(--e3) var(--e3); width: calc(100% - 2 * var(--e3)); }
+}

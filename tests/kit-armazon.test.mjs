@@ -96,7 +96,9 @@ test('DOM: portada global no consulta colecciones ni muestra selector global', a
 test('DOM E24: selector accesible con uno o varios casos y pestaña Mapa de actores', async () => {
   const una = await montar({ empresas: muestras, hash:'#/ddhh' });
   assert.match(una.nodos.contenido.textContent, /Caso Caso de prueba C/);
-  assert.ok(una.nodos.contenido.todos().find(n => n.attrs['aria-label'] === 'Casos del módulo'));
+  assert.ok(una.nodos.contenido.todos().find(n => n.className === 'kit-caso-unico'));
+  assert.ok(!una.nodos.contenido.todos().some(n => n.tag === 'button' && n.textContent === 'Caso'));
+  assert.ok(!una.nodos.contenido.todos().some(n => n.id === 'kit-lista-casos'));
   const varias = await montar({ empresas:muestras, hash:'#/actores' });
   const selector = varias.nodos.contenido.todos().find(n => n.attrs['aria-label'] === 'Casos del módulo');
   assert.equal(selector.todos().filter(n => n.tag === 'a').length, 2);
@@ -148,4 +150,13 @@ test('DOM E24b: el armazón no pide ni muestra logos de empresa', async () => {
   const m = await montar({hash:'#/actores/uno',listar:async () => [{id:'logo',imagen:'data:image/png;base64,YQ==',alt:'Empresa de prueba'}]});
   assert.equal(m.consultas.filter(c => c[1] === 'perfil').length,0);
   assert.ok(!m.nodos.contenido.todos().some(n => n.className === 'kit-empresa-logo'));
+});
+
+test('E27: Alimentación de II oculta en barra pero resoluble con permiso',async()=>{
+ const m=await montar({hash:'#/ddhh/uno/alimentacion'});
+ assert.equal(m.root.location.hash,'#/ddhh/uno/alimentacion');
+ const tabs=m.nodos.contenido.todos().find(n=>n.className==='kit-pestanas');
+ assert.deepEqual(tabs.children.map(n=>n.textContent),['Resultados','Cruce de estándares']);
+ assert.ok(!tabs.children.some(n=>n.href.endsWith('/alimentacion')));
+ m.datos.puedeEditar=()=>false;await m.root.App.actualizarVista();assert.equal(m.root.location.hash,'#/');
 });

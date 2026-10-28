@@ -86,3 +86,7 @@ button:disabled { opacity: .65; cursor: wait; }
 .kit-casos-lista a { display: block; padding: var(--e2); color: var(--texto); }
 .kit-casos-lista a + a { border-top: 1px solid var(--kit-desplegable-borde); }
 .kit-casos-lista a[aria-current] { font-weight: 700; text-decoration-thickness: 2px; }
+
+/* Un solo caso disponible: identificación sin desplegable. */
+.kit-caso-unico { display: flex; flex-wrap: wrap; gap: var(--e2); color: var(--texto-suave); }
+.kit-caso-unico strong { color: var(--texto); font-weight: 700; }
