@@ -206,3 +206,17 @@ test('E25: cifra separa número y contexto conservando texto y aria-label', asyn
     assert.equal(q.attrs['aria-label'],`${nombre}: ${cantidad} ${cantidad === 1 ? 'organización' : 'organizaciones'}, ${porcentaje} %`);
   }
 });
+
+test('E26: dentro del mismo orden, gobernación antes que asamblea y alcaldía antes que concejo', async () => {
+  const base = {...actores()[1],influencia:4,impacto:2,categoria:'Instituciones gubernamentales',posicion:'Neutral'};
+  const lista = [
+    {...base,id:'r1',institucion:'Asamblea Departamental de Prueba',orden:'Regional'},
+    {...base,id:'r2',institucion:'Contraloría de Prueba',orden:'Regional'},
+    {...base,id:'r3',institucion:'Gobernación de Prueba',orden:'Regional'},
+    {...base,id:'l1',institucion:'Concejo Municipal de Prueba',orden:'Local'},
+    {...base,id:'l2',institucion:'Aguas de Prueba',orden:'Local'},
+    {...base,id:'l3',institucion:'Alcaldía de Prueba',orden:'Local'}
+  ];
+  const m = await montar('mapa',true,{actores:lista}); await cuadro(m).onclick();
+  assert.deepEqual(tarjetas(m).map(n => n.children[1].textContent),['Gobernación de Prueba','Asamblea Departamental de Prueba','Contraloría de Prueba','Alcaldía de Prueba','Concejo Municipal de Prueba','Aguas de Prueba']);
+});

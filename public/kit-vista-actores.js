@@ -167,7 +167,9 @@
           if (select.value && select.value !== categoria) return;
           const visibles = grupos.filter(o => o.registros.some(a => a.categoria === categoria) && (!activos.size || o.registros.some(a => activos.has(a.posicion))));
           const rango = o => Math.min(...o.registros.map(a => { const i = ['Internacional','Nacional','Regional','Local'].indexOf(a.orden); return i < 0 ? 4 : i; }));
-          visibles.sort((a,b) => (categoria === categorias[0][0] ? rango(a)-rango(b) : 0) || a.nombre.localeCompare(b.nombre,'es'));
+          // Dentro del mismo orden, el ejecutivo va antes que la corporación: gobernación antes que asamblea, alcaldía antes que concejo.
+          const jerarquia = o => { const i = ['Gobernación','Asamblea Departamental','Alcaldía','Concejo Municipal'].findIndex(p => o.nombre.startsWith(p)); return i < 0 ? 4 : i; };
+          visibles.sort((a,b) => (categoria === categorias[0][0] ? rango(a)-rango(b) || jerarquia(a)-jerarquia(b) : 0) || a.nombre.localeCompare(b.nombre,'es'));
           if (!visibles.length) return; total += visibles.length;
           const seccion = el('section',null,'ka-categoria'), rejilla = el('div',null,'ka-organizaciones'); seccion.append(el('h3',nombre),rejilla);
           visibles.forEach(o => { const b = boton(null,() => fichaOrganizacion(ctx,ctx.organizaciones.find(g => g.nombre === o.nombre))); b.className = 'ka-organizacion'; b.setAttribute('aria-label',o.nombre + ' · ' + posicion(o.registros)); b.title = o.nombre; b.append(logo(ctx,o),el('span',o.nombre,'ka-nombre'),etiqueta(posicion(o.registros))); rejilla.append(b); }); lista.append(seccion);
