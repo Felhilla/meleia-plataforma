@@ -1,0 +1,145 @@
+{
+  "titulo": "Aspectos",
+  "campos": {
+    "id": {
+      "tipo": "texto",
+      "etiqueta": "Código",
+      "obligatorio": true,
+      "max": 80
+    },
+    "orden": {
+      "tipo": "entero",
+      "etiqueta": "Orden",
+      "obligatorio": true,
+      "min": 1,
+      "max": 100
+    },
+    "nombre": {
+      "tipo": "texto",
+      "etiqueta": "Nombre",
+      "obligatorio": true
+    },
+    "marco": {
+      "tipo": "texto",
+      "etiqueta": "Marco de referencia",
+      "obligatorio": true
+    },
+    "definicion": {
+      "tipo": "texto-largo",
+      "etiqueta": "Definición",
+      "obligatorio": true
+    },
+    "dimension": {
+      "tipo": "lista",
+      "etiqueta": "Dimensión ESG",
+      "obligatorio": true,
+      "valores": [
+        "Ambiental",
+        "Social",
+        "Gobernanza"
+      ]
+    },
+    "importancia": {
+      "tipo": "decimal",
+      "etiqueta": "Importancia",
+      "obligatorio": true,
+      "min": 0,
+      "max": 5
+    },
+    "probabilidad": {
+      "tipo": "decimal",
+      "etiqueta": "Probabilidad",
+      "obligatorio": true,
+      "min": 0,
+      "max": 5
+    },
+    "rentabilidad": {
+      "tipo": "decimal",
+      "etiqueta": "Impacto en la rentabilidad",
+      "obligatorio": true,
+      "min": 0,
+      "max": 5
+    },
+    "gasto": {
+      "tipo": "decimal",
+      "etiqueta": "Impacto en el gasto operativo",
+      "obligatorio": true,
+      "min": 0,
+      "max": 5
+    },
+    "financiera": {
+      "tipo": "decimal",
+      "etiqueta": "Materialidad financiera",
+      "obligatorio": true,
+      "min": 0,
+      "max": 5
+    },
+    "cuadrante": {
+      "tipo": "lista",
+      "etiqueta": "Cuadrante",
+      "obligatorio": true,
+      "valores": [
+        "Doble",
+        "Impacto",
+        "Financiera",
+        "No material"
+      ]
+    },
+    "validado": {
+      "tipo": "lista",
+      "etiqueta": "Validado por el comité",
+      "obligatorio": true,
+      "valores": [
+        "Sí",
+        "No"
+      ]
+    },
+    "tema_id": {
+      "tipo": "texto",
+      "etiqueta": "Tema material",
+      "obligatorio": false
+    },
+    "col_importancia": {
+      "tipo": "decimal",
+      "etiqueta": "Colaboradores · importancia",
+      "obligatorio": true,
+      "min": 0,
+      "max": 5
+    },
+    "col_probabilidad": {
+      "tipo": "decimal",
+      "etiqueta": "Colaboradores · probabilidad",
+      "obligatorio": true,
+      "min": 0,
+      "max": 5
+    },
+    "cli_importancia": {
+      "tipo": "decimal",
+      "etiqueta": "Clientes · importancia",
+      "obligatorio": true,
+      "min": 0,
+      "max": 5
+    },
+    "cli_probabilidad": {
+      "tipo": "decimal",
+      "etiqueta": "Clientes · probabilidad",
+      "obligatorio": true,
+      "min": 0,
+      "max": 5
+    },
+    "pro_importancia": {
+      "tipo": "decimal",
+      "etiqueta": "Proveedores · importancia",
+      "obligatorio": true,
+      "min": 0,
+      "max": 5
+    },
+    "pro_probabilidad": {
+      "tipo": "decimal",
+      "etiqueta": "Proveedores · probabilidad",
+      "obligatorio": true,
+      "min": 0,
+      "max": 5
+    }
+  }
+}

@@ -17,7 +17,7 @@ test('portada global y rutas desconocidas sin empresa', () => {
   assert.equal(App.resolverRuta('#/', {}, []).clave, 'portada');
 });
 test('rutas nuevas, primer caso y redirecciones antiguas', () => {
-  for (const ruta of ['actores/mapa', 'actores/alimentacion', 'ddhh/resultados', 'ddhh/estandares', 'ddhh/alimentacion', 'materialidad/doble', 'materialidad/impacto', 'materialidad/financiera', 'materialidad/alimentacion', 'riesgos/matriz', 'riesgos/medidas', 'riesgos/alimentacion']) {
+  for (const ruta of ['actores/mapa', 'actores/alimentacion', 'ddhh/resultados', 'ddhh/estandares', 'ddhh/alimentacion', 'materialidad/resultados', 'materialidad/alimentacion', 'riesgos/matriz', 'riesgos/medidas', 'riesgos/alimentacion']) {
     const [modulo,sub] = ruta.split('/'), nueva = '#/' + modulo + '/uno' + (sub ? '/' + sub : '');
     assert.equal(resolver(nueva).clave, ruta); assert.equal(resolver('#/e/uno/' + ruta).hash, nueva);
   }
@@ -108,7 +108,8 @@ test('DOM E24: selector accesible con uno o varios casos y pestaña Mapa de acto
   boton.onclick(); const enlace = lista.children[1]; enlace.onclick(); assert.equal(lista.hidden,true);
   assert.equal(lista.children[0].attrs['aria-current'],'page'); assert.equal(enlace.href,'#/actores/' + casosActores[1] + '/mapa');
   varias.root.location.hash = enlace.href; await varias.eventos.hashchange();
-  assert.match(varias.nodos.contenido.textContent,/Mapa de actores/);
+  assert.equal(varias.root.App.resolverRuta(varias.root.location.hash, {}, muestras).clave,'actores/mapa');
+  assert.equal(varias.nodos.contenido.todos().filter(n=>n.className==='kit-pestanas').length,0);
   assert.doesNotMatch(varias.nodos.contenido.textContent, /Alimentación/);
   assert.match(varias.nodos['kit-cuenta'].textContent, /Responsable/);
   varias.root.location.hash = '#/actores/' + casosActores[1]; varias.datos.puedeEditar = id => id === casosActores[1]; await varias.root.App.actualizarVista();
@@ -142,7 +143,7 @@ test('E22: el Módulo III ofrece exclusivamente el caso configurado y sus rutas'
   assert.equal(modulo.casos.length,1);
   assert.notEqual(modulo.casos[0],'empresa-demo');
   const casos=[{id:modulo.casos[0],nombre:'Caso de muestra',rol:'demostrador',muestra_comercial:true}];
-  assert.equal(App.resolverRuta('#/materialidad',{},casos).hash,'#/materialidad/'+casos[0].id+'/doble');
+  assert.equal(App.resolverRuta('#/materialidad',{},casos).hash,'#/materialidad/'+casos[0].id+'/resultados');
   assert.deepEqual(App.casos(modulo,[...muestras,...casos]).map(e=>e.id),[casos[0].id]);
 });
 
@@ -159,4 +160,19 @@ test('E27: Alimentación de II oculta en barra pero resoluble con permiso',async
  assert.deepEqual(tabs.children.map(n=>n.textContent),['Resultados','Cruce de estándares']);
  assert.ok(!tabs.children.some(n=>n.href.endsWith('/alimentacion')));
  m.datos.puedeEditar=()=>false;await m.root.App.actualizarVista();assert.equal(m.root.location.hash,'#/');
+});
+
+test('E30: rutas anteriores convergen y la única pestaña visible no dibuja barra',async()=>{
+ for(const sub of ['doble','impacto','financiera']){
+  assert.equal(resolver('#/materialidad/uno/'+sub).hash,'#/materialidad/uno/resultados');
+  assert.equal(resolver('#/e/uno/materialidad/'+sub).clave,'materialidad/resultados');
+ }
+ assert.equal(resolver('#/materialidad/uno/alimentacion').clave,'materialidad/alimentacion');
+ assert.equal(resolver('#/materialidad/dos/alimentacion').clave,'portada');
+ for(const id of ['uno','dos']){
+  const m=await montar({hash:'#/materialidad/'+id+'/resultados'});
+  assert.equal(m.nodos.contenido.todos().filter(n=>n.className==='kit-pestanas').length,0);
+ }
+ const m=await montar({hash:'#/ddhh/uno/resultados'});
+ assert.equal(m.nodos.contenido.todos().filter(n=>n.className==='kit-pestanas').length,1);
 });
