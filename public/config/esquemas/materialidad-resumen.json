@@ -32,7 +32,7 @@
     },
     "participantes_taller": {
       "tipo": "entero",
-      "etiqueta": "Participantes del taller",
+      "etiqueta": "Directivos del taller financiero",
       "min": 0,
       "max": 100000,
       "obligatorio": true
@@ -40,6 +40,27 @@
     "notas": {
       "tipo": "texto-largo",
       "etiqueta": "Notas",
+      "obligatorio": false
+    },
+    "participantes_colaboradores": {
+      "tipo": "entero",
+      "etiqueta": "Participantes: colaboradores",
+      "min": 0,
+      "max": 100000,
+      "obligatorio": false
+    },
+    "participantes_clientes": {
+      "tipo": "entero",
+      "etiqueta": "Participantes: clientes",
+      "min": 0,
+      "max": 100000,
+      "obligatorio": false
+    },
+    "participantes_proveedores": {
+      "tipo": "entero",
+      "etiqueta": "Participantes: proveedores",
+      "min": 0,
+      "max": 100000,
       "obligatorio": false
     }
   },

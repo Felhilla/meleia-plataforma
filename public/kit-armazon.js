@@ -1,8 +1,8 @@
 (function (root) {
   'use strict';
   const modulos = typeof module !== 'undefined' && module.exports ? require('./config/kit-modulos.json').modulos : [];
-  const tabsModulo = { actores: ['mapa', 'alimentacion'], ddhh: ['resultados', 'estandares', 'alimentacion'], materialidad: ['doble', 'impacto', 'financiera', 'alimentacion'], riesgos: ['matriz', 'medidas', 'alimentacion'] };
-  const ocultas = { ddhh: ['alimentacion'] };
+  const tabsModulo = { actores: ['mapa', 'alimentacion'], ddhh: ['resultados', 'estandares', 'alimentacion'], materialidad: ['resultados', 'alimentacion'], riesgos: ['matriz', 'medidas', 'alimentacion'] };
+  const ocultas = { ddhh: ['alimentacion'], materialidad: ['alimentacion'] };
   const roles = { admin: 'Soporte GH', responsable: 'Responsable', demostrador: 'Demostración' };
   function pestanas(modulo, permiso) { return (tabsModulo[modulo] || []).filter(p => p !== 'alimentacion' || permiso === true || ['admin', 'responsable'].includes(permiso)); }
   function casos(modulo, empresas) { return empresas.filter(e => e.muestra_comercial === false || (e.muestra_comercial === true && modulo.casos.includes(e.id))); }
@@ -18,7 +18,7 @@
     const empresa = partes[1] ? disponibles.find(e => e.id === partes[1]) : disponibles[0];
     if (!empresa) return portada;
     const tabs = pestanas(modulo.id, puedeEditar(empresa.id));
-    const sub = partes[2] || tabs[0];
+    const sub = modulo.id === 'materialidad' && ['doble','impacto','financiera'].includes(partes[2]) ? 'resultados' : partes[2] || tabs[0];
     if (sub && !tabs.includes(sub)) return portada;
     return { clave: modulo.id + (sub ? '/' + sub : ''), empresa, modulo, sub, hash: '#/' + modulo.id + '/' + empresa.id + (sub ? '/' + sub : '') };
   }
@@ -163,8 +163,8 @@
               selector.append(botonCaso,el('span',ruta.empresa.nombre,'kit-caso-actual'),listaCasos); zona.append(selector);
             }
             const tabs = el('nav', null, 'kit-pestanas'); tabs.setAttribute('aria-label', 'Pestañas del módulo');
-            pestanas(ruta.modulo.id, datos.puedeEditar(ruta.empresa.id)).filter(p => !(ocultas[ruta.modulo.id] || []).includes(p)).forEach(p => tabs.append(enlace(({mapa: 'Mapa de actores', alimentacion: 'Alimentación', resultados: 'Resultados', estandares: 'Cruce de estándares', doble: 'Doble materialidad', impacto: 'Materialidad de impacto', financiera: 'Materialidad financiera'})[p] || p[0].toUpperCase() + p.slice(1), '#/' + ruta.modulo.id + '/' + ruta.empresa.id + '/' + p, p === ruta.sub)));
-            zona.append(tabs);
+            pestanas(ruta.modulo.id, datos.puedeEditar(ruta.empresa.id)).filter(p => !(ocultas[ruta.modulo.id] || []).includes(p)).forEach(p => tabs.append(enlace(({mapa: 'Mapa de actores', alimentacion: 'Alimentación', resultados: 'Resultados', estandares: 'Cruce de estándares'})[p] || p[0].toUpperCase() + p.slice(1), '#/' + ruta.modulo.id + '/' + ruta.empresa.id + '/' + p, p === ruta.sub)));
+            if (tabs.children.length > 1) zona.append(tabs);
             const cuerpo = el('div'); zona.append(cuerpo);
             const vista = vistas.get(ruta.clave);
             if (vista) {

@@ -72,7 +72,7 @@ Tokens del armazón del Kit (`estilos-kit.css`, E23):
 | Verde | `--sem-verde` `#5A9452` | `#E1EEDD` | `#233A24` |
 | Gris | `--sem-gris` `#AEB5AF` | `#ECEEEC` | `#2A322E` |
 
-**Materialidad 0–5** (`config/kit-ddhh-catalogo.json` → `calificacion.materialidad`; se muestra en la metodología del Módulo II): 5 Muy alto **rojo** · 4 Alto **naranja** · 3 Medio **ámbar** · 2 Bajo **amarillo** · 1 Muy bajo **verde** · 0 Nulo **gris**. El Módulo III (resultados publicados) no usa semáforo: barras en `--principal` con la marca del umbral en `--texto`.
+**Materialidad 0–5** (`config/kit-ddhh-catalogo.json` → `calificacion.materialidad`; se muestra en la metodología del Módulo II): 5 Muy alto **rojo** · 4 Alto **naranja** · 3 Medio **ámbar** · 2 Bajo **amarillo** · 1 Muy bajo **verde** · 0 Nulo **gris**. El Módulo III usa este semáforo en la ficha del aspecto, con redondeo al entero más cercano, número y etiqueta (boceto de Felipe, 28-oct). El mapa muestra cuadrantes con `--kit-titulo-fondo` (doble), `--ka-azul-fondo` (impacto), `--kit-desplegable-fondo` (financiera) y `--superficie` (no material). Los marcadores numerados usan `--forest`: triángulo Ambiental, círculo Social y cuadrado Gobernanza. Los umbrales usan `--texto`; el financiero es la diagonal del promedio de rentabilidad y gasto.
 
 **Brechas / madurez 0–5** (`calificacion.brechas`, Módulo II): 5 Optimizado y 4 Gestionado **verde** · 3 En gestión **ámbar** · 2 Inicial **naranja** · 1 Declarativo y 0 Sin información **rojo**. Se pinta en círculos (`.res-puntaje`, `.dim-circulo`) con el nivel entero del puntaje.
 
