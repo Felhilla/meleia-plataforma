@@ -335,5 +335,75 @@
     elegir.onchange=comparar.onchange=dibujar;dibujar();
   }
   App.registrarVista('ddhh/resultados',{render:(c,d,p)=>render(c,d,p)});
-  App.registrarVista('ddhh/estandares',{render:c=>{c.append(el('p', 'Cruce de estándares en preparación.', 'en-preparacion'));}});
+  // Metodología por sector: no depende de la empresa ni de sus evaluaciones.
+  async function renderCruce(contenedor, _, params) {
+    try {
+      const config = await U.config('config/kit-ddhh-cruce.json');
+      if (!params.vigente()) return;
+      const raiz = el('section', null, 'ddhh-cruce');
+      raiz.append(el('p', 'Cómo responden los indicadores de cada estándar a los mismos temas. GRI va siempre primero.', 'ddhh-cruce-intro'));
+      const label = el('label', 'Sector', 'ddhh-cruce-selector'), select = el('select');
+      select.id = 'ddhh-cruce-sector'; label.htmlFor = select.id;
+      config.sectores.forEach(sector => {
+        const opcion = el('option', sector.nombre); opcion.value = sector.id; select.append(opcion);
+      });
+      label.append(select);
+      const cuerpo = el('div'); raiz.append(label, cuerpo); contenedor.append(raiz);
+      function dibujar() {
+        if (!params.vigente()) return;
+        cuerpo.replaceChildren();
+        const sector = config.sectores.find(s => s.id === select.value);
+        if (!sector) return;
+        if (!sector.grupos.length) {
+          cuerpo.append(el('p', sector.id === 'mineria' ? 'Cruce del sector minero en preparación.' : 'Cruce de estándares en preparación.', 'en-preparacion'));
+        } else {
+          const region = el('div', null, 'ddhh-cruce-region');
+          region.tabIndex = 0; region.setAttribute('role', 'region');
+          region.setAttribute('aria-label', 'Cruce de estándares · ' + sector.nombre);
+          const tabla = el('table', null, 'ddhh-cruce-tabla');
+          tabla.style.minWidth = (14 + sector.columnas.length * 10) + 'rem';
+          tabla.append(el('caption', 'Cruce de estándares · ' + sector.nombre));
+          const cols = el('colgroup'), temaCol = el('col'); temaCol.className = 'ddhh-cruce-tema'; cols.append(temaCol);
+          sector.columnas.forEach(() => cols.append(el('col'))); tabla.append(cols);
+          const head = el('thead'), titulos = el('tr');
+          ['Tema', ...sector.columnas].forEach(t => { const th = el('th', t); th.scope = 'col'; titulos.append(th); });
+          head.append(titulos); tabla.append(head);
+          sector.grupos.forEach(grupo => {
+            const body = el('tbody'), filaGrupo = el('tr'), titulo = el('th', grupo.nombre, 'ddhh-cruce-grupo');
+            titulo.scope = 'colgroup'; titulo.colSpan = sector.columnas.length + 1;
+            filaGrupo.append(titulo); body.append(filaGrupo);
+            grupo.filas.forEach(fila => {
+              const tr = el('tr'), tema = el('th', fila.tema); tema.scope = 'row'; tr.append(tema);
+              sector.columnas.forEach(columna => {
+                const td = el('td'), indicadores = fila.celdas[columna];
+                if (!indicadores.length) {
+                  const vacio = el('span', '—', 'ddhh-cruce-ref'); vacio.setAttribute('aria-label', 'Sin correspondencia'); td.append(vacio);
+                }
+                indicadores.forEach(indicador => {
+                  const item = el('div', null, 'ddhh-cruce-indicador');
+                  item.append(el('strong', indicador.codigo), el('span', indicador.nombre, 'ddhh-cruce-nombre'));
+                  if (indicador.ref) item.append(el('span', indicador.ref, 'ddhh-cruce-ref'));
+                  td.append(item);
+                });
+                tr.append(td);
+              });
+              body.append(tr);
+            });
+            tabla.append(body);
+          });
+          region.append(tabla); cuerpo.append(region);
+        }
+        const detalles = el('details', null, 'ddhh-cruce-fuentes'), fuentes = el('ul'), notas = el('ul');
+        detalles.append(el('summary', 'Fuentes y notas'));
+        Object.entries(sector.fuentes || {}).forEach(([estandar, texto]) => {
+          const li = el('li'); li.append(el('strong', estandar + ': '), document.createTextNode(texto)); fuentes.append(li);
+        });
+        (sector.notas || []).forEach(nota => notas.append(el('li', nota)));
+        detalles.append(fuentes, notas); cuerpo.append(detalles);
+      }
+      select.value = config.sectores[0]?.id || '';
+      select.onchange = dibujar; dibujar();
+    } catch (e) { if (params.vigente()) U.error(contenedor, e); }
+  }
+  App.registrarVista('ddhh/estandares', {render: renderCruce});
 }());

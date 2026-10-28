@@ -95,7 +95,7 @@ test('E27: dimensión cambia título, puntaje, estándares, hallazgos y brechas 
  for(const id of ['e3-eval','e3-vs']) { const s=m.contenedor.todos().find(n=>n.id===id);s.value='ev-1';s.onchange(); }
  assert.equal(m.consultas.length,antes);assert.ok(m.consultas.every(([,c])=>c!=='ddhh-resultados'));
 });
-test('E27: Alimentación solo para edición y Cruce es un marcador sin consultas',async()=>{
+test('E27: Alimentación solo para edición',async()=>{
  for(const editar of [true,false]) {
   const m=await montar('ddhh/resultados',editar);
   const enlaces=m.contenedor.todos().filter(n=>n.tagName==='A'&&n.textContent==='Alimentación');
@@ -103,7 +103,4 @@ test('E27: Alimentación solo para edición y Cruce es un marcador sin consultas
   if(editar) {assert.equal(enlaces[0].href,'#/ddhh/empresa-1/alimentacion');assert.equal(enlaces[0].className,'boton secundario');}
   assert.doesNotMatch(m.contenedor.textContent,/Cargar nueva evaluación|En una frase/);
  }
- const m=await montar('ddhh/estandares');assert.equal(m.consultas.length,0);
- assert.equal(m.contenedor.children.length,1);assert.equal(m.contenedor.children[0].className,'en-preparacion');
- assert.equal(m.contenedor.textContent,'Cruce de estándares en preparación.');
 });

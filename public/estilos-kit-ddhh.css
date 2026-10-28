@@ -305,3 +305,29 @@ button.enlace:focus-visible { outline: 2px solid var(--principal); outline-offse
  .dim-observaciones .dim-col + .dim-col { border-left: 0; border-top: 1px solid var(--borde); }
  .dim-tablero .dim-tabla table { margin: 0 var(--e3) var(--e3); width: calc(100% - 2 * var(--e3)); }
 }
+
+/* E28b · Cruce metodológico por sector. */
+.ddhh-cruce { min-width: 0; max-width: 100%; }
+.ddhh-cruce-intro { color: var(--texto-suave); }
+.ddhh-cruce-selector { display: grid; gap: var(--e2); width: 18.5rem; max-width: 100%; margin-bottom: var(--e4); font-size: var(--t-chico); }
+.ddhh-cruce-selector select { width: 100%; min-width: 0; box-sizing: border-box; }
+.ddhh-cruce-region { max-width: 100%; overflow-x: auto; border: 1px solid var(--borde); }
+.ddhh-cruce-region:focus-visible { outline: 3px solid var(--principal); outline-offset: 4px; }
+.ddhh-cruce-tabla { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0; }
+.ddhh-cruce-tabla caption { text-align: left; padding: var(--e3); color: var(--texto-suave); }
+.ddhh-cruce-tema { width: 14rem; }
+.ddhh-cruce-tabla th, .ddhh-cruce-tabla td { vertical-align: top; text-align: left; padding: var(--e3); border-bottom: 1px solid var(--borde); overflow-wrap: anywhere; }
+.ddhh-cruce-tabla th + th, .ddhh-cruce-tabla td { border-left: 1px solid var(--borde); }
+.ddhh-cruce-tabla thead th { background: var(--kit-titulo-fondo); font-weight: 700; }
+.ddhh-cruce-tabla th[scope="row"] { background: var(--superficie); font-size: var(--t-chico); font-weight: 700; }
+.ddhh-cruce-tabla th[scope="row"], .ddhh-cruce-tabla thead th:first-child { position: sticky; left: 0; z-index: 1; }
+.ddhh-cruce-tabla .ddhh-cruce-grupo { text-transform: uppercase; font-size: var(--t-micro); font-weight: 700; letter-spacing: .12em; color: var(--oro-texto); background: var(--fondo); }
+.ddhh-cruce-indicador { display: grid; gap: var(--e1); }
+.ddhh-cruce-indicador + .ddhh-cruce-indicador { margin-top: var(--e2); padding-top: var(--e2); border-top: 1px solid var(--borde); }
+.ddhh-cruce-nombre { font-size: var(--t-chico); }
+.ddhh-cruce-ref { font-size: var(--t-micro); color: var(--texto-suave); }
+.ddhh-cruce-fuentes { margin-top: var(--e4); overflow-wrap: anywhere; }
+@media (max-width: 759px) {
+ .ddhh-cruce-tema { width: 8.5rem; }
+ .ddhh-cruce-tabla th, .ddhh-cruce-tabla td { padding: var(--e2); }
+}
