@@ -18,12 +18,9 @@
     };
   }
   if (typeof module === 'object' && module.exports) { module.exports = {posicionesArana}; return; }
-  /* Capítulo 04 · Resultados por dimensión. Boceto de Felipe: una tarjeta por dimensión con
-     encabezado (dimensión), cuerpo en tres columnas (hallazgos · araña · brechas) y pie de estándares relacionados.
-     Dos niveles: las dos grandes dimensiones y, al elegir un eje, su tarjeta de detalle con sus indicadores. */
+  // Tablero de resultados: una dimensión seleccionable y fichas por eje.
   const E = window.KitEstandares, el = App.el;
 
-  const graficos = [['etapas-ocde', 'Etapas de la debida diligencia (Guía OCDE)'], ['temas-ddhh', 'Temas de DDHH']];
   const formato = new Intl.NumberFormat('es-CO', {minimumFractionDigits: 1, maximumFractionDigits: 1});
   const numero = n => n === null || n === undefined || Number.isNaN(n) ? 'Sin información' : formato.format(n);
   const delta = n => n === null || n === undefined ? '' : `${Math.abs(n) < 0.05 ? '=' : n > 0 ? '▲' : '▼'} ${n > 0.049 ? '+' : ''}${formato.format(Math.abs(n) < 0.05 ? 0 : n)}`;
@@ -38,53 +35,6 @@
     if (texto !== undefined) n.textContent = texto;
     return n;
   }
-  function grafico(ancho, alto, etiqueta) {
-    return svg('svg', {viewBox: `0 0 ${ancho} ${alto}`, role: 'img', 'aria-label': etiqueta, class: 'relato-grafico'});
-  }
-  function texto(s, x, y, t, attrs = {}) {
-    s.append(svg('text', {x, y, fill: 'var(--texto)', 'font-size': 16, ...attrs}, t));
-  }
-  function resumenEstandares(c, dt, d) {
-    const evaluacion = E.ordenar(d.evaluaciones.filter(e => ['fuente', 'cargada'].includes(e.origen)))[0];
-    if (!evaluacion) { c.append(App.el('p', 'No hay evaluaciones reales disponibles.', 'nota')); return; }
-    c.append(App.el('h4', 'Madurez de gestión · ' + new Intl.DateTimeFormat('es-CO', {month: 'long', year: 'numeric'}).format(new Date(evaluacion.fecha + '-01T12:00:00'))));
-    const grupos = [['etapas-ocde', 'Implementación de la debida diligencia'], ['temas-ddhh', 'Gestión DDHH']];
-    const max = d.umbrales.escala.maximo, umbral = d.umbrales.cortes[0].menor_que;
-    // Un solo gráfico: dos barras con el puntaje dentro, separadas por una línea punteada; escala 0–5 una vez.
-    const medias = grupos.map(([id, nombre]) => {
-      const valores = E.comparar(evaluacion, null, E.ejesDe(id, d.estandares)).map(f => f.a).filter(v => v !== null);
-      return [nombre, valores.length ? valores.reduce((a, b) => a + b, 0) / valores.length : null];
-    });
-    const etiqueta = medias.map(([n, m]) => n + ': ' + (m === null ? 'sin datos' : numero(m)) + ' sobre ' + max).join('. ') + '. Umbral ' + numero(umbral) + '.';
-    const s = grafico(400, 196, etiqueta), x = v => 400 * v / max, valores = [];
-    medias.forEach(([nombre, media], i) => {
-      const y = 22 + i * 86;
-      texto(s, 0, y, nombre, {'font-size': 15, 'font-weight': 700});
-      s.append(svg('rect', {x: 0, y: y + 12, width: 400, height: 40, rx: 6, fill: 'var(--suave)'}));
-      if (media !== null) {
-        s.append(svg('rect', {x: 0, y: y + 12, width: x(media), height: 40, rx: 6, fill: 'var(--principal)'}));
-        valores.push([x(media) - 12, y + 39, numero(media)]);
-      }
-    });
-    s.append(svg('line', {x1: 0, x2: 400, y1: 84, y2: 84, stroke: 'var(--borde-fuerte)', 'stroke-width': 1.5, 'stroke-dasharray': '6 6'}));
-    s.append(svg('line', {x1: x(umbral), x2: x(umbral), y1: 28, y2: 162, stroke: 'var(--texto)', 'stroke-width': 2}));
-    texto(s, x(umbral), 182, 'umbral ' + numero(umbral), {'text-anchor': 'middle', 'font-size': 14, fill: 'var(--texto-suave)'});
-    texto(s, 0, 182, '0', {'font-size': 14, fill: 'var(--texto-suave)'}); texto(s, 400, 182, String(max), {'text-anchor': 'end', 'font-size': 14, fill: 'var(--texto-suave)'});
-    // Los puntajes se dibujan al final, con halo del color de la barra, para que el umbral no los cruce.
-    valores.forEach(([vx, vy, t]) => texto(s, vx, vy, t, {'text-anchor': 'end', 'font-size': 20, 'font-weight': 700, fill: 'var(--sobre-principal)', stroke: 'var(--principal)', 'stroke-width': 8, 'paint-order': 'stroke', class: 'res-valor-barra'}));
-    c.append(s);
-    c.append(App.el('p', 'Cómo leerlo: una barra más larga indica mayor madurez. El filete marca el umbral ' + numero(umbral) + '.', 'nota'));
-    dt.append(App.el('h4', 'Las tres dimensiones con menor puntaje'));
-    const lista = App.el('ul', null, 'relato-brechas');
-    E.comparar(evaluacion, null, d.estandares.ejes).filter(f => f.a !== null).sort((a, b) => a.a - b.a || a.eje.id.localeCompare(b.eje.id)).slice(0, 3).forEach(f => {
-      // Puntaje en un círculo con el color del semáforo de brechas (nivel entero del puntaje).
-      const nivel = (d.caso.metodologia?.calificacion?.brechas?.niveles || []).find(n => n.valor === Math.floor(f.a));
-      const circulo = App.el('strong', numero(f.a), 'res-puntaje sem-' + (nivel?.color || 'gris'));
-      const li = App.el('li'); li.append(circulo, App.el('span', f.eje.nombre)); lista.append(li);
-    });
-    dt.append(lista);
-  }
-
   function lineas(texto, limite) {
     return texto.split(/\s+/).reduce((r, palabra) => {
       if (!r.length || r[r.length - 1].length + palabra.length + 1 > limite) r.push(palabra);
@@ -143,16 +93,6 @@
     });
     return dibujo;
   }
-  function barras(items, umbrales) {
-    const lista = el('ol', null, 'dim-barras');
-    items.slice().sort((a, b) => (a.valor ?? -1) - (b.valor ?? -1)).forEach(it => {
-      const li = el('li'), pista = el('span', null, 'pista'), relleno = el('span', null, 'relleno');
-      relleno.style.width = ((it.valor ?? 0) / 5 * 100) + '%'; relleno.style.background = tono(it.valor, umbrales);
-      pista.append(relleno); li.append(el('span', it.codigo, 'codigo'), el('span', it.texto, 'texto'), pista, el('strong', numero(it.valor)));
-      lista.append(li);
-    });
-    return lista;
-  }
   function columna(titulo, frases, clase) {
     const c = el('div', null, 'dim-col ' + clase);
     c.append(el('h3', titulo));
@@ -165,21 +105,13 @@
     const lista = el('ul', null, 'dim-estandares'); estandares.forEach(s => lista.append(el('li', s)));
     p.append(lista); return p;
   }
-  function indicadorCompleto(i) {
-    const n = el('article', null, 'dim-indicador');
-    n.append(el('h4', `${i.codigo} · ${i.pregunta}`), el('p', `Calificación: ${numero(i.calificacion)} · Incorporado: ${i.incorporado === 'si' ? 'sí' : i.incorporado === 'no' ? 'no' : 'sin información'}`, 'nota'));
-    if (i.descripcion) n.append(el('p', i.descripcion, 'texto-dato'));
-    n.append(el('p', i.brecha ? 'Brecha: ' + i.brecha : 'Sin brecha registrada', 'dim-brecha texto-dato'));
-    return n;
-  }
-
   function pintar(contenedor, datos, params, cat, listas) {
-    let activo = true, evaluaciones = [], principal, comparada, ejeId = null;
+    let activo = true, evaluaciones = [], principal, comparada, ejeId = null, dimensionId = 'etapas-ocde';
     let dims = datos.dimensiones || {grandes: [], ejes: {}};
     const raiz = el('div', null, 'dim');
     const aviso = el('p', 'Cargando evaluaciones…', 'nota dim-aviso'); aviso.setAttribute('role', 'status');
     const controles = el('div', null, 'dim-barra'), cuerpo = el('div');
-    raiz.append(controles, aviso, cuerpo); contenedor.append(raiz);
+    raiz.append(aviso, cuerpo); contenedor.append(raiz);
     function url() {}
     function sincronizar() {
       datos = KitEstudios.ddhh(cat, listas, principal.id);
@@ -191,25 +123,34 @@
       disparador = document.activeElement;
       ejeId = id; url(); dibujar(); abrirFicha();
     }
-    function cabeza(antetitulo, titulo, subtitulo, valor, anterior) {
+    function cabeza(titulo, valor, anterior) {
       const h = el('header', null, 'dim-cabeza'), t = el('div');
       const h2 = el('h2', titulo); h2.tabIndex = -1;
-      t.append(el('p', antetitulo, 'antetitulo'), h2, el('p', subtitulo, 'dim-pregunta'));
+      t.append(h2);
       const c = el('div', null, 'dim-puntaje');
-      c.append(el('span', numero(valor), 'cifra'), el('span', 'sobre 5', 'cifra-etiqueta'));
+      c.append(el('span', numero(valor), 'cifra'), el('span', '/5', 'cifra-etiqueta'));
       if (typeof anterior === 'number' && typeof valor === 'number') c.append(el('span', delta(valor - anterior) + ' frente a ' + etiqueta(comparada).split(' · ')[0].toLowerCase(), 'dim-delta'));
       h.append(t, c); return h;
     }
-    function tarjetaGeneral(g, indice) {
+    function tarjetaGeneral(g) {
       const ejes = E.ejesDe(g.id, datos.estandares), filas = E.comparar(principal, comparada, ejes);
-      const t = el('article', null, 'tarjeta dim-tarjeta');
-      t.append(cabeza(`Dimensión ${indice + 1} de 2`, g.titulo, g.pregunta, promedio(filas.map(f => f.a)), comparada ? promedio(filas.map(f => f.b)) : null));
+      const t = el('article', null, 'tarjeta dim-tarjeta dim-tablero');
+      const lateral = el('aside', null, 'dim-lateral'), resultado = el('div', null, 'dim-resultado');
+      lateral.append(controles, pie(g.estandares));
+      t.append(lateral, resultado);
+      resultado.append(cabeza(g.titulo, promedio(filas.map(f => f.a)), comparada ? promedio(filas.map(f => f.b)) : null));
       const medio = el('div', null, 'dim-centro');
       medio.append(arana({ejes: ejes.map(e => ({clave: e.id, texto: e.nombre, partes: lineas(dims.ejes[e.id]?.corto || e.nombre, 13)})), valores: filas.map(f => f.a), comparacion: comparada ? filas.map(f => f.b) : null,
-        seleccionado: ejeId, rotulo: g.titulo, umbrales: datos.umbrales, alElegir: elegir}), el('p', 'Toque un eje para ver su detalle.', 'nota dim-ayuda'));
-      const cuerpoT = el('div', null, 'dim-cuerpo');
-      cuerpoT.append(columna('Hallazgos', g.hallazgos, 'hallazgos'), medio, columna('Brechas', g.brechas, 'brechas'));
-      t.append(cuerpoT, pie(g.estandares));
+        seleccionado: ejeId, rotulo: g.titulo, umbrales: datos.umbrales, alElegir: elegir}));
+      if (comparada) {
+        const leyenda = el('p', null, 'dim-leyenda-poligonos');
+        leyenda.append(el('span', 'Evaluación', 'muestra principal'), el('span', 'Comparación', 'muestra comparada'));
+        medio.append(leyenda);
+      }
+      medio.append(el('p', 'Toque un eje para ver su detalle.', 'nota dim-ayuda'));
+      const cuerpoT = el('div', null, 'dim-observaciones');
+      cuerpoT.append(columna('Hallazgos', g.hallazgos, 'hallazgos'), columna('Brechas', g.brechas, 'brechas'));
+      resultado.append(medio, cuerpoT);
       const tabla = el('table'), thead = el('thead'), tr = el('tr');
       ['Eje', 'Puntaje', comparada ? 'Comparación' : null, comparada ? 'Diferencia' : null].filter(Boolean).forEach(x => { const th = el('th', x); th.scope = 'col'; tr.append(th); });
       thead.append(tr); tabla.append(thead);
@@ -220,7 +161,7 @@
         tb.append(fila);
       });
       tabla.append(tb);
-      const det = el('details', null, 'e3-datos dim-tabla'); det.append(el('summary', 'Ver puntajes por eje, de menor a mayor'), tabla); t.append(det);
+      const det = el('details', null, 'e3-datos dim-tabla'); det.append(el('summary', 'Ver puntajes por eje, de menor a mayor'), tabla); resultado.append(det);
       return t;
     }
     /* Ficha del eje en ventana (boceto de Felipe): título | calificación; hallazgos clave en viñetas;
@@ -332,24 +273,28 @@
       if ([principal, comparada].some(e => e?.origen === 'ejemplo')) { const letrero = el('p', 'Ejemplo ilustrativo: la evaluación de ejemplo muestra cómo se ve el avance entre dos evaluaciones. Sus puntajes no son de la empresa.', 'nota dim-ejemplo'); letrero.setAttribute('role', 'note'); cuerpo.append(letrero); }
       if (!dims.grandes.length) { cuerpo.append(el('p', 'Contenido en preparación.', 'en-preparacion')); return; }
       const general = el('section', null, 'dim-general');
-      dims.grandes.forEach((g, i) => general.append(tarjetaGeneral(g, i)));
+      const tarjeta = tarjetaGeneral(dims.grandes.find(g => g.id === dimensionId) || dims.grandes[0]);
+      general.append(tarjeta);
       cuerpo.append(general);
       const escala = el('p', 'Escala de 0 a 5: 0 = sin información; 5 = práctica implementada con seguimiento y reporte. Colores de los puntos: por debajo de 3, entre 3 y 4, desde 4.', 'nota dim-escala');
-      cuerpo.append(escala);
+      tarjeta.append(escala);
+      if (params.puedeEditar) { const cargar = el('a', 'Alimentación', 'boton secundario'); cargar.href = KitEstudiosUI.ruta('ddhh', params, 'alimentacion'); cuerpo.append(cargar); }
     }
     function prepararControles() {
       controles.replaceChildren();
-      [['Evaluación', principal?.id, false], ['Comparar con', comparada?.id || '', true]].forEach(([texto, valor, vs]) => {
-        const label = el('label', texto), select = el('select'); select.id = vs ? 'e3-vs' : 'e3-eval';
+      const labelDimension = el('label', 'Dimensión'), dimension = el('select');
+      dimension.id = 'e3-dimension'; labelDimension.htmlFor = dimension.id;
+      dims.grandes.forEach(g => { const op = el('option', g.titulo); op.value = g.id; dimension.append(op); });
+      dimension.value = dimensionId;
+      dimension.onchange = () => { dimensionId = dimension.value; ejeId = null; dibujar(); };
+      labelDimension.append(dimension); controles.append(labelDimension);
+      [['Evaluación', principal?.id, false], ['Comparación', comparada?.id || '', true]].forEach(([texto, valor, vs]) => {
+        const label = el('label', texto), select = el('select'); select.id = vs ? 'e3-vs' : 'e3-eval'; label.htmlFor = select.id;
         if (vs) { const op = el('option', 'Sin comparación'); op.value = ''; select.append(op); }
         evaluaciones.forEach(e => { const op = el('option', etiqueta(e)); op.value = e.id; select.append(op); }); select.value = valor;
         select.onchange = () => { if (vs) comparada = evaluaciones.find(e => e.id === select.value) || null; else principal = evaluaciones.find(e => e.id === select.value); url(); dibujar(); };
         label.append(select); controles.append(label);
       });
-      const leyenda = el('p', null, 'dim-leyenda-poligonos');
-      leyenda.append(el('span', 'Evaluación', 'muestra principal'), el('span', 'Comparación', 'muestra comparada'));
-      controles.append(leyenda);
-      if(params.puedeEditar){const cargar=el('a','Cargar nueva evaluación','boton secundario');cargar.href=KitEstudiosUI.ruta('ddhh',params,'alimentacion');controles.append(cargar);}
     }
     evaluaciones = E.ordenar(datos.evaluaciones);
     principal = evaluaciones.find(e=>e.origen!=='ejemplo') || evaluaciones[0]; comparada = null;
@@ -358,33 +303,15 @@
     return () => { activo = false; if (cerrarFicha) cerrarFicha(false); };
   }
   const U = KitEstudiosUI, K = KitEstudios;
-  async function render(contenedor, _, params, resultados) {
+  async function render(contenedor, _, params) {
     let limpiar;
     try {
       const [cat, nombre, listas] = await Promise.all([
         U.config('config/kit-ddhh-catalogo.json'), U.nombre(params),
-        U.cargar(params, [...K.colecciones.ddhh.filter(c=>c!=='ddhh-resultados'), ...(resultados?['ddhh-resultados']:[])])
+        U.cargar(params, K.colecciones.ddhh.filter(c=>c!=='ddhh-resultados'))
       ]);
       if (!params.vigente()) return;
       const datosEmpresa = K.reemplazar(listas,nombre);
-      const resumen = K.ddhh(cat,datosEmpresa);
-      if(resultados) {
-        const rs=datosEmpresa['ddhh-resultados'];
-        if(!rs.length)U.vacio(contenedor,params,'ddhh','Esta empresa aún no tiene mensajes de resultados.');
-        rs.sort((a,b)=>a.orden-b.orden).forEach(r=>{
-          if(r.tipo==='titular'){const s=el('section',null,'seccion pregunta');s.append(el('p','En una frase','antetitulo'),el('p',r.titulo));contenedor.append(s);}
-          else {
-            const s=el('section',null,'seccion tarjeta res-tarjeta relato-mensaje'),tit=el('div',null,'res-titulo'),txt=el('div',null,'res-descripcion');
-            tit.append(el('p',r.tema,'antetitulo'),el('h3',r.titulo));txt.append(el('p',r.texto));s.append(tit,txt);
-            if(r.tema==='Estándares'&&cat.estandares.every(e=>e.escala.tipo==='decimal'&&e.escala.max===5)) {
-              const graf=el('div',null,'res-grafico'),relevantes=el('div',null,'res-datos');
-              resumenEstandares(graf,relevantes,resumen);s.append(graf,relevantes);
-            } else s.className+=' res-narrativa';
-            if(r.tema==='Estándares'||r.tema==='Materialidad'){const link=el('a','Ver detalle →','boton secundario');link.href=U.ruta(r.tema==='Estándares'?'ddhh':'materialidad',params,r.tema==='Estándares'?'estandares':'doble');txt.append(link);}
-            contenedor.append(s);
-          }
-        });
-      }
       if(!datosEmpresa['ddhh-evaluaciones'].length){U.vacio(contenedor,params,'ddhh','Esta empresa aún no tiene evaluaciones.');return;}
       if(cat.estandares.some(s=>s.escala.tipo==='lista'||s.escala.min!==0||s.escala.max!==5)) {
         pintarEscalas(contenedor,params,cat,datosEmpresa);return;
@@ -407,6 +334,76 @@
           cat.indicadores.filter(i=>i.eje===e.id).forEach(i=>{const r=(listas['ddhh-indicadores']||[]).find(r=>r.evaluacion===a.id&&r.indicador===i.id);detalle.append(el('h3',i.pregunta),el('p',K.mostrar(r?.calificacion,s.escala)),el('p',r?.descripcion||'Sin hallazgos registrados'),el('p',r?.brecha||'Sin brecha registrada'));});sec.append(detalle);});cuerpo.append(sec);});}
     elegir.onchange=comparar.onchange=dibujar;dibujar();
   }
-  App.registrarVista('ddhh/resultados',{render:(c,d,p)=>render(c,d,p,true)});
-  App.registrarVista('ddhh/estandares',{render:(c,d,p)=>render(c,d,p,false)});
+  App.registrarVista('ddhh/resultados',{render:(c,d,p)=>render(c,d,p)});
+  // Metodología por sector: no depende de la empresa ni de sus evaluaciones.
+  async function renderCruce(contenedor, _, params) {
+    try {
+      const config = await U.config('config/kit-ddhh-cruce.json');
+      if (!params.vigente()) return;
+      const raiz = el('section', null, 'ddhh-cruce');
+      raiz.append(el('p', 'Cómo responden los indicadores de cada estándar a los mismos temas. GRI va siempre primero.', 'ddhh-cruce-intro'));
+      const label = el('label', 'Sector', 'ddhh-cruce-selector'), select = el('select');
+      select.id = 'ddhh-cruce-sector'; label.htmlFor = select.id;
+      config.sectores.forEach(sector => {
+        const opcion = el('option', sector.nombre); opcion.value = sector.id; select.append(opcion);
+      });
+      label.append(select);
+      const cuerpo = el('div'); raiz.append(label, cuerpo); contenedor.append(raiz);
+      function dibujar() {
+        if (!params.vigente()) return;
+        cuerpo.replaceChildren();
+        const sector = config.sectores.find(s => s.id === select.value);
+        if (!sector) return;
+        if (!sector.grupos.length) {
+          cuerpo.append(el('p', sector.id === 'mineria' ? 'Cruce del sector minero en preparación.' : 'Cruce de estándares en preparación.', 'en-preparacion'));
+        } else {
+          const region = el('div', null, 'ddhh-cruce-region');
+          region.tabIndex = 0; region.setAttribute('role', 'region');
+          region.setAttribute('aria-label', 'Cruce de estándares · ' + sector.nombre);
+          const tabla = el('table', null, 'ddhh-cruce-tabla');
+          tabla.style.minWidth = (12 + sector.columnas.length * 9) + 'rem';
+          tabla.append(el('caption', 'Cruce de estándares · ' + sector.nombre));
+          const cols = el('colgroup'), temaCol = el('col'); temaCol.className = 'ddhh-cruce-tema'; cols.append(temaCol);
+          sector.columnas.forEach(() => cols.append(el('col'))); tabla.append(cols);
+          const head = el('thead'), titulos = el('tr');
+          ['Tema', ...sector.columnas].forEach(t => { const th = el('th', t); th.scope = 'col'; titulos.append(th); });
+          head.append(titulos); tabla.append(head);
+          sector.grupos.forEach(grupo => {
+            const body = el('tbody'), filaGrupo = el('tr'), titulo = el('th', grupo.nombre, 'ddhh-cruce-grupo');
+            titulo.scope = 'colgroup'; titulo.colSpan = sector.columnas.length + 1;
+            filaGrupo.append(titulo); body.append(filaGrupo);
+            grupo.filas.forEach(fila => {
+              const tr = el('tr'), tema = el('th', fila.tema); tema.scope = 'row'; tr.append(tema);
+              sector.columnas.forEach(columna => {
+                const td = el('td'), indicadores = fila.celdas[columna];
+                if (!indicadores.length) {
+                  const vacio = el('span', '—', 'ddhh-cruce-ref'); vacio.setAttribute('aria-label', 'Sin correspondencia'); td.append(vacio);
+                }
+                indicadores.forEach(indicador => {
+                  const item = el('div', null, 'ddhh-cruce-indicador');
+                  item.append(el('strong', indicador.codigo), el('span', indicador.nombre, 'ddhh-cruce-nombre'));
+                  if (indicador.ref) item.append(el('span', indicador.ref, 'ddhh-cruce-ref'));
+                  td.append(item);
+                });
+                tr.append(td);
+              });
+              body.append(tr);
+            });
+            tabla.append(body);
+          });
+          region.append(tabla); cuerpo.append(region);
+        }
+        const detalles = el('details', null, 'ddhh-cruce-fuentes'), fuentes = el('ul'), notas = el('ul');
+        detalles.append(el('summary', 'Fuentes y notas'));
+        Object.entries(sector.fuentes || {}).forEach(([estandar, texto]) => {
+          const li = el('li'); li.append(el('strong', estandar + ': '), document.createTextNode(texto)); fuentes.append(li);
+        });
+        (sector.notas || []).forEach(nota => notas.append(el('li', nota)));
+        detalles.append(fuentes, notas); cuerpo.append(detalles);
+      }
+      select.value = config.sectores[0]?.id || '';
+      select.onchange = dibujar; dibujar();
+    } catch (e) { if (params.vigente()) U.error(contenedor, e); }
+  }
+  App.registrarVista('ddhh/estandares', {render: renderCruce});
 }());

@@ -1,0 +1,1671 @@
+{
+ "_nota": "Cruce de estándares del Módulo II. Lo genera privado/cruce-estandares/generar-config.py; no editar a mano.",
+ "sectores": [
+  {
+   "id": "oil-gas",
+   "nombre": "Oil & Gas",
+   "columnas": [
+    "GRI",
+    "Guía OCDE",
+    "PRNU",
+    "OIT",
+    "IPIECA"
+   ],
+   "fuentes": {
+    "GRI": "GRI 11: Oil and Gas Sector 2021; GRI 2: Contenidos Generales 2021; GRI 3: Temas Materiales 2021; estándares temáticos citados por GRI 11",
+    "Guía OCDE": "Guía de la OCDE de Debida Diligencia para una Conducta Empresarial Responsable (2018), sección II y anexo",
+    "PRNU": "Principios Rectores sobre las Empresas y los Derechos Humanos (ONU, 2011)",
+    "OIT": "Convenios fundamentales de la OIT (folleto de convenios fundamentales; folleto de entorno de trabajo seguro y saludable)",
+    "IPIECA": "IPIECA, Human rights due diligence guidance, 2.ª ed., 2021 (secciones 3, 4 y tabla 2)"
+   },
+   "grupos": [
+    {
+     "nombre": "Integración de la debida diligencia",
+     "filas": [
+      {
+       "tema": "Incorporar la debida diligencia en las políticas y sistemas de gestión",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "2-23",
+          "nombre": "Compromisos y políticas",
+          "ref": "GRI 2, p. 36"
+         },
+         {
+          "codigo": "2-24",
+          "nombre": "Incorporación de los compromisos y políticas",
+          "ref": "GRI 2, p. 39"
+         }
+        ],
+        "Guía OCDE": [
+         {
+          "codigo": "Paso 1 · 1.1",
+          "nombre": "Adoptar y divulgar políticas de CER",
+          "ref": "p. 26"
+         },
+         {
+          "codigo": "Paso 1 · 1.2",
+          "nombre": "Incorporar las políticas a la supervisión y la gestión",
+          "ref": "p. 27"
+         },
+         {
+          "codigo": "Paso 1 · 1.3",
+          "nombre": "Expectativas de CER en las relaciones con proveedores",
+          "ref": "p. 28"
+         }
+        ],
+        "PRNU": [
+         {
+          "codigo": "Principio 15",
+          "nombre": "Políticas y procesos de la empresa",
+          "ref": ""
+         },
+         {
+          "codigo": "Principio 16",
+          "nombre": "Compromiso político",
+          "ref": ""
+         }
+        ],
+        "OIT": [],
+        "IPIECA": [
+         {
+          "codigo": "Sección 4",
+          "nombre": "Comprometerse con los DDHH e incorporarlos en políticas y sistemas de gestión",
+          "ref": "p. 32"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Identificar los impactos potenciales o reales",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "3-1",
+          "nombre": "Proceso de determinación de los temas materiales",
+          "ref": "GRI 3, p. 18"
+         },
+         {
+          "codigo": "3-2",
+          "nombre": "Lista de temas materiales",
+          "ref": "GRI 3, p. 20"
+         }
+        ],
+        "Guía OCDE": [
+         {
+          "codigo": "Paso 2 · 2.1–2.2",
+          "nombre": "Delimitar áreas de riesgo y evaluar impactos",
+          "ref": "pp. 29–30"
+         },
+         {
+          "codigo": "Paso 2 · 2.3",
+          "nombre": "Evaluar la participación de la empresa en el impacto",
+          "ref": "p. 31"
+         },
+         {
+          "codigo": "Paso 2 · 2.4",
+          "nombre": "Priorizar los impactos más significativos",
+          "ref": "p. 32"
+         }
+        ],
+        "PRNU": [
+         {
+          "codigo": "Principio 17",
+          "nombre": "Debida diligencia en DDHH",
+          "ref": ""
+         },
+         {
+          "codigo": "Principio 18",
+          "nombre": "Identificar y evaluar las consecuencias",
+          "ref": ""
+         },
+         {
+          "codigo": "Principio 24",
+          "nombre": "Priorizar según la gravedad",
+          "ref": ""
+         }
+        ],
+        "OIT": [],
+        "IPIECA": [
+         {
+          "codigo": "Sección 3 · parte 1",
+          "nombre": "Evaluar riesgos e impactos en operaciones, cadena y relaciones comerciales",
+          "ref": "p. 18"
+         },
+         {
+          "codigo": "Tabla 2",
+          "nombre": "Lista genérica de riesgos e impactos en DDHH",
+          "ref": "pp. 38–41"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Cesar, prevenir o mitigar los impactos adversos",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "3-3",
+          "nombre": "Gestión de los temas materiales (acciones para prevenir o mitigar)",
+          "ref": "GRI 3, p. 21"
+         }
+        ],
+        "Guía OCDE": [
+         {
+          "codigo": "Paso 3 · 3.1",
+          "nombre": "Detener las actividades que causan o contribuyen al impacto",
+          "ref": "p. 33"
+         },
+         {
+          "codigo": "Paso 3 · 3.2",
+          "nombre": "Prevenir y mitigar según la priorización",
+          "ref": "p. 34"
+         }
+        ],
+        "PRNU": [
+         {
+          "codigo": "Principio 19",
+          "nombre": "Integrar las conclusiones y actuar",
+          "ref": ""
+         },
+         {
+          "codigo": "Principio 23",
+          "nombre": "Cumplir la ley y respetar los DDHH en cualquier contexto",
+          "ref": ""
+         }
+        ],
+        "OIT": [],
+        "IPIECA": [
+         {
+          "codigo": "Sección 3 · parte 2",
+          "nombre": "Integrar los hallazgos entre funciones y tomar medidas",
+          "ref": "p. 22"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Seguimiento de implementación y resultados",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "3-3",
+          "nombre": "Gestión de los temas materiales (seguimiento de la eficacia)",
+          "ref": "GRI 3, p. 21"
+         }
+        ],
+        "Guía OCDE": [
+         {
+          "codigo": "Paso 4 · 4.1",
+          "nombre": "Seguimiento de la implementación y la eficacia",
+          "ref": "p. 36"
+         }
+        ],
+        "PRNU": [
+         {
+          "codigo": "Principio 20",
+          "nombre": "Verificar la eficacia de la respuesta",
+          "ref": ""
+         }
+        ],
+        "OIT": [],
+        "IPIECA": [
+         {
+          "codigo": "Sección 3 · parte 3",
+          "nombre": "Hacer seguimiento del desempeño en prevención y mitigación",
+          "ref": "p. 25"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Comunicar cómo se abordan los impactos",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "2-23",
+          "nombre": "Compromisos y políticas (disponibilidad pública)",
+          "ref": "GRI 2, p. 36"
+         },
+         {
+          "codigo": "3-3",
+          "nombre": "Gestión de los temas materiales",
+          "ref": "GRI 3, p. 21"
+         }
+        ],
+        "Guía OCDE": [
+         {
+          "codigo": "Paso 5 · 5.1",
+          "nombre": "Comunicar externamente políticas, procesos y resultados",
+          "ref": "p. 37"
+         }
+        ],
+        "PRNU": [
+         {
+          "codigo": "Principio 21",
+          "nombre": "Comunicar las medidas adoptadas",
+          "ref": ""
+         }
+        ],
+        "OIT": [],
+        "IPIECA": [
+         {
+          "codigo": "Sección 3 · parte 4",
+          "nombre": "Comunicar cómo se abordan los impactos",
+          "ref": "p. 27"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Remediar",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "2-25",
+          "nombre": "Procesos para remediar los impactos negativos",
+          "ref": "GRI 2, p. 41"
+         },
+         {
+          "codigo": "2-26",
+          "nombre": "Mecanismos para solicitar asesoramiento y plantear inquietudes",
+          "ref": "GRI 2, p. 44"
+         }
+        ],
+        "Guía OCDE": [
+         {
+          "codigo": "Paso 6 · 6.1",
+          "nombre": "Reparar el impacto causado o al que contribuyó",
+          "ref": "p. 38"
+         },
+         {
+          "codigo": "Paso 6 · 6.2",
+          "nombre": "Mecanismos de reparación legítimos",
+          "ref": "p. 39"
+         }
+        ],
+        "PRNU": [
+         {
+          "codigo": "Principio 22",
+          "nombre": "Reparación",
+          "ref": ""
+         },
+         {
+          "codigo": "Principio 29",
+          "nombre": "Mecanismos de reclamación a nivel operacional",
+          "ref": ""
+         },
+         {
+          "codigo": "Principio 31",
+          "nombre": "Criterios de eficacia de los mecanismos",
+          "ref": ""
+         }
+        ],
+        "OIT": [],
+        "IPIECA": [
+         {
+          "codigo": "Sección 4",
+          "nombre": "Establecer mecanismos de reclamación y reparar los impactos",
+          "ref": "p. 30"
+         }
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "nombre": "Gestión de DDHH",
+     "filas": [
+      {
+       "tema": "Trabajo forzoso",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "11.12 · 409-1",
+          "nombre": "Trabajo forzoso y esclavitud moderna: operaciones y proveedores con riesgo",
+          "ref": "GRI 11, p. 38"
+         },
+         {
+          "codigo": "11.12 · 414-1",
+          "nombre": "Proveedores evaluados con criterios sociales",
+          "ref": "GRI 11, p. 38"
+         }
+        ],
+        "Guía OCDE": [
+         {
+          "codigo": "Anexo P1 · Tabla 2",
+          "nombre": "Derechos humanos: trabajo forzoso",
+          "ref": "p. 42"
+         }
+        ],
+        "PRNU": [
+         {
+          "codigo": "Principio 12",
+          "nombre": "Derechos de la Declaración de la OIT",
+          "ref": ""
+         }
+        ],
+        "OIT": [
+         {
+          "codigo": "C029",
+          "nombre": "Convenio sobre el trabajo forzoso, 1930",
+          "ref": ""
+         },
+         {
+          "codigo": "C105",
+          "nombre": "Convenio sobre la abolición del trabajo forzoso, 1957",
+          "ref": ""
+         }
+        ],
+        "IPIECA": [
+         {
+          "codigo": "Tabla 2 · Condiciones de trabajo 1",
+          "nombre": "Trabajo forzoso y prácticas abusivas",
+          "ref": "p. 38"
+         },
+         {
+          "codigo": "Tabla 2 · Condiciones de trabajo 5",
+          "nombre": "Restricción de la libertad de movimiento",
+          "ref": "p. 38"
+         },
+         {
+          "codigo": "Tabla 2 · Bienes y servicios 1",
+          "nombre": "Trabajo forzoso en proveedores",
+          "ref": "p. 40"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Trabajo infantil",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "408-1",
+          "nombre": "Operaciones y proveedores con riesgo de trabajo infantil (GRI 11, recuadro 5, remite a GRI 408)",
+          "ref": "GRI 11, p. 39"
+         }
+        ],
+        "Guía OCDE": [
+         {
+          "codigo": "Anexo P1 · Tabla 2",
+          "nombre": "Trabajo infantil (Líneas Directrices, cap. V, párr. 1 c)",
+          "ref": "p. 43"
+         }
+        ],
+        "PRNU": [
+         {
+          "codigo": "Principio 12",
+          "nombre": "Derechos de la Declaración de la OIT",
+          "ref": ""
+         }
+        ],
+        "OIT": [
+         {
+          "codigo": "C138",
+          "nombre": "Convenio sobre la edad mínima, 1973",
+          "ref": ""
+         },
+         {
+          "codigo": "C182",
+          "nombre": "Convenio sobre las peores formas de trabajo infantil, 1999",
+          "ref": ""
+         }
+        ],
+        "IPIECA": [
+         {
+          "codigo": "Tabla 2 · Condiciones de trabajo 6",
+          "nombre": "Contratación de menores de edad",
+          "ref": "p. 38"
+         },
+         {
+          "codigo": "Tabla 2 · Bienes y servicios 2",
+          "nombre": "Trabajo infantil en proveedores",
+          "ref": "p. 40"
+         },
+         {
+          "codigo": "Tabla 2 · Impactos en niños 3",
+          "nombre": "Trabajo infantil",
+          "ref": "p. 41"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Discriminación, acoso y violencia",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "11.11 · 406-1",
+          "nombre": "No discriminación: casos de discriminación y acciones correctivas",
+          "ref": "GRI 11, p. 36"
+         }
+        ],
+        "Guía OCDE": [
+         {
+          "codigo": "Anexo P1 · Tabla 2",
+          "nombre": "Discriminación en el empleo (cap. V, párr. 1 e); violencia de género y acoso",
+          "ref": "pp. 42–43"
+         }
+        ],
+        "PRNU": [
+         {
+          "codigo": "Principio 12",
+          "nombre": "Derechos de la Declaración de la OIT",
+          "ref": ""
+         }
+        ],
+        "OIT": [
+         {
+          "codigo": "C111",
+          "nombre": "Convenio sobre la discriminación (empleo y ocupación), 1958",
+          "ref": ""
+         }
+        ],
+        "IPIECA": [
+         {
+          "codigo": "Tabla 2 · Condiciones de trabajo 13",
+          "nombre": "Discriminación al contratar, desarrollar o promover",
+          "ref": "p. 38"
+         },
+         {
+          "codigo": "Tabla 2 · Condiciones de trabajo 14",
+          "nombre": "Acoso en el lugar de trabajo",
+          "ref": "p. 38"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Igualdad de género",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "11.11 · 405-1",
+          "nombre": "Diversidad en órganos de gobierno y empleados",
+          "ref": "GRI 11, p. 36"
+         },
+         {
+          "codigo": "11.11 · 405-2",
+          "nombre": "Ratio del salario base y la remuneración de mujeres frente a hombres",
+          "ref": "GRI 11, p. 36"
+         },
+         {
+          "codigo": "11.11 · 401-3",
+          "nombre": "Permiso parental",
+          "ref": "GRI 11, p. 36"
+         }
+        ],
+        "Guía OCDE": [
+         {
+          "codigo": "Anexo P2",
+          "nombre": "Integrar los temas de género en la debida diligencia",
+          "ref": "p. 45"
+         },
+         {
+          "codigo": "Anexo P1 · Tabla 2",
+          "nombre": "Discriminación salarial por trabajo de igual valor",
+          "ref": "p. 42"
+         }
+        ],
+        "PRNU": [
+         {
+          "codigo": "Principio 12",
+          "nombre": "Derechos de la Declaración de la OIT",
+          "ref": ""
+         }
+        ],
+        "OIT": [
+         {
+          "codigo": "C100",
+          "nombre": "Convenio sobre igualdad de remuneración, 1951",
+          "ref": ""
+         },
+         {
+          "codigo": "C111",
+          "nombre": "Convenio sobre la discriminación (empleo y ocupación), 1958",
+          "ref": ""
+         }
+        ],
+        "IPIECA": [
+         {
+          "codigo": "Tabla 2 · Mujeres y niñas 4",
+          "nombre": "Empleo de mujeres",
+          "ref": "p. 41"
+         },
+         {
+          "codigo": "Tabla 2 · Mujeres y niñas 5",
+          "nombre": "Discriminación y acoso",
+          "ref": "p. 41"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Libertad de asociación y negociación colectiva",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "11.13 · 407-1",
+          "nombre": "Operaciones y proveedores con riesgo para la libertad de asociación",
+          "ref": "GRI 11, p. 40"
+         }
+        ],
+        "Guía OCDE": [
+         {
+          "codigo": "Anexo P1 · Tabla 2",
+          "nombre": "Sindicación y negociación colectiva (cap. V, párr. 1 b y 7)",
+          "ref": "p. 43"
+         }
+        ],
+        "PRNU": [
+         {
+          "codigo": "Principio 12",
+          "nombre": "Derechos de la Declaración de la OIT",
+          "ref": ""
+         }
+        ],
+        "OIT": [
+         {
+          "codigo": "C087",
+          "nombre": "Convenio sobre la libertad sindical y la protección del derecho de sindicación, 1948",
+          "ref": ""
+         },
+         {
+          "codigo": "C098",
+          "nombre": "Convenio sobre el derecho de sindicación y de negociación colectiva, 1949",
+          "ref": ""
+         }
+        ],
+        "IPIECA": [
+         {
+          "codigo": "Tabla 2 · Condiciones de trabajo 10",
+          "nombre": "Barreras a sindicatos y a la negociación colectiva",
+          "ref": "p. 38"
+         },
+         {
+          "codigo": "Tabla 2 · Bienes y servicios 5",
+          "nombre": "Límites a la libertad de asociación en proveedores",
+          "ref": "p. 40"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Salud y seguridad ocupacional",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "11.9 · 403-1 a 403-10",
+          "nombre": "Salud y seguridad en el trabajo",
+          "ref": "GRI 11, p. 32"
+         }
+        ],
+        "Guía OCDE": [
+         {
+          "codigo": "Anexo P1 · Tabla 2",
+          "nombre": "Adaptar equipos, jornada y procesos a los trabajadores (cap. V, párr. 1 e; Convenio 155)",
+          "ref": "p. 43"
+         }
+        ],
+        "PRNU": [
+         {
+          "codigo": "Principio 12",
+          "nombre": "Carta Internacional de Derechos Humanos (PIDESC, art. 7 b)",
+          "ref": ""
+         }
+        ],
+        "OIT": [
+         {
+          "codigo": "C155",
+          "nombre": "Convenio sobre seguridad y salud de los trabajadores, 1981",
+          "ref": ""
+         },
+         {
+          "codigo": "C187",
+          "nombre": "Convenio sobre el marco promocional para la seguridad y salud en el trabajo, 2006",
+          "ref": ""
+         }
+        ],
+        "IPIECA": [
+         {
+          "codigo": "Tabla 2 · Condiciones de trabajo 7",
+          "nombre": "Condiciones de trabajo inseguras o insalubres",
+          "ref": "p. 38"
+         },
+         {
+          "codigo": "Tabla 2 · Bienes y servicios 4",
+          "nombre": "Condiciones inseguras en proveedores",
+          "ref": "p. 40"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Remuneración y evaluación de la brecha de salario digno",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "11.11 · 405-2",
+          "nombre": "Ratio del salario base y la remuneración de mujeres frente a hombres",
+          "ref": "GRI 11, p. 36"
+         },
+         {
+          "codigo": "11.10 · 401-2",
+          "nombre": "Beneficios para empleados de tiempo completo",
+          "ref": "GRI 11, p. 34"
+         }
+        ],
+        "Guía OCDE": [
+         {
+          "codigo": "Anexo P1 · Tabla 2",
+          "nombre": "Sueldos que no satisfacen las necesidades esenciales (cap. V, párr. 4 b)",
+          "ref": "p. 43"
+         }
+        ],
+        "PRNU": [
+         {
+          "codigo": "Principio 12",
+          "nombre": "Carta Internacional de Derechos Humanos (PIDESC, art. 7 a)",
+          "ref": ""
+         }
+        ],
+        "OIT": [
+         {
+          "codigo": "C100",
+          "nombre": "Convenio sobre igualdad de remuneración, 1951",
+          "ref": ""
+         }
+        ],
+        "IPIECA": [
+         {
+          "codigo": "Tabla 2 · Condiciones de trabajo 4",
+          "nombre": "Salarios insuficientes, atrasados o retenidos",
+          "ref": "p. 38"
+         },
+         {
+          "codigo": "Tabla 2 · Bienes y servicios 9",
+          "nombre": "Salarios insuficientes en proveedores",
+          "ref": "p. 40"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Horario de trabajo",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "11.10",
+          "nombre": "Prácticas de empleo: turnos extensos, nocturnos y FIFO (sin contenido temático propio)",
+          "ref": "GRI 11, p. 34"
+         }
+        ],
+        "Guía OCDE": [
+         {
+          "codigo": "Anexo P1 · Tabla 2",
+          "nombre": "Adaptar la jornada laboral a las capacidades de los trabajadores (cap. V, párr. 1 e)",
+          "ref": "p. 43"
+         }
+        ],
+        "PRNU": [
+         {
+          "codigo": "Principio 12",
+          "nombre": "Carta Internacional de Derechos Humanos (PIDESC, art. 7 d)",
+          "ref": ""
+         }
+        ],
+        "OIT": [],
+        "IPIECA": [
+         {
+          "codigo": "Tabla 2 · Condiciones de trabajo 3",
+          "nombre": "Horas de trabajo excesivas",
+          "ref": "p. 38"
+         },
+         {
+          "codigo": "Tabla 2 · Bienes y servicios 8",
+          "nombre": "Horas excesivas en proveedores",
+          "ref": "p. 40"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Condiciones laborales",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "11.10 · 401-1",
+          "nombre": "Contrataciones y rotación de personal",
+          "ref": "GRI 11, p. 34"
+         },
+         {
+          "codigo": "11.10 · 402-1",
+          "nombre": "Plazos de aviso mínimos sobre cambios operacionales",
+          "ref": "GRI 11, p. 34"
+         },
+         {
+          "codigo": "11.10 · 414-1, 414-2",
+          "nombre": "Evaluación social de proveedores",
+          "ref": "GRI 11, p. 34"
+         }
+        ],
+        "Guía OCDE": [
+         {
+          "codigo": "Anexo P1 · Tabla 2",
+          "nombre": "Empleo y relaciones laborales (Líneas Directrices, cap. V)",
+          "ref": "p. 43"
+         }
+        ],
+        "PRNU": [
+         {
+          "codigo": "Principio 12",
+          "nombre": "Carta Internacional de Derechos Humanos (PIDESC, art. 7)",
+          "ref": ""
+         }
+        ],
+        "OIT": [],
+        "IPIECA": [
+         {
+          "codigo": "Tabla 2 · Condiciones de trabajo 2",
+          "nombre": "Malas prácticas de reclutamiento",
+          "ref": "p. 38"
+         },
+         {
+          "codigo": "Tabla 2 · Condiciones de trabajo 8",
+          "nombre": "Alojamiento inseguro o insalubre",
+          "ref": "p. 38"
+         },
+         {
+          "codigo": "Tabla 2 · Condiciones de trabajo 9",
+          "nombre": "Reclutamiento y trato de trabajadores locales",
+          "ref": "p. 38"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Derechos ambientales",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "11.6 · 303-1",
+          "nombre": "Agua: interacción con el agua como recurso compartido",
+          "ref": "GRI 11, p. 26"
+         },
+         {
+          "codigo": "11.3 · 305-7",
+          "nombre": "Emisiones al aire (NOx, SOx y otras)",
+          "ref": "GRI 11, p. 20"
+         },
+         {
+          "codigo": "11.15 · 413-1",
+          "nombre": "Comunidades locales: participación y evaluación de impactos",
+          "ref": "GRI 11, p. 44"
+         }
+        ],
+        "Guía OCDE": [
+         {
+          "codigo": "Anexo P1 · Tabla 2",
+          "nombre": "Medio ambiente: degradación de ecosistemas y contaminación del agua; acceso al agua potable",
+          "ref": "pp. 42–43"
+         }
+        ],
+        "PRNU": [
+         {
+          "codigo": "Principio 12",
+          "nombre": "Carta Internacional de Derechos Humanos (PIDESC, art. 12)",
+          "ref": ""
+         }
+        ],
+        "OIT": [],
+        "IPIECA": [
+         {
+          "codigo": "Tabla 2 · Salud, seguridad y ambiente comunitario 4",
+          "nombre": "Residuos peligrosos",
+          "ref": "p. 39"
+         },
+         {
+          "codigo": "Tabla 2 · Salud, seguridad y ambiente comunitario 5",
+          "nombre": "Calidad y disponibilidad del agua",
+          "ref": "p. 39"
+         },
+         {
+          "codigo": "Tabla 2 · Salud, seguridad y ambiente comunitario 6",
+          "nombre": "Calidad del aire",
+          "ref": "p. 39"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "notas": [
+    "GRI 11 no tiene un tema de trabajo infantil: su recuadro 5 remite a GRI 408. Por eso la fila de trabajo infantil cita GRI 408-1 sin número 11.x.",
+    "GRI 11 no tiene contenido temático sobre horas de trabajo; el tema 11.10 lo trata en su descripción (turnos extensos, nocturnos y FIFO).",
+    "La celda OIT queda vacía en los seis pasos de debida diligencia: los convenios fundamentales no regulan el proceso. La Declaración tripartita de la OIT sobre las empresas multinacionales sí se refiere a la debida diligencia, pero no está en la carpeta de estándares; se puede agregar si se verifica el párrafo exacto.",
+    "Horario de trabajo, condiciones laborales y derechos ambientales no tienen convenio fundamental de la OIT. Existen convenios técnicos (p. ej., C001 sobre horas de trabajo) que no están en la carpeta.",
+    "En los temas laborales que no son principios fundamentales de la OIT, la columna PRNU cita el principio 12 por la vía de la Carta Internacional de Derechos Humanos (PIDESC, arts. 7 y 12). El texto del PIDESC no está en la carpeta.",
+    "Las páginas de la Guía OCDE y de IPIECA son las impresas en el documento. Las de GRI 11 corresponden al índice del estándar."
+   ]
+  },
+  {
+   "id": "mineria",
+   "nombre": "Minería",
+   "columnas": [
+    "GRI",
+    "CMSI",
+    "TSM",
+    "RGMP",
+    "Copper Mark",
+    "DRE"
+   ],
+   "fuentes": {
+    "GRI": "GRI 14: Mining Sector 2024 V1.1 (2025); GRI 2: Contenidos Generales 2021 (fila de cumplimiento legal)",
+    "CMSI": "Estándar Minero Consolidado (Consolidated Mining Standard Initiative), borrador de consulta pública, octubre de 2024",
+    "TSM": "Hacia una Minería Sostenible (TSM): protocolos de agua, relaves, cambio climático, biodiversidad, seguridad y salud, trabajo infantil y forzoso, diversidad e inclusión, y relacionamiento",
+    "RGMP": "World Gold Council, Responsible Gold Mining Principles",
+    "Copper Mark": "The Copper Mark, estándar de debida diligencia",
+    "DRE": "PDAC, Driving Responsible Exploration: Principles & Guidance Notes"
+   },
+   "grupos": [
+    {
+     "nombre": "Ambiental",
+     "filas": [
+      {
+       "tema": "Gestión del agua",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "14.7 · 303-1",
+          "nombre": "Agua como recurso compartido",
+          "ref": "p. 31 del PDF"
+         },
+         {
+          "codigo": "14.7 · 303-4",
+          "nombre": "Vertidos de agua",
+          "ref": "p. 31 del PDF"
+         }
+        ],
+        "CMSI": [
+         {
+          "codigo": "18.1",
+          "nombre": "Gestión y desempeño del agua",
+          "ref": "p. 95 del PDF"
+         }
+        ],
+        "TSM": [
+         {
+          "codigo": "Agua · Indicador 2",
+          "nombre": "Manejo del agua en las operaciones",
+          "ref": "p. 6 del PDF"
+         }
+        ],
+        "RGMP": [
+         {
+          "codigo": "10.1",
+          "nombre": "Eficiencia hídrica",
+          "ref": "p. 11 del PDF"
+         },
+         {
+          "codigo": "10.2",
+          "nombre": "Acceso y calidad del agua",
+          "ref": "p. 11 del PDF"
+         }
+        ],
+        "Copper Mark": [],
+        "DRE": [
+         {
+          "codigo": "7",
+          "nombre": "Protección ambiental: eficiencia hídrica",
+          "ref": "p. 65 del PDF · coincidencia parcial"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Relaves",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "14.6 · 14.6.3",
+          "nombre": "Instalaciones de relaves",
+          "ref": "p. 29 del PDF"
+         }
+        ],
+        "CMSI": [
+         {
+          "codigo": "21.1",
+          "nombre": "Gestión de relaves",
+          "ref": "p. 118 del PDF"
+         }
+        ],
+        "TSM": [
+         {
+          "codigo": "Relaves · Indicador 2",
+          "nombre": "Sistema de manejo de relaves",
+          "ref": "p. 10 del PDF"
+         }
+        ],
+        "RGMP": [
+         {
+          "codigo": "8.2",
+          "nombre": "Gestión de relaves y residuos",
+          "ref": "p. 10 del PDF"
+         }
+        ],
+        "Copper Mark": [],
+        "DRE": []
+       }
+      },
+      {
+       "tema": "Cambio climático y uso de energía",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "14.1 · 102-5",
+          "nombre": "Emisiones de GEI de alcance 1",
+          "ref": "p. 19 del PDF"
+         },
+         {
+          "codigo": "14.1 · 103-2",
+          "nombre": "Consumo y autogeneración de energía",
+          "ref": "p. 19 del PDF"
+         }
+        ],
+        "CMSI": [
+         {
+          "codigo": "20.1",
+          "nombre": "Estrategia corporativa de cambio climático",
+          "ref": "p. 110 del PDF"
+         }
+        ],
+        "TSM": [
+         {
+          "codigo": "Cambio climático · Indicador 2",
+          "nombre": "Gestión climática en las instalaciones",
+          "ref": "p. 6 del PDF"
+         }
+        ],
+        "RGMP": [
+         {
+          "codigo": "10.3",
+          "nombre": "Respuesta al cambio climático",
+          "ref": "p. 11 del PDF"
+         },
+         {
+          "codigo": "10.4",
+          "nombre": "Eficiencia energética y reporte",
+          "ref": "p. 11 del PDF"
+         }
+        ],
+        "Copper Mark": [],
+        "DRE": [
+         {
+          "codigo": "7",
+          "nombre": "Protección ambiental: eficiencia energética",
+          "ref": "p. 65 del PDF · coincidencia parcial"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Biodiversidad y uso del suelo",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "14.4 · 101-2",
+          "nombre": "Gestión de impactos en biodiversidad",
+          "ref": "p. 24 del PDF"
+         },
+         {
+          "codigo": "14.4 · 101-4",
+          "nombre": "Identificación de impactos en biodiversidad",
+          "ref": "p. 24 del PDF"
+         }
+        ],
+        "CMSI": [
+         {
+          "codigo": "19.1",
+          "nombre": "Biodiversidad, servicios ecosistémicos y naturaleza",
+          "ref": "p. 103 del PDF"
+         }
+        ],
+        "TSM": [
+         {
+          "codigo": "Gestión de biodiversidad · Indicador 2",
+          "nombre": "Manejo de biodiversidad en las instalaciones",
+          "ref": "p. 6 del PDF"
+         }
+        ],
+        "RGMP": [
+         {
+          "codigo": "9.1",
+          "nombre": "Biodiversidad",
+          "ref": "p. 10 del PDF"
+         },
+         {
+          "codigo": "9.2",
+          "nombre": "Sitios del Patrimonio Mundial",
+          "ref": "p. 10 del PDF"
+         }
+        ],
+        "Copper Mark": [],
+        "DRE": [
+         {
+          "codigo": "7",
+          "nombre": "Protección ambiental: biodiversidad",
+          "ref": "p. 66 del PDF"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Uso de sustancias peligrosas",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "14.3 · 305-7",
+          "nombre": "Emisiones atmosféricas significativas",
+          "ref": "p. 22 del PDF · coincidencia parcial"
+         }
+        ],
+        "CMSI": [
+         {
+          "codigo": "22.5",
+          "nombre": "Cianuro",
+          "ref": "p. 124 del PDF"
+         },
+         {
+          "codigo": "22.4",
+          "nombre": "Mercurio",
+          "ref": "p. 123 del PDF"
+         }
+        ],
+        "TSM": [],
+        "RGMP": [
+         {
+          "codigo": "8.3",
+          "nombre": "Cianuro y materiales peligrosos",
+          "ref": "p. 10 del PDF"
+         },
+         {
+          "codigo": "8.4",
+          "nombre": "Mercurio",
+          "ref": "p. 10 del PDF"
+         }
+        ],
+        "Copper Mark": [],
+        "DRE": []
+       }
+      },
+      {
+       "tema": "Gestión de residuos y sustancias peligrosas",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "14.5 · 306-2",
+          "nombre": "Gestión de impactos de residuos",
+          "ref": "p. 27 del PDF"
+         },
+         {
+          "codigo": "14.5 · 306-3",
+          "nombre": "Residuos generados",
+          "ref": "p. 27 del PDF"
+         }
+        ],
+        "CMSI": [
+         {
+          "codigo": "22.1",
+          "nombre": "Residuos no minerales y materiales peligrosos",
+          "ref": "p. 120 del PDF"
+         },
+         {
+          "codigo": "22.6",
+          "nombre": "Emisiones contaminantes accidentales",
+          "ref": "p. 124 del PDF"
+         }
+        ],
+        "TSM": [],
+        "RGMP": [
+         {
+          "codigo": "8.3",
+          "nombre": "Gestión de materiales peligrosos",
+          "ref": "p. 10 del PDF"
+         }
+        ],
+        "Copper Mark": [],
+        "DRE": [
+         {
+          "codigo": "7",
+          "nombre": "Almacenamiento y eliminación de materiales peligrosos",
+          "ref": "p. 65 del PDF"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Economía circular",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "14.5 · 306-4",
+          "nombre": "Residuos desviados de eliminación",
+          "ref": "p. 27 del PDF"
+         }
+        ],
+        "CMSI": [
+         {
+          "codigo": "23.1",
+          "nombre": "Gestión de la economía circular",
+          "ref": "p. 128 del PDF"
+         }
+        ],
+        "TSM": [],
+        "RGMP": [],
+        "Copper Mark": [],
+        "DRE": []
+       }
+      }
+     ]
+    },
+    {
+     "nombre": "Social",
+     "filas": [
+      {
+       "tema": "Derechos humanos",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "14.14 · 410-1",
+          "nombre": "Seguridad y derechos humanos",
+          "ref": "p. 48 del PDF · coincidencia parcial"
+         }
+        ],
+        "CMSI": [
+         {
+          "codigo": "5.1",
+          "nombre": "Derechos humanos",
+          "ref": "p. 36 del PDF"
+         }
+        ],
+        "TSM": [
+         {
+          "codigo": "Relacionamiento · Indicador 3",
+          "nombre": "Impactos comunitarios y derechos humanos",
+          "ref": "p. 10 del PDF"
+         }
+        ],
+        "RGMP": [
+         {
+          "codigo": "5.1",
+          "nombre": "Principios Rectores de las Naciones Unidas",
+          "ref": "p. 8 del PDF"
+         },
+         {
+          "codigo": "5.2",
+          "nombre": "Prevención de complicidad en abusos",
+          "ref": "p. 8 del PDF"
+         }
+        ],
+        "Copper Mark": [
+         {
+          "codigo": "5.2.4",
+          "nombre": "Evaluación de riesgos de derechos humanos",
+          "ref": "p. 28 del PDF"
+         }
+        ],
+        "DRE": [
+         {
+          "codigo": "3",
+          "nombre": "Respeto de los derechos humanos",
+          "ref": "p. 30 del PDF"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Trabajo infantil y forzoso",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "14.18 · 408-1",
+          "nombre": "Riesgos de trabajo infantil",
+          "ref": "p. 56 del PDF"
+         },
+         {
+          "codigo": "14.19 · 409-1",
+          "nombre": "Riesgos de trabajo forzoso",
+          "ref": "p. 58 del PDF"
+         }
+        ],
+        "CMSI": [
+         {
+          "codigo": "6.1",
+          "nombre": "Trabajo infantil y esclavitud moderna",
+          "ref": "p. 40 del PDF"
+         }
+        ],
+        "TSM": [
+         {
+          "codigo": "Trabajo infantil y forzoso · Indicador 1",
+          "nombre": "Prevención del trabajo forzoso",
+          "ref": "p. 5 del PDF"
+         },
+         {
+          "codigo": "Trabajo infantil y forzoso · Indicador 2",
+          "nombre": "Prevención del trabajo infantil",
+          "ref": "p. 5 del PDF"
+         }
+        ],
+        "RGMP": [
+         {
+          "codigo": "6.3",
+          "nombre": "Trabajo infantil y forzoso",
+          "ref": "p. 8 del PDF"
+         }
+        ],
+        "Copper Mark": [
+         {
+          "codigo": "5.2.4",
+          "nombre": "Trabajo forzado y peores formas infantiles",
+          "ref": "p. 28 del PDF"
+         }
+        ],
+        "DRE": []
+       }
+      },
+      {
+       "tema": "Salud y seguridad",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "14.16 · 403-1",
+          "nombre": "Sistema de salud y seguridad laboral",
+          "ref": "p. 52 del PDF"
+         },
+         {
+          "codigo": "14.16 · 403-2",
+          "nombre": "Identificación de peligros y evaluación de riesgos",
+          "ref": "p. 52 del PDF"
+         }
+        ],
+        "CMSI": [
+         {
+          "codigo": "9.1",
+          "nombre": "Gestión de la salud y seguridad",
+          "ref": "p. 55 del PDF"
+         }
+        ],
+        "TSM": [
+         {
+          "codigo": "Seguridad y salud · Indicador 2",
+          "nombre": "Planificación, implementación y operación",
+          "ref": "p. 9 del PDF"
+         }
+        ],
+        "RGMP": [
+         {
+          "codigo": "4.2",
+          "nombre": "Sistemas de gestión de seguridad",
+          "ref": "p. 7 del PDF"
+         },
+         {
+          "codigo": "4.4",
+          "nombre": "Salud comunitaria y planificación de emergencias",
+          "ref": "p. 7 del PDF"
+         }
+        ],
+        "Copper Mark": [],
+        "DRE": [
+         {
+          "codigo": "8",
+          "nombre": "Salud y seguridad de trabajadores y población",
+          "ref": "p. 69 del PDF"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Relacionamiento comunitario",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "14.10 · 413-1",
+          "nombre": "Participación y evaluación de impactos comunitarios",
+          "ref": "p. 40 del PDF"
+         }
+        ],
+        "CMSI": [
+         {
+          "codigo": "12.1",
+          "nombre": "Identificación y participación de partes interesadas",
+          "ref": "p. 69 del PDF"
+         }
+        ],
+        "TSM": [
+         {
+          "codigo": "Relacionamiento · Indicador 1",
+          "nombre": "Identificación de comunidades y grupos de interés",
+          "ref": "p. 6 del PDF"
+         },
+         {
+          "codigo": "Relacionamiento · Indicador 4",
+          "nombre": "Mecanismos de respuesta a grupos de interés",
+          "ref": "p. 13 del PDF"
+         }
+        ],
+        "RGMP": [
+         {
+          "codigo": "7.1",
+          "nombre": "Consulta comunitaria",
+          "ref": "p. 9 del PDF"
+         },
+         {
+          "codigo": "7.6",
+          "nombre": "Pueblos indígenas",
+          "ref": "p. 9 del PDF"
+         },
+         {
+          "codigo": "2.5",
+          "nombre": "Resolución de reclamaciones",
+          "ref": "p. 6 del PDF"
+         }
+        ],
+        "Copper Mark": [
+         {
+          "codigo": "5.1.5",
+          "nombre": "Mecanismo de quejas",
+          "ref": "p. 17 del PDF · coincidencia parcial"
+         }
+        ],
+        "DRE": [
+         {
+          "codigo": "5",
+          "nombre": "Participación de comunidades y partes interesadas",
+          "ref": "p. 13 del PDF"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Diversidad, igualdad e inclusión",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "14.21 · 405-1",
+          "nombre": "Diversidad de órganos de gobierno y empleados",
+          "ref": "p. 62 del PDF"
+         },
+         {
+          "codigo": "14.21 · 406-1",
+          "nombre": "Discriminación y acciones correctivas",
+          "ref": "p. 62 del PDF"
+         }
+        ],
+        "CMSI": [
+         {
+          "codigo": "8.1",
+          "nombre": "Gobernanza de diversidad, equidad e inclusión",
+          "ref": "p. 51 del PDF"
+         }
+        ],
+        "TSM": [
+         {
+          "codigo": "Diversidad, equidad e inclusión · Indicador 2",
+          "nombre": "Gestión de diversidad, equidad e inclusión",
+          "ref": "p. 7 del PDF"
+         }
+        ],
+        "RGMP": [
+         {
+          "codigo": "6.5",
+          "nombre": "Diversidad",
+          "ref": "p. 8 del PDF"
+         },
+         {
+          "codigo": "6.2",
+          "nombre": "Prevención de discriminación y acoso",
+          "ref": "p. 8 del PDF"
+         }
+        ],
+        "Copper Mark": [],
+        "DRE": []
+       }
+      }
+     ]
+    },
+    {
+     "nombre": "Gobernanza",
+     "filas": [
+      {
+       "tema": "Cumplimiento Legal",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "2-27",
+          "nombre": "Cumplimiento de la legislación y las normativas (GRI 2)",
+          "ref": "GRI 2, p. 45"
+         }
+        ],
+        "CMSI": [
+         {
+          "codigo": "2.1",
+          "nombre": "Cumplimiento legal",
+          "ref": "p. 18 del PDF"
+         }
+        ],
+        "TSM": [],
+        "RGMP": [
+         {
+          "codigo": "1.1",
+          "nombre": "Cumplimiento legal",
+          "ref": "p. 6 del PDF"
+         }
+        ],
+        "Copper Mark": [
+         {
+          "codigo": "5.2.4.1",
+          "nombre": "Evaluaciones legales en terreno",
+          "ref": "p. 31 del PDF · coincidencia parcial"
+         }
+        ],
+        "DRE": [
+         {
+          "codigo": "1",
+          "nombre": "Gobernanza responsable: cumplimiento legal",
+          "ref": "p. 18 del PDF"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Ética y anticorrupción",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "14.22 · 205-1",
+          "nombre": "Evaluación de riesgos de corrupción",
+          "ref": "p. 64 del PDF"
+         },
+         {
+          "codigo": "14.22 · 205-2",
+          "nombre": "Formación y comunicación sobre anticorrupción",
+          "ref": "p. 64 del PDF"
+         }
+        ],
+        "CMSI": [
+         {
+          "codigo": "2.2",
+          "nombre": "Ética empresarial y responsabilidad",
+          "ref": "p. 18 del PDF"
+         }
+        ],
+        "TSM": [],
+        "RGMP": [
+         {
+          "codigo": "1.2",
+          "nombre": "Código de conducta",
+          "ref": "p. 6 del PDF"
+         },
+         {
+          "codigo": "1.3",
+          "nombre": "Prevención de soborno y corrupción",
+          "ref": "p. 6 del PDF"
+         },
+         {
+          "codigo": "6.7",
+          "nombre": "Denuncias y protección contra represalias",
+          "ref": "p. 8 del PDF"
+         }
+        ],
+        "Copper Mark": [
+         {
+          "codigo": "5.2.4",
+          "nombre": "Riesgos de soborno y fraude",
+          "ref": "p. 28 del PDF"
+         }
+        ],
+        "DRE": [
+         {
+          "codigo": "2",
+          "nombre": "Prácticas empresariales éticas",
+          "ref": "p. 25 del PDF"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Transparencia y reporte",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "14.23 · 207-4",
+          "nombre": "Reporte fiscal por país",
+          "ref": "p. 66 del PDF"
+         }
+        ],
+        "CMSI": [
+         {
+          "codigo": "1.2",
+          "nombre": "Informes de sostenibilidad",
+          "ref": "p. 12 del PDF"
+         },
+         {
+          "codigo": "1.3",
+          "nombre": "Transparencia de los ingresos mineros",
+          "ref": "p. 12 del PDF"
+         }
+        ],
+        "TSM": [
+         {
+          "codigo": "Relacionamiento · Indicador 5",
+          "nombre": "Informes de relacionamiento comunitario",
+          "ref": "p. 15 del PDF · coincidencia parcial"
+         }
+        ],
+        "RGMP": [
+         {
+          "codigo": "1.5",
+          "nombre": "Transparencia de pagos a gobiernos",
+          "ref": "p. 6 del PDF"
+         },
+         {
+          "codigo": "1.7",
+          "nombre": "Responsabilidades y reporte",
+          "ref": "p. 6 del PDF"
+         }
+        ],
+        "Copper Mark": [
+         {
+          "codigo": "5.5",
+          "nombre": "Informes de debida diligencia",
+          "ref": "p. 40 del PDF"
+         }
+        ],
+        "DRE": [
+         {
+          "codigo": "2",
+          "nombre": "Transparencia y reporte",
+          "ref": "p. 25 del PDF"
+         }
+        ]
+       }
+      },
+      {
+       "tema": "Gestión de riesgos y debida diligencia",
+       "celdas": {
+        "GRI": [
+         {
+          "codigo": "14.25 · 14.25.3",
+          "nombre": "Debida diligencia en áreas de alto riesgo",
+          "ref": "p. 71 del PDF · coincidencia parcial"
+         }
+        ],
+        "CMSI": [
+         {
+          "codigo": "1.4",
+          "nombre": "Evaluación de riesgos",
+          "ref": "p. 13 del PDF"
+         },
+         {
+          "codigo": "3.1",
+          "nombre": "Cadena de suministro responsable",
+          "ref": "p. 23 del PDF"
+         }
+        ],
+        "TSM": [
+         {
+          "codigo": "Relacionamiento · Indicador 3",
+          "nombre": "Evaluación de riesgos e impactos comunitarios",
+          "ref": "p. 10 del PDF · coincidencia parcial"
+         }
+        ],
+        "RGMP": [
+         {
+          "codigo": "2.1",
+          "nombre": "Gestión de riesgos",
+          "ref": "p. 6 del PDF"
+         },
+         {
+          "codigo": "2.3",
+          "nombre": "Debida diligencia",
+          "ref": "p. 6 del PDF"
+         }
+        ],
+        "Copper Mark": [
+         {
+          "codigo": "5.1",
+          "nombre": "Sistema de gestión de debida diligencia",
+          "ref": "p. 15 del PDF"
+         },
+         {
+          "codigo": "5.2.4",
+          "nombre": "Evaluación de riesgos de suministro",
+          "ref": "p. 28 del PDF"
+         }
+        ],
+        "DRE": [
+         {
+          "codigo": "4",
+          "nombre": "Debida diligencia y evaluación de riesgos",
+          "ref": "p. 40 del PDF"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   ],
+   "notas": [
+    "Filas: los 16 aspectos del Excel «Estándares de Buenas Prácticas Mineras» de GH.",
+    "Las páginas de este sector son las del archivo PDF, no las impresas.",
+    "«Coincidencia parcial»: el requisito trata el aspecto solo en parte.",
+    "El CMSI citado es el borrador de consulta pública de octubre de 2024, no una versión final.",
+    "The Copper Mark se cruzó con su estándar de debida diligencia. Por eso los aspectos ambientales, salud y seguridad, y diversidad aparecen sin correspondencia: esos temas están en sus criterios de producción responsable, que no se revisaron.",
+    "GRI 14 es un estándar de reporte: sus contenidos piden informar, no equivalen a una obligación operativa."
+   ]
+  }
+ ]
+}
