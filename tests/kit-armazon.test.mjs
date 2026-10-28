@@ -176,3 +176,17 @@ test('E30: rutas anteriores convergen y la única pestaña visible no dibuja bar
  const m=await montar({hash:'#/ddhh/uno/resultados'});
  assert.equal(m.nodos.contenido.todos().filter(n=>n.className==='kit-pestanas').length,1);
 });
+
+test('E33: Riesgos sin barra, rutas secundarias vigentes y permisos conservados', async () => {
+  for (const id of ['uno', 'dos']) {
+    for (const vista of ['matriz', 'medidas']) {
+      const m = await montar({ hash: '#/riesgos/' + id + '/' + vista });
+      assert.equal(m.nodos.contenido.todos().filter(n => n.className === 'kit-pestanas').length, 0);
+      assert.equal(resolver('#/riesgos/' + id + '/' + vista).clave, 'riesgos/' + vista);
+    }
+  }
+  const m = await montar({ hash: '#/riesgos/uno/alimentacion' });
+  assert.equal(m.nodos.contenido.todos().filter(n => n.className === 'kit-pestanas').length, 0);
+  assert.equal(resolver('#/riesgos/uno/alimentacion').clave, 'riesgos/alimentacion');
+  assert.equal(resolver('#/riesgos/dos/alimentacion').clave, 'portada');
+});

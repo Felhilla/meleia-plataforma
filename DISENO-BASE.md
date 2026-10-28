@@ -116,3 +116,16 @@ Existe solo en el plan de acción del Demo A (`public/vista-plan.js`, `public/es
 | Capítulos, antetítulo dorado, relato y gráficos del Demo A conservados en los Módulos II–IV | ver `docs/sistema-diseno.md` | Módulos II–IV | Diseño del Demo A aprobado |
 
 Reglas transversales vigentes: tema claro y oscuro con tokens; 1280 × 720 sin desplazar en el mapa del Módulo I; a 390 px nada se corta ni hay desplazamiento horizontal; los botones no parten palabras; logos de empresa eliminados por decisión de Felipe (27-oct).
+
+## 8. Módulo IV · Ventana de riesgos (E33, boceto 28-oct-2026)
+
+La matriz es la entrada única visible del módulo. No se dibuja barra de pestañas; las rutas de Medidas y Alimentación conservan sus permisos. Al pie, los enlaces con aspecto de botón secundario se alinean a la izquierda: «Medidas de gestión» para todos y «Alimentación» solo para quien puede editar. Ambas vistas secundarias incluyen «← Volver a la matriz» arriba. El selector de los dos casos se conserva.
+
+- **Banda de cifras** `.kr-resumen`: tres columnas (prioridad alta, media y baja), franja `--kit-desplegable-fondo`, borde y separadores verticales `--kit-desplegable-borde`; números grandes en `--principal`, siguiendo el patrón de `mat-cifras`.
+- **Matriz** `.kr-marco`: una tarjeta con marco, eje «Gravedad» rotado a la izquierda, filas 3 · Alta / 2 · Media / 1 · Baja; abajo las columnas 1 · Baja / 2 · Media / 3 · Alta y «Probabilidad». Celdas de al menos 9,5 rem en escritorio, con las clases de prioridad existentes y códigos como botones. Conserva tabla y encabezados accesibles. En celular reduce rellenos y altura de celdas, mantiene las tres columnas y permite crecer verticalmente.
+- **Lista**: «Ver lista de riesgos» es un `details` cerrado inicialmente, con los cuatro filtros existentes y la lista ordenada por prioridad.
+- **Ficha**: diálogo modal con Escape, foco atrapado (incluido el `summary`) y devolución del foco. El h2 presenta código y nombre en `--kit-titulo-fondo` con borde `--kit-titulo-borde`; descripción con saltos de línea. Dos columnas en escritorio, una en celular. La izquierda muestra gravedad, promedio con un decimal, probabilidad y prioridad, seguidas de los tres criterios. Los niveles usan `.kr-alta`, `.kr-media` y `.kr-baja`; los criterios muestran número dentro de círculo: 3 alta, 2 media, 1 baja, con sus respectivos tokens de texto y fondo. Sin calificación se indica «Sin calificar».
+- **Detalle derecho**: derecho humano, relación, tipo de impacto, grupos afectados uno por línea y medidas asociadas agrupadas por nombre de componente. Sin medidas: «Sin medidas asociadas».
+- **Validación**: al menos un registro muestra «Validado» con `--baja-fondo` / `--baja` y los grupos con su resultado debajo. Sin registros, «Sin validar» con `--sem-gris-fondo` / `--texto-suave`; no usa rojo ni «No». Justificación, contexto, controles, comentarios y propuestas permanecen en «Más información», plegado.
+
+No se cambian tokens, paleta, tipografía, semáforos ni la banda global `.kit-titulo`. Los cálculos siguen a cargo de `KitRiesgos` y su configuración.
