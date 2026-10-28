@@ -182,25 +182,28 @@
   }
   async function abrirResumen(ctx) {
     if (!ctx.activo()) return;
-    const p = ctx.dialogo('Organizaciones identificadas', false, true); p.classList.add('ka-resumen-dialogo');
+    // Misma estructura que la ficha del Módulo II (dim-ficha): cabeza con título y panel de cifra, banda y tabla.
+    const p = ctx.dialogo('Organizaciones identificadas', true, true); p.classList.add('dim-ficha', 'ka-resumen-dialogo');
     try { await ctx.logos(); if (!ctx.activo() || ctx.panelActual !== p) return;
-      const columnas = el('div',null,'ka-resumen-columnas'), izquierda = el('div'), derecha = el('div');
-      const encabezado = p.querySelector('.kit-titulo') || p.querySelector('h2'); encabezado.className = 'ka-resumen-titulo';
-      encabezado.append(el('strong', numero(ctx.organizaciones.length)));
-      const tabla = el('table', null, 'ka-resumen-tabla'), body = el('tbody');
+      const cabeza = el('header', null, 'dim-ficha-cabeza'), titulo = el('div', null, 'dim-ficha-titulo'), total = el('div', null, 'dim-ficha-calif ka-resumen-total');
+      titulo.append(el('p', 'Mapa de actores', 'antetitulo'), el('h2', 'Organizaciones identificadas'), el('p', 'Por posición frente al proyecto y por categoría.', 'nota'));
+      total.append(el('span', 'Total', 'dim-ficha-rotulo'), el('strong', numero(ctx.organizaciones.length)), el('span', ctx.organizaciones.length === 1 ? 'organización' : 'organizaciones', 'dim-ficha-nivel'));
+      cabeza.append(titulo, total);
+      const banda = el('section', null, 'dim-ficha-hallazgos ka-resumen-posiciones'), ul = el('ul');
+      banda.append(el('h3', 'Posición frente al proyecto'));
+      posiciones.forEach((pos, i) => { const li = el('li', null, 'ka-resumen-pos-' + pos.toLowerCase()); li.append(el('strong', numero(ctx.organizaciones.filter(o => o.registros.some(a => a.posicion === pos)).length)), el('span', plurales[i])); ul.append(li); });
+      banda.append(ul);
+      { const mixtas = ctx.organizaciones.filter(o => posicion(o.registros) === 'Mixta').length; if (mixtas) banda.append(el('p', `${orgs(mixtas)} con cargos de distinta posición; por eso cuentan en más de una posición.`, 'nota')); }
+      const env = el('div', null, 'dim-ficha-tabla-env'), tabla = el('table', null, 'dim-ficha-tabla ka-resumen-tabla'), thead = el('thead'), tr = el('tr'), body = el('tbody');
       tabla.setAttribute('aria-label', 'Organizaciones por categoría');
-      categorias.forEach(([categoria,nombre]) => {
+      ['Categoría', 'Organizaciones'].forEach(t => { const th = el('th', t); th.scope = 'col'; tr.append(th); }); thead.append(tr);
+      categorias.forEach(([categoria, nombre]) => {
         const cantidad = agrupar(ctx.listas.actores.filter(a => a.categoria === categoria)).length;
         if (!cantidad) return;
         const fila = el('tr'), th = el('th', nombre); th.scope = 'row'; fila.append(th, el('td', numero(cantidad))); body.append(fila);
       });
-      tabla.append(body); izquierda.append(tabla);
-      posiciones.forEach((pos,i) => {
-        const fila = el('div',null,'ka-resumen-posicion'), clase = 'ka-' + pos.toLowerCase();
-        fila.append(el('strong',numero(ctx.organizaciones.filter(o => o.registros.some(a => a.posicion === pos)).length),'ka-resumen-numero '+clase),el('span',plurales[i],'ka-etiqueta '+clase)); derecha.append(fila);
-      });
-      { const mixtas = ctx.organizaciones.filter(o => posicion(o.registros) === 'Mixta').length; if (mixtas) derecha.append(el('small',`${orgs(mixtas)} con cargos de distinta posición; por eso cuentan en más de una caja.`)); }
-      columnas.append(izquierda,derecha); p.append(columnas);
+      tabla.append(thead, body); env.append(tabla);
+      p.append(cabeza, banda, env);
     } catch(e) { ctx.error(p,e); }
   }
   async function mapa(contenedor, datos, params) {
