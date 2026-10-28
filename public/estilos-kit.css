@@ -85,5 +85,3 @@ button:disabled { opacity: .65; cursor: wait; }
 .kit-casos-lista a { display: block; padding: var(--e2); color: var(--texto); }
 .kit-casos-lista a + a { border-top: 1px solid var(--kit-desplegable-borde); }
 .kit-casos-lista a[aria-current] { font-weight: 700; text-decoration-thickness: 2px; }
-.kit-empresa-logo { display: block; width: auto; max-width: 200px; height: 64px; margin-left: auto; padding: 4px 8px; object-fit: contain; background: #fff; border: 1px solid var(--borde); border-radius: var(--radio-chico); }
-@media (max-width: 560px) { .kit-empresa-logo { height: 48px; max-width: 120px; } }

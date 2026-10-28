@@ -123,6 +123,7 @@ test('E24: resumen conserva seis categorías y posiciones superpuestas', async (
   const m = await montar('mapa',false,{actores:muestra()}); await centro(m).onclick();
   assert.match(panel(m).textContent,/6 organizaciones/);
   for (const nombre of ['Autoridades','Comunidades y asociaciones','Gremios','Academia','Proveedores','Medios de comunicación']) assert.match(panel(m).textContent,new RegExp(nombre));
+  assert.ok(m.document.body.todos().some(x => x.className === 'ka-fondo ka-fondo-centro'), 'el resumen abre como ventana centrada');
   assert.match(panel(m).textContent,/0\s*Gremios · 0 actores/); assert.match(panel(m).textContent,/1\s*Academia · 1 actor\b/);
   assert.match(panel(m).textContent,/2\s*Favorables/); assert.match(panel(m).textContent,/4 Neutrales/); assert.match(panel(m).textContent,/2 Desfavorables/); assert.match(panel(m).textContent,/1 organización con cargos de distinta posición/);
 });
