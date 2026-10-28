@@ -90,7 +90,7 @@ test('E24: agrupa instituciones exactas, cuenta organizaciones por cuadrante y r
   assert.deepEqual(m.consultas.map(c => c[1]),['actores','actores-contactos','actores-resumen']);
   assert.equal(m.contenedor.todos().filter(n => n.tagName === 'BUTTON').length,5);
   const exacta = await montar('mapa',true,{actores:[...muestra(),{...muestra()[0],id:'i',institucion:'organización Nube'}]});
-  await centro(exacta).onclick(); assert.match(panel(exacta).textContent,/Organizaciones identificadas\s+7/);
+  await centro(exacta).onclick(); assert.match(panel(exacta).textContent,/Total\s+7\s+organizaciones/);
 });
 test('E24: filtros combinables, posiciones mixtas y autoridades ordenadas', async () => {
   const m = await montar('mapa',true,{actores:muestra()}); await cuadro(m).onclick();
@@ -124,16 +124,17 @@ test('E24: ficha completa, contactos, intensidad, detalle plegado y foco de vent
 });
 test('E24: resumen omite categorías vacías y posiciones superpuestas', async () => {
   const m = await montar('mapa',false,{actores:muestra()}); await centro(m).onclick();
-  assert.match(panel(m).textContent,/Organizaciones identificadas\s+6/);
+  assert.match(panel(m).textContent,/Total\s+6\s+organizaciones/);
   assert.equal(centro(m).attrs['aria-label'],'6 Organizaciones identificadas');
   for (const nombre of ['Autoridades','Academia']) assert.match(panel(m).textContent,new RegExp(nombre));
   assert.ok(m.document.body.todos().some(x => x.className === 'ka-fondo ka-fondo-centro'), 'el resumen abre como ventana centrada');
-  const tabla=panel(m).todos().find(n=>n.className==='ka-resumen-tabla');
+  const tabla=panel(m).todos().find(n=>String(n.className).includes('ka-resumen-tabla'));
   assert.equal(tabla.tagName,'TABLE');assert.doesNotMatch(tabla.textContent,/actores|Gremios|Comunidades|Proveedores|Medios/);
   assert.ok(tabla.todos().filter(n=>n.tagName==='TD').every(n=>Number(n.textContent)>0));
   assert.match(tabla.textContent,/Academia 1/);
-  const posiciones=panel(m).todos().filter(n=>n.className==='ka-resumen-posicion');
-  assert.equal(posiciones.length,3);posiciones.forEach(n=>{assert.equal(n.children[0].tagName,'STRONG');assert.ok(n.children[1].className.includes('ka-etiqueta'));});
+  const posiciones=panel(m).todos().filter(n=>String(n.className).startsWith('ka-resumen-pos-'));
+  assert.equal(posiciones.length,3);posiciones.forEach(n=>{assert.equal(n.children[0].tagName,'STRONG');assert.equal(n.children[1].tagName,'SPAN');});
+  assert.ok(panel(m).todos().some(n=>String(n.className).includes('dim-ficha-cabeza')),'el resumen usa la cabeza de la ficha del Módulo II');
   assert.match(panel(m).textContent,/2\s*Favorables/); assert.match(panel(m).textContent,/4 Neutrales/); assert.match(panel(m).textContent,/2 Desfavorables/); assert.match(panel(m).textContent,/1 organización con cargos de distinta posición/);
 });
 test('E24: logos se piden bajo demanda una vez, rechazan SVG y URL', async () => {
