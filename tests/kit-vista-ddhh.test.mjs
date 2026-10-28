@@ -80,7 +80,7 @@ test('E27: dimensión cambia título, puntaje, estándares, hallazgos y brechas 
  assert.deepEqual(select.options.map(o=>o.textContent),cat.dimensiones.grandes.map(g=>g.titulo));
  const nodo=clase=>m.contenedor.todos().find(n=>n.className.split(' ').includes(clase));
  assert.equal(nodo('cifra').textContent,'3,0');
- const eje=cat.ejes[0];boton(m.contenedor,eje.nombre).onclick();boton(panel(m),'Cerrar ×').onclick();
+ const eje=cat.ejes[0];boton(m.contenedor,eje.nombre).onclick();panel(m).querySelector('[aria-label=\"Cerrar\"]').onclick();
  select.value='temas-ddhh';select.onchange();
  const dimension=cat.dimensiones.grandes.find(g=>g.id==='temas-ddhh');
  const h2=m.contenedor.todos().find(n=>n.tagName==='H2');assert.equal(h2.textContent,dimension.titulo);assert.equal(h2.tabIndex,-1);
@@ -103,4 +103,10 @@ test('E27: Alimentación solo para edición',async()=>{
   if(editar) {assert.equal(enlaces[0].href,'#/ddhh/empresa-1/alimentacion');assert.equal(enlaces[0].className,'boton secundario');}
   assert.doesNotMatch(m.contenedor.textContent,/Cargar nueva evaluación|En una frase/);
  }
+});
+
+test('E34: eje usa cierre común accesible con foco inicial',async()=>{
+ const m=await montar('ddhh/resultados');const origen=boton(m.contenedor,json('config/kit-ddhh-catalogo.json').ejes[0].nombre);origen.focus();origen.onclick();
+ const cerrar=panel(m).querySelector('[aria-label="Cerrar"]');assert.equal(cerrar.className,'kit-cerrar');assert.equal(cerrar.textContent,'×');assert.equal(cerrar.type,'button');assert.equal(m.document.activeElement,cerrar);
+ cerrar.onclick();assert.equal(panel(m),undefined);assert.equal(m.document.activeElement,m.contenedor.querySelector('.dim-vertice'));assert.ok(m.document.activeElement.isConnected);
 });

@@ -32,10 +32,6 @@
     return [...aspectos].sort((a,b)=>promedio(b)-promedio(a)||a.orden-b.orden||a.id.localeCompare(b.id));
   }
   const top=(rs,tipo)=>ordenados(rs,tipo).slice(0,10);
-  function cifras(rs){
-    const v=rs.filter(r=>r.validado==='Sí'),n=q=>v.filter(r=>r.cuadrante===q).length;
-    return [{valor:v.length,etiqueta:v.length===1?'Tema material':'Temas materiales'},{valor:n('Doble'),etiqueta:'de doble materialidad'},{valor:n('Impacto'),etiqueta:'de impacto'},{valor:n('Financiera'),etiqueta:n('Financiera')===1?'financiero':'financieros'}];
-  }
   function nivel(valor){
     const numero=Math.max(0,Math.min(5,Math.round(valor)));
     return {numero,etiqueta:['Nulo','Muy bajo','Bajo','Medio','Alto','Muy alto'][numero],color:['gris','verde','amarillo','ambar','naranja','rojo'][numero]};
@@ -50,5 +46,5 @@
       return [Math.min(5,Math.max(0,x+paso)),y];
     });
   }
-  return {colecciones,validar,variables,umbrales,estado,ordenados,top,cifras,nivel,posiciones};
+  return {colecciones,validar,variables,umbrales,estado,ordenados,top,nivel,posiciones};
 }));

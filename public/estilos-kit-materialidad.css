@@ -1,10 +1,5 @@
 /* E30 · Hermano del tablero de dimensiones; tokens del diseño base. */
 .materialidad { min-width:0; max-width:100%; color:var(--texto); overflow-wrap:anywhere; }
-.mat-cifras { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); background:var(--kit-desplegable-fondo); border:1px solid var(--kit-desplegable-borde); border-radius:8px; margin-bottom:var(--e4); padding:var(--e3) 0; }
-.mat-cifras > div { display:grid; text-align:center; padding:var(--e2); }
-.mat-cifras > div + div { border-left:1px solid var(--kit-desplegable-borde); }
-.mat-cifras strong { font-size:var(--t-display); font-weight:700; color:var(--principal); line-height:1.15; }
-.mat-cifras span { font-size:var(--t-chico); }
 .mat-tablero { display:grid; grid-template-columns:18.5rem minmax(0,1fr); padding:0; overflow:hidden; margin-bottom:var(--e3); }
 .mat-lateral { min-width:0; background:var(--kit-tarjeta-gris); border-right:1px solid var(--borde); padding:var(--e4); }
 .mat-lateral label { display:block; font-size:var(--t-chico); margin-bottom:var(--e2); }
@@ -50,25 +45,19 @@
 .materialidad th,.materialidad td { padding:var(--e2) var(--e1); border-bottom:1px solid var(--borde); text-align:left; overflow-wrap:anywhere; font-size:var(--t-micro); }
 .materialidad th:first-child { width:22%; }
 .mat-ficha { position:relative; width:min(800px,94vw); max-height:90vh; height:auto; padding:var(--e4); overflow-y:auto; box-sizing:border-box; }
-.mat-ficha > button { white-space:nowrap; position:absolute; top:var(--e3); right:var(--e3); }
-.mat-ficha .mat-ficha-cab { position:static; padding:0; margin-top:var(--e6); background:none; color:inherit; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:var(--e3); align-items:center; border-bottom:1px solid var(--borde); }
-.mat-ficha-cab h2 { margin:var(--e3) 0; }
+.mat-ficha .mat-ficha-cab { position:static; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:var(--e3); align-items:center; color:inherit; }
 .mat-dimension { display:grid; gap:var(--e1); border-left:1px solid var(--borde); padding-left:var(--e3); }
 .mat-dimension span { font-size:var(--t-micro); color:var(--texto-suave); }
 .mat-dimension strong { font-weight:700; }
 .mat-ficha th,.mat-ficha td { vertical-align:middle; }
-.mat-ficha-medio { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--e4); border-block:1px solid var(--borde); padding:var(--e3) 0; }
-.mat-nota h3 { font-size:var(--t-cuerpo); }
 .mat-calificacion { display:inline-flex; align-items:center; gap:var(--e2); flex-wrap:wrap; }
 .mat-circulo { display:inline-flex; align-items:center; justify-content:center; min-width:2.6rem; height:2.6rem; border-radius:50%; font-size:var(--t-h3); font-weight:700; color:var(--sobre-semaforo,var(--texto)); }
-.mat-nota .mat-circulo { min-width:3.5rem; height:3.5rem; font-size:var(--t-h3); }
 .mat-nivel-0 { background:var(--sem-gris); }
 .mat-nivel-1 { background:var(--sem-verde); }
 .mat-nivel-2 { background:var(--sem-amarillo); color:var(--texto); }
 .mat-nivel-3 { background:var(--sem-ambar); color:var(--texto); }
 .mat-nivel-4 { background:var(--sem-naranja); }
 .mat-nivel-5 { background:var(--sem-rojo); color:white; }
-.mat-estado { background:var(--kit-titulo-fondo); border:1px solid var(--kit-titulo-borde); padding:var(--e3); }
 .mat-micro { font-size:var(--t-micro); color:var(--texto-suave); }
 .mat-fuente { margin-top:var(--e4); }
 /* Los sólidos conservan su color en ambos temas. */
@@ -81,9 +70,8 @@
  .mat-dimension { border-left:0; padding:0 0 var(--e3); }
  .mat-lateral { border-right:0; border-bottom:1px solid var(--borde); }
  .mat-resultado,.mat-lateral { padding:var(--e3); }
- .mat-cifras { grid-template-columns:repeat(2,minmax(0,1fr)); }
- .mat-cifras > div:nth-child(3) { border-left:0; }
- .mat-cifras > div:nth-child(n+3) { border-top:1px solid var(--kit-desplegable-borde); }
  .mat-tablero .mat-tabla table { table-layout:auto; }
  .mat-tablero .mat-tabla th,.mat-tablero .mat-tabla td { padding:var(--e1) 1px; font-size:var(--t-micro); word-break:break-word; }
 }
+
+.mat-ficha .mat-tabla caption { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }

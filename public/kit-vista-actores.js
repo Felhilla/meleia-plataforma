@@ -53,7 +53,8 @@
           else if (!e.shiftKey && root.document.activeElement === ultimo) { e.preventDefault(); primero?.focus(); }
         }
       };
-      const b = boton('×', cerrar); b.className = 'kit-credenciales-cerrar'; b.setAttribute('aria-label','Cerrar'); panel.append(b); if (!encima) panel.append(h); else { const etiqueta = el('span',titulo,'ka-sr'); etiqueta.id = h.id; panel.append(etiqueta); } fondo.append(panel); root.document.body.append(fondo);
+      fondo.onclick = e => { if (e.target === fondo) cerrar(); };
+      const b = boton('×', cerrar); b.className = 'kit-cerrar'; b.setAttribute('aria-label','Cerrar'); panel.append(b); if (!encima) panel.append(h); else { const etiqueta = el('span',titulo,'ka-sr'); etiqueta.id = h.id; panel.append(etiqueta); } fondo.append(panel); root.document.body.append(fondo);
       root.document.addEventListener('keydown', teclado); pila.push({panel,cerrar}); b.focus();
       ctx.panelActual = panel;
       return panel;

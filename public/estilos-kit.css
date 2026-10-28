@@ -60,7 +60,6 @@ button:disabled { opacity: .65; cursor: wait; }
 .kit-credenciales-boton { padding: var(--e2) var(--e4); background: var(--kit-titulo-fondo); border: 1px solid var(--kit-titulo-borde); border-radius: var(--radio-chico); color: var(--texto); font: inherit; font-weight: 700; cursor: pointer; }
 .kit-credenciales-boton[aria-expanded="true"] { background: var(--principal); color: var(--sobre-principal); }
 .kit-credenciales-panel { position: relative; margin-top: var(--e3); padding: var(--e5) var(--e4) var(--e4); background: var(--kit-desplegable-fondo); border: 1px solid var(--kit-desplegable-borde); border-radius: var(--radio-chico); }
-.kit-credenciales-cerrar { position: absolute; top: var(--e2); right: var(--e2); width: 36px; height: 36px; border: 1px solid var(--kit-desplegable-borde); border-radius: var(--radio-chico); background: var(--superficie); color: var(--texto); font-size: 1.3rem; line-height: 1; cursor: pointer; }
 .kit-equipo .kit-persona + .kit-persona { border-left: 2px dashed var(--kit-desplegable-borde); padding-left: var(--e4); }
 .kit-persona { display: flex; flex-direction: column; gap: var(--e2); min-width: 0; }
 .kit-persona img, .kit-persona-foto-vacia { width: 112px; height: 112px; border-radius: 50%; object-fit: cover; background: var(--superficie); border: 1px solid var(--kit-desplegable-borde); }
@@ -90,3 +89,29 @@ button:disabled { opacity: .65; cursor: wait; }
 /* Un solo caso disponible: identificación sin desplegable. */
 .kit-caso-unico { display: flex; flex-wrap: wrap; gap: var(--e2); color: var(--texto-suave); }
 .kit-caso-unico strong { color: var(--texto); font-weight: 700; }
+
+/* E34 · Ventanas y fichas compartidas. */
+.kit-cerrar { position:absolute; top:var(--e3); right:var(--e3); z-index:2; display:grid; place-items:center; width:32px; height:32px; min-height:0; padding:0; border:0; border-radius:var(--radio-chico); background:transparent; color:var(--texto-suave); font:inherit; font-size:1.25rem; line-height:1; cursor:pointer; }
+.kit-cerrar:hover, .kit-cerrar:focus-visible { background:var(--suave); color:var(--texto); }
+.kit-ficha.kit-ficha { position:relative; padding:var(--e5); padding-top:var(--e5); display:grid; gap:var(--e3); font-size:var(--t-cuerpo); font-weight:400; line-height:1.6; color:var(--texto); }
+.kit-ficha h2 { font-size:var(--t-h2); font-weight:700; line-height:1.15; letter-spacing:-.015em; text-wrap:balance; margin:0; }
+.kit-ficha .kit-ficha-encabezado { margin-right:var(--e4); }
+.kit-caja { min-width:0; background:var(--fondo-alterno); border:1px solid var(--borde); border-radius:var(--radio-chico); padding:var(--e4); }
+.kit-caja-destacada { background:var(--kit-titulo-fondo); border-color:var(--kit-titulo-borde); }
+.kit-ficha .kit-caja h3 { font-size:var(--t-micro); font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--oro-texto); margin:0 0 var(--e3); }
+.kit-ficha .kit-ficha-rotulo { font-size:var(--t-chico); font-weight:700; color:var(--texto-suave); }
+.kit-ficha p, .kit-ficha ul { margin:0; }
+.kit-ficha .kit-ficha-cuerpo { font-size:var(--t-cuerpo); font-weight:400; line-height:1.6; color:var(--texto); }
+.kit-ficha .kit-ficha-nota { display:block; font-size:var(--t-micro); color:var(--texto-suave); }
+.kit-ficha-rejilla { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--e3); }
+.kit-ficha-pila { display:flex; flex-direction:column; gap:var(--e3); min-width:0; }
+.kit-ficha-dato { display:grid; gap:var(--e2); }
+.kit-ficha-dato + .kit-ficha-dato { margin-top:var(--e3); }
+.kit-ficha .kit-mini-tabla { width:100%; border-collapse:collapse; table-layout:fixed; }
+.kit-ficha .kit-mini-tabla th, .kit-ficha .kit-mini-tabla td { width:50%; padding:var(--e3) var(--e2); border:1px solid var(--borde); text-align:left; vertical-align:middle; overflow-wrap:anywhere; }
+.kit-ficha .kit-mini-tabla td { font-size:var(--t-cuerpo); }
+.kit-mini-tabla + h3 { margin-top:var(--e4) !important; }
+/* Rótulos sin cortes a mitad de palabra (en el Módulo III la regla general de tablas los partía). */
+.kit-ficha .kit-mini-tabla th, .materialidad .kit-ficha .kit-mini-tabla th, .kit-ficha.materialidad .kit-mini-tabla th { width:55%; overflow-wrap:normal; word-break:normal; hyphens:auto; font-size:var(--t-chico); padding:var(--e3) var(--e2); }
+.kit-ficha .mat-circulo { min-width:2.4rem; width:2.4rem; height:2.4rem; font-size:var(--t-cuerpo); }
+@media(max-width:759px) { .kit-ficha-rejilla { grid-template-columns:minmax(0,1fr); } }

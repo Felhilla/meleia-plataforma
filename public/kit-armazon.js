@@ -103,12 +103,12 @@
         boton.onclick = async () => {
           if (!panel.hidden) { cerrar(); return; }
           panel.hidden = false; boton.setAttribute('aria-expanded', 'true');
-          if (cargado) return;
+          if (cargado) { panel.querySelector('.kit-cerrar')?.focus(); return; }
           panel.replaceChildren(el('p', 'Cargando…', 'nota'));
           try {
             const r = await root.fetch('config/kit-credenciales.json'); if (!r.ok) throw Error('No se pudo cargar el equipo.');
             const cfg = await r.json(); cargado = true;
-            const x = el('button', '×', 'kit-credenciales-cerrar'); x.type = 'button'; x.setAttribute('aria-label', 'Cerrar credenciales'); x.onclick = cerrar;
+            const x = el('button', '×', 'kit-cerrar'); x.type = 'button'; x.setAttribute('aria-label', 'Cerrar credenciales'); x.onclick = cerrar;
             const lista = el('div', null, 'kit-rejilla kit-equipo');
             cfg.personas.forEach(p => {
               const ficha = el('article', null, 'kit-persona');
@@ -119,7 +119,7 @@
               if (p.experiencia) ficha.append(el('p', p.experiencia, 'kit-persona-experiencia'));
               lista.append(ficha);
             });
-            panel.replaceChildren(x, lista);
+            panel.replaceChildren(x, lista); x.focus();
           } catch (e) { panel.replaceChildren(mensaje(e.message || 'No se pudo cargar el equipo.', true)); }
         };
         panel.onkeydown = e => { if (e.key === 'Escape') cerrar(); };

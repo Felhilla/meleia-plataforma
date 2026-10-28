@@ -47,9 +47,9 @@
       const origen = focoOrigen?.isConnected ? focoOrigen : root.document.activeElement;
       cerrarDialogo();
       focoOrigen = origen;
-      const anterior = origen, fondo = el('div', null, 'kr-fondo'), panel = el('section', null, 'kr-dialogo');
+      const anterior = origen, fondo = el('div', null, 'kr-fondo'), panel = el('section', null, 'kr-dialogo kit-ficha');
       panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-labelledby', 'kr-dialogo-titulo'); panel.tabIndex = -1;
-      const h = el('h2', titulo); h.id = 'kr-dialogo-titulo';
+      const cab = el('header', null, 'kit-caja kit-caja-destacada kit-ficha-encabezado'); const h = el('h2', titulo); cab.append(h); h.id = 'kr-dialogo-titulo';
       const regiones = [...root.document.body.children].map(n => [n, n.inert]); regiones.forEach(([n]) => { n.inert = true; });
       const cerrar = () => { root.document.removeEventListener('keydown', teclado); fondo.remove(); regiones.forEach(([n, previo]) => { n.inert = previo; }); if (activo()) { if (anterior?.isConnected) anterior.focus(); else contenedor.focus(); } cerrarDialogo = () => {}; focoOrigen = null; };
       const teclado = e => {
@@ -61,7 +61,7 @@
           else if (!e.shiftKey && root.document.activeElement === ultimo) { e.preventDefault(); primero?.focus(); }
         }
       };
-      const b = boton('Cerrar', cerrar); panel.append(b, h); fondo.append(panel); root.document.body.append(fondo);
+      const b = boton('×', cerrar); b.className = 'kit-cerrar'; b.setAttribute('aria-label', 'Cerrar'); panel.append(b, cab); fondo.onclick = e => { if (e.target === fondo) cerrar(); }; fondo.append(panel); root.document.body.append(fondo);
       root.document.addEventListener('keydown', teclado); b.focus(); cerrarDialogo = cerrar;
       ctx.panelActual = panel;
       return panel;
@@ -75,38 +75,37 @@
   function detalles(n, registro, esquema) {
     Object.entries(esquema.campos).forEach(([k, r]) => { if (registro[k] !== undefined && registro[k] !== '') texto(n, `${r.etiqueta}: ${Array.isArray(registro[k]) ? registro[k].join(' · ') : registro[k]}`); });
   }
+  function caja(n, titulo) { const s = el('section', null, 'kit-caja'); s.append(el('h3', titulo)); n.append(s); return s; }
+  function miniTabla(n, titulo, filas) { const t = el('table', null, 'kit-mini-tabla'), body = el('tbody'); t.setAttribute('aria-label', titulo); filas.forEach(([nombre, valor]) => { const fila = el('tr'), th = el('th', nombre, 'kit-ficha-rotulo'), td = el('td'); th.scope = 'row'; td.append(valor); fila.append(th, td); body.append(fila); }); t.append(body); n.append(t); }
   async function fichaRiesgo(ctx, r) {
     const panel = ctx.dialogo(`${r.codigo} · ${r.nombre}`);
     panel.classList.add('kr-ficha-riesgo');
-    panel.append(el('p', r.descripcion || 'Sin descripción.', 'kr-descripcion'));
-    const columnas = el('div', null, 'kr-ficha-columnas'), izquierda = el('div'), derecha = el('div');
+    caja(panel, 'Descripción del riesgo').append(el('p', r.descripcion || 'Sin descripción.', 'kr-descripcion'));
+    const columnas = el('div', null, 'kit-ficha-rejilla'), izquierda = el('div', null, 'kit-ficha-pila'), derecha = el('div', null, 'kit-ficha-pila');
     columnas.append(izquierda, derecha); panel.append(columnas);
-    const c = tecnica(ctx, r.id), g = K.gravedad(c, ctx.cfg), oficial = bloque(izquierda, 'Calificación técnica');
-    if (!g) texto(oficial, 'Sin calificar');
-    else {
-      [['Gravedad', g.nivel], ['Probabilidad', c.probabilidad], ['Prioridad', K.prioridad(c, ctx.cfg)]].forEach(([nombre, nivel]) => {
-        const fila = el('p', null, 'kr-nivel'); fila.append(el('span', nombre), etiqueta(nivel));
-        if (nombre === 'Gravedad') fila.append(el('small', 'Promedio ' + new Intl.NumberFormat('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(g.promedio)));
-        oficial.append(fila);
-      });
-      tabla(oficial, ['Criterio', 'Valor'], ctx.cfg.gravedad.criterios.map(k => [
-        ({ escala: 'Escala', alcance: 'Alcance', irremediabilidad: 'Carácter de irremediabilidad' })[k],
-        el('span', String(c[k]), 'kr-criterio kr-' + ({ 1: 'baja', 2: 'media', 3: 'alta' })[c[k]])
-      ]));
-    }
-    const derechos = bloque(derecha, 'Derecho humano afectado');
-    texto(derechos, r.derecho_humano || 'Sin asignar');
-    texto(derechos, 'Relación: ' + (c?.vinculacion || 'Sin calificar') + (c?.tipo_impacto ? ' · impacto ' + c.tipo_impacto.toLowerCase() : ''));
-    derechos.append(el('h4', 'Grupos de interés afectados'));
-    if (!(r.ambitos || []).length) texto(derechos, 'Sin registrar');
-    (r.ambitos || []).forEach(a => texto(derechos, a));
-    const medidas = bloque(derecha, 'Medidas de gestión'), lista = ctx.listas['riesgos-medidas'].filter(a => a.riesgos?.includes(r.id));
+    const c = tecnica(ctx, r.id), g = K.gravedad(c, ctx.cfg), oficial = caja(izquierda, 'Calificación técnica');
+    miniTabla(oficial, 'Calificación técnica', [['Gravedad', g?.nivel], ['Probabilidad', c?.probabilidad], ['Prioridad', K.prioridad(c, ctx.cfg)]].map(([nombre, nivel]) => {
+      const valor = el('div', null, 'kr-nivel'); valor.append(etiqueta(nivel));
+      if (nombre === 'Gravedad' && g) valor.append(el('small', 'Promedio ' + new Intl.NumberFormat('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(g.promedio), 'kit-ficha-nota'));
+      return [nombre, valor];
+    }));
+    oficial.append(el('h3', 'Criterios de gravedad'));
+    miniTabla(oficial, 'Criterios de gravedad', ctx.cfg.gravedad.criterios.map(k => [
+      ({ escala: 'Escala', alcance: 'Alcance', irremediabilidad: 'Carácter de irremediabilidad' })[k],
+      [1,2,3].includes(c?.[k]) ? el('span', String(c[k]), 'kr-criterio kr-' + ({ 1: 'baja', 2: 'media', 3: 'alta' })[c[k]]) : el('span', 'Sin calificar', 'kit-ficha-nota')
+    ]));
+    function dato(n, nombre, valores) { const d = el('div', null, 'kit-ficha-dato'); d.append(el('span', nombre, 'kit-ficha-rotulo')); valores.forEach(v => d.append(el('p', v))); n.append(d); return d; }
+    const derechos = caja(derecha, 'Afectación');
+    dato(derechos, 'Derecho humano afectado', [r.derecho_humano || 'Sin asignar']);
+    dato(derechos, 'Relación', [(c?.vinculacion || 'Sin calificar') + (c?.tipo_impacto ? ' · impacto ' + c.tipo_impacto.toLowerCase() : '')]);
+    dato(derechos, 'Grupos de interés afectados', r.ambitos?.length ? r.ambitos : ['Sin registrar']);
+    const medidas = caja(derecha, 'Medidas de gestión'), lista = ctx.listas['riesgos-medidas'].filter(a => a.riesgos?.includes(r.id));
     if (!lista.length) texto(medidas, 'Sin medidas asociadas');
     [...new Set(lista.map(a => a.componente))].forEach(id => {
-      const grupo = bloque(medidas, 'Pilar: ' + (K.componentes(ctx.cfg, ctx.params.empresa).find(p => p.id === id)?.nombre || id));
-      lista.filter(a => a.componente === id).forEach(a => texto(grupo, `${a.codigo} · ${a.titulo} (${a.estado})`));
+      const grupo = dato(medidas, 'Pilar', [K.componentes(ctx.cfg, ctx.params.empresa).find(p => p.id === id)?.nombre || id]);
+      lista.filter(a => a.componente === id).forEach(a => { const medida = el('div', null, 'kit-ficha-dato'); medida.append(el('p', `${a.codigo} · ${a.titulo}`), el('span', a.estado, 'kit-ficha-nota')); grupo.append(medida); });
     });
-    const validaciones = bloque(derecha, 'Validación de los grupos de interés');
+    const validaciones = caja(derecha, 'Validación de los grupos de interés');
     const registros = ctx.listas['riesgos-validaciones'].filter(v => v.riesgo === r.id);
     validaciones.append(el('span', registros.length ? 'Validado' : 'Sin validar', 'kr-etiqueta ' + (registros.length ? 'kr-baja' : 'kr-sin-validar')));
     const mas = el('details', null, 'kr-mas'); mas.append(el('summary', 'Más información')); panel.append(mas);
@@ -115,16 +114,16 @@
       texto(mas, c.justificacion || 'Sin justificación.');
       texto(mas, 'Tipos de medida: ' + (ctx.cfg.tiposMedida[c.vinculacion]?.[c.tipo_impacto] || []).join(' · '));
     }
-    const control = bloque(mas, 'Contexto y controles');
+    const control = caja(mas, 'Contexto y controles');
     ['localizacion', 'actividades', 'medidas_control', 'analisis_controles'].forEach(k => { if (r[k]) texto(control, r[k]); });
-    const propuestas = bloque(mas, 'Validación y propuestas de los grupos');
+    const propuestas = caja(mas, 'Validación y propuestas de los grupos');
     texto(propuestas, K.validacion(r.id, ctx.listas['riesgos-validaciones'], ctx.cfg).texto);
     try {
       await ctx.cargar(['riesgos-grupos']);
       if (!ctx.activo() || ctx.panelActual !== panel || !panel.isConnected) return;
       ctx.listas['riesgos-validaciones'].filter(v => v.riesgo === r.id).forEach(v => {
-        const grupo = ctx.listas['riesgos-grupos'].find(g => g.id === v.grupo), s = bloque(propuestas, grupo?.nombre || v.grupo);
-        validaciones.append(el('p', `${grupo?.nombre || v.grupo}: ${v.resultado}`, 'kr-validacion-detalle'));
+        const grupo = ctx.listas['riesgos-grupos'].find(g => g.id === v.grupo), s = caja(propuestas, grupo?.nombre || v.grupo);
+        validaciones.append(el('p', `${grupo?.nombre || v.grupo}: ${v.resultado}`, 'kr-validacion-detalle kit-ficha-nota'));
         texto(s, v.resultado); texto(s, v.comentario || 'Sin comentario.');
         if (v.resultado === ctx.cfg.resultadoAjuste) {
           Object.entries(v).filter(([k, valor]) => k.startsWith('propuesta_') && valor !== '' && valor != null).forEach(([k, valor]) => texto(s, `${k.slice(10).replaceAll('_', ' ')} propuesto: ${valor}`));
@@ -268,11 +267,11 @@
     const plazoTexto = a => { const p = K.plazo(a, ctx.listas['riesgos-calificacion'], cfg); return p.propuesto ? p.meses ? `Plazo propuesto: ${p.meses} meses desde la aprobación de la medida` : 'Completa la calificación de los riesgos para proponer el plazo' : `Plazo: ${new Intl.DateTimeFormat('es-CO', { timeZone: 'UTC' }).format(new Date(p.fecha + 'T00:00:00Z'))}`; };
     function fichaAccion(a) {
       const panel = ctx.dialogo(`${a.codigo} · ${a.titulo}`);
-      texto(panel, a.descripcion || 'Sin descripción.'); texto(panel, `${a.estado} · Responsable: ${a.responsable || 'sin asignar'}`); texto(panel, plazoTexto(a));
-      const links = bloque(panel, 'Riesgos que atiende');
+      const detalle = caja(panel, 'Descripción'); texto(detalle, a.descripcion || 'Sin descripción.'); texto(detalle, `${a.estado} · Responsable: ${a.responsable || 'sin asignar'}`); texto(detalle, plazoTexto(a));
+      const links = caja(panel, 'Riesgos que atiende');
       if (!a.riesgos?.length) texto(links, 'Sin riesgo vinculado.');
       (a.riesgos || []).forEach(id => { const r = ctx.listas.riesgos.find(x => x.id === id); texto(links, `${r?.codigo || id} · ${r?.nombre || 'Riesgo no disponible'} · Prioridad ${prioridad(ctx, id)}`); });
-      if (params.puedeEditar) panel.append(boton('Editar acción', async function () { this.disabled = true; const zona = bloque(panel, 'Actualizar acción'); try { await formulario(ctx, zona, 'riesgos-medidas', a, guardado => { pintar(); fichaAccion(guardado); }, ['estado', 'plazo', 'responsable']); } catch (e) { ctx.error(zona, e); this.disabled = false; } }));
+      if (params.puedeEditar) panel.append(boton('Editar acción', async function () { this.disabled = true; const zona = caja(panel, 'Actualizar acción'); try { await formulario(ctx, zona, 'riesgos-medidas', a, guardado => { pintar(); fichaAccion(guardado); }, ['estado', 'plazo', 'responsable']); } catch (e) { ctx.error(zona, e); this.disabled = false; } }));
     }
     function fichaPilar(c) {
       const panel = ctx.dialogo(c.nombre), lista = ctx.listas['riesgos-medidas'].filter(a => a.componente === c.id);

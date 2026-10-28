@@ -18,22 +18,29 @@
     n.append(circulo,el('span',nivel.etiqueta));return n;
   }
   function ficha(a,tema,tipo,boton,vigente,umbrales){
-    const fondo=el('div',null,'fondo-dialogo centrado'),d=el('section',null,'panel materialidad mat-ficha'),cerrar=U.boton('Cerrar ×',()=>limpiar());
+    const fondo=el('div',null,'fondo-dialogo centrado'),d=el('section',null,'panel materialidad mat-ficha kit-ficha'),cerrar=U.boton('×',()=>limpiar());
+    cerrar.className='kit-cerrar';cerrar.type='button';cerrar.setAttribute('aria-label','Cerrar');
     d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.setAttribute('aria-labelledby','mat-ficha-titulo');
     const h=el('h2',a.nombre);h.id='mat-ficha-titulo';
-    const cab=el('header',null,'mat-ficha-cab');const dimension=el('div',null,'mat-dimension');dimension.append(el('span','Dimensión ESG'),el('strong',a.dimension));cab.append(h,dimension);
+    const cab=el('header',null,'mat-ficha-cab kit-caja kit-caja-destacada kit-ficha-encabezado');const dimension=el('div',null,'mat-dimension');dimension.append(el('span','Dimensión ESG'),el('strong',a.dimension));cab.append(h,dimension);
     const validado=a.validado==='Sí',descripcion=validado&&tema?.descripcion?.trim()?tema.descripcion:a.definicion;
-    d.append(cerrar,cab,el('h3','Descripción'),el('p',descripcion));
-    const medio=el('div',null,'mat-ficha-medio'),notas=el('div'),referencias=el('div');
+    function caja(titulo,clase=''){const n=el('section',null,'kit-caja '+clase);n.append(el('h3',titulo));return n;}
+    const descripcionCaja=caja('Descripción');descripcionCaja.append(el('p',descripcion,'kit-ficha-cuerpo'));
+    d.append(cerrar,cab,descripcionCaja);
+    const medio=el('div',null,'kit-ficha-rejilla'),izquierda=el('div',null,'kit-ficha-pila'),referencias=el('div',null,'kit-ficha-pila'),notas=caja('Calificación');
     const campos=tipo==='doble'?[variables.doble[1],variables.doble[0]]:tipo==='impacto'?[variables.impacto[1],variables.impacto[0]]:[variables.financiera[1],variables.financiera[0]];
-    campos.forEach(([k,l])=>{const r=el('div',null,'mat-nota');r.append(el('h3',l),calificacion(a[k]));notas.append(r);});
+    const mini=el('table',null,'kit-mini-tabla'),body=el('tbody');mini.setAttribute('aria-label','Calificación');
+    campos.forEach(([k,l])=>{const r=el('tr',null,'mat-nota'),rotulo=el('th',l,'kit-ficha-rotulo'),valor=el('td');rotulo.scope='row';valor.append(calificacion(a[k]));r.append(rotulo,valor);body.append(r);});
+    mini.append(body);notas.append(mini);izquierda.append(notas);
     const ul=el('ul'),indicadores=validado&&tema?.indicadores?.trim()?tema.indicadores.split(';'):a.marco.split(' / ');
     indicadores.map(x=>x.trim()).filter(Boolean).forEach(x=>ul.append(el('li',x)));
-    const estado=el('div',null,'mat-estado');estado.append(el('strong',M.estado(a,tipo,umbrales)));
-    referencias.append(el('h3','Estándares relacionados'),ul,estado);medio.append(notas,referencias);d.append(medio);
-    if(tipo!=='financiera')d.append(tabla('Calificación de los grupos de interés',['Grupo','Importancia','Probabilidad'],[['col','Colaboradores'],['cli','Clientes'],['pro','Proveedores']].map(([k,l])=>[l,calificacion(a[k+'_importancia']),calificacion(a[k+'_probabilidad'])])));
-    if(tipo!=='impacto')d.append(tabla('Calificación del taller financiero',['Variable','Calificación'],taller.map(([k,l])=>[l,calificacion(a[k])])));
-    d.append(el('p','Escala de 0 (nulo) a 5 (muy alto).','mat-micro'));
+    const estandares=caja('Estándares relacionados');estandares.append(ul);
+    const estado=caja('Estado','kit-caja-destacada');estado.append(el('p',M.estado(a,tipo,umbrales),'mat-estado kit-ficha-cuerpo'));
+    referencias.append(estandares,estado);medio.append(izquierda,referencias);d.append(medio);
+    function cajaTabla(titulo,columnas,filas){const n=caja(titulo);n.append(tabla(titulo,columnas,filas));d.append(n);}
+    if(tipo!=='financiera')cajaTabla('Calificación de los grupos de interés',['Grupo','Importancia','Probabilidad'],[['col','Colaboradores'],['cli','Clientes'],['pro','Proveedores']].map(([k,l])=>[l,calificacion(a[k+'_importancia']),calificacion(a[k+'_probabilidad'])]));
+    if(tipo!=='impacto')cajaTabla('Calificación del taller financiero',['Variable','Calificación'],taller.map(([k,l])=>[l,calificacion(a[k])]));
+    d.append(el('p','Escala de 0 (nulo) a 5 (muy alto).','kit-ficha-nota'));
     const regiones=[...document.querySelectorAll('body > header, body > main, body > footer, body > .saltar')],inertes=regiones.map(n=>n.inert);regiones.forEach(n=>{n.inert=true;});
     fondo.append(d);document.body.append(fondo);document.body.classList.add('dialogo-abierto');cerrar.focus();let limpio=false;
     function limpiar(){if(limpio)return;limpio=true;document.removeEventListener('keydown',teclado);regiones.forEach((n,i)=>{n.inert=inertes[i];});fondo.remove();document.body.classList.remove('dialogo-abierto');if(vigente())boton.focus();}
@@ -92,8 +99,6 @@
       const datos=KitEstudios.reemplazar(listas,nombre),resumen=datos['materialidad-resumen'].find(r=>r.id==='resumen'),aspectos=datos['materialidad-aspectos'],temas=datos['materialidad-temas'];
       const raiz=el('div',null,'materialidad');c.append(raiz);
       if(!resumen||!aspectos.length){U.vacio(raiz,p,'materialidad');return()=>{activo=false;};}
-      const banda=el('div',null,'mat-cifras');
-      M.cifras(aspectos).forEach(x=>{const n=el('div');n.append(el('strong',String(x.valor)),el('span',x.etiqueta));banda.append(n);});raiz.append(banda);
       const tarjeta=el('article',null,'tarjeta mat-tablero'),lateral=el('aside',null,'mat-lateral'),derecha=el('div',null,'mat-resultado'),label=el('label','Materialidad'),selector=el('select');
       label.htmlFor='mat-tipo';selector.id='mat-tipo';
       Object.entries(titulos).forEach(([k,t])=>{const o=el('option',t);o.value=k;selector.append(o);});selector.value='doble';

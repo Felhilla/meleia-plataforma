@@ -220,3 +220,9 @@ test('E26: dentro del mismo orden, gobernación antes que asamblea y alcaldía a
   const m = await montar('mapa',true,{actores:lista}); await cuadro(m).onclick();
   assert.deepEqual(tarjetas(m).map(n => n.children[1].textContent),['Gobernación de Prueba','Asamblea Departamental de Prueba','Contraloría de Prueba','Alcaldía de Prueba','Concejo Municipal de Prueba','Aguas de Prueba']);
 });
+
+test('E34: ficha de actor usa cierre común accesible con foco inicial',async()=>{
+ const m=await montar('mapa',true,{actores:muestra()});await cuadro(m).onclick();const origen=tarjetas(m)[0];origen.focus();origen.onclick();
+ const p=panel(m),cerrar=p.todos().find(n=>n.attrs['aria-label']==='Cerrar');assert.equal(cerrar.className,'kit-cerrar');assert.equal(cerrar.textContent,'×');assert.equal(cerrar.type,'button');assert.equal(m.document.activeElement,cerrar);
+ cerrar.onclick();assert.equal(m.document.activeElement,origen);
+});

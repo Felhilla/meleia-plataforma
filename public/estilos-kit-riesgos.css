@@ -38,7 +38,6 @@
 .kr-previa, .kr-bloque { border-top: 1px solid var(--borde); padding-top: var(--e4); margin-top: var(--e4); }
 .kr-fondo { position: fixed; inset: 0; z-index: 100; background: color-mix(in srgb, var(--texto) 25%, transparent); display: grid; place-items: center; padding: var(--e3); }
 .kr-dialogo { background: var(--superficie); color: var(--texto); width: min(1100px, 100%); max-height: 92dvh; overflow: auto; padding: var(--e5); border: 1px solid var(--borde); border-radius: var(--radio); box-shadow: var(--sombra-alta); overflow-wrap: anywhere; }
-.kr-dialogo > .boton:first-child { display: block; margin-left: auto; margin-bottom: var(--e3); }
 .kr-dialogo h2 { max-width: 850px; }
 .kr-dialogo h3 { margin-bottom: var(--e3); }
 .kr-plan { display: grid; grid-template-columns: minmax(250px, .85fr) minmax(0, 1.4fr); gap: var(--e5); align-items: start; }
@@ -60,13 +59,7 @@
 }
 
 .kr-lista summary, .kr-mas summary { cursor:pointer; padding:var(--e3) 0; font-weight:700; }
-.kr-ficha-riesgo > h2 { max-width:none; padding:var(--e4); background:var(--kit-titulo-fondo); border:1px solid var(--kit-titulo-borde); border-radius:var(--radio-chico); }
 .kr-descripcion, .kr-mas p { white-space:pre-line; }
-.kr-ficha-columnas { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.2fr); gap:var(--e4); }
-.kr-ficha-columnas > div { min-width:0; }
-.kr-ficha-columnas > div + div { border-left:1px solid var(--borde); padding-left:var(--e4); }
-.kr-ficha-columnas .kr-bloque { margin-top:0; margin-bottom:var(--e4); }
-.kr-nivel { display:flex; align-items:center; flex-wrap:wrap; gap:var(--e2); }
 .kr-etiqueta { display:inline-block; padding:var(--e1) var(--e2); border-radius:var(--radio-chico); font-weight:700; }
 .kr-criterio { display:inline-grid; place-items:center; width:2rem; height:2rem; border-radius:50%; font-weight:700; }
 .kr-sin-validar { background:var(--sem-gris-fondo); color:var(--texto-suave); }
@@ -77,3 +70,6 @@
   .kr-ficha-columnas { grid-template-columns:minmax(0,1fr); }
   .kr-ficha-columnas > div + div { border-left:0; padding-left:0; }
 }
+
+.kr-nivel { display:grid; justify-items:start; gap:var(--e2); }
+.kr-mas > .kit-caja { margin-top:var(--e3); }

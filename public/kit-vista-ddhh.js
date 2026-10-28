@@ -179,7 +179,7 @@
       const nivel = (datos.caso?.metodologia?.calificacion?.brechas?.niveles || []).find(n => typeof valor === 'number' && n.valor === Math.floor(valor));
       const fondo = el('div', null, 'fondo-dialogo centrado');
       const panel = el('section', null, 'panel dim-ficha'); panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-labelledby', 'dim-ficha-titulo'); panel.tabIndex = -1;
-      const cerrar = el('button', 'Cerrar ×', 'dim-cerrar');
+      const cerrar = el('button', '×', 'kit-cerrar'); cerrar.type = 'button'; cerrar.setAttribute('aria-label', 'Cerrar');
       // Fila 1: título | calificación
       const cabeza = el('header', null, 'dim-ficha-cabeza');
       const titulo = el('div', null, 'dim-ficha-titulo');
