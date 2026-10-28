@@ -25,7 +25,6 @@
       const a = el('a', nombre, 'boton secundario'); a.href = ruta(params.empresa, vista); pie.append(a);
     }); n.append(pie);
   }
-  const etiqueta = nivel => el('span', nivel || 'Sin calificar', 'kr-etiqueta' + (['Alta', 'Media', 'Baja'].includes(nivel) ? ' kr-' + nivel.toLowerCase() : ' kr-sin-validar'));
   function tabla(n, cabeceras, filas) {
     const marco = el('div', null, 'kr-tabla'), t = el('table'), head = el('thead'), tr = el('tr'), body = el('tbody');
     cabeceras.forEach(c => { const th = el('th', c); th.scope = 'col'; tr.append(th); }); head.append(tr);
@@ -76,7 +75,6 @@
     Object.entries(esquema.campos).forEach(([k, r]) => { if (registro[k] !== undefined && registro[k] !== '') texto(n, `${r.etiqueta}: ${Array.isArray(registro[k]) ? registro[k].join(' · ') : registro[k]}`); });
   }
   function caja(n, titulo) { const s = el('section', null, 'kit-caja'); s.append(el('h3', titulo)); n.append(s); return s; }
-  function miniTabla(n, titulo, filas) { const t = el('table', null, 'kit-mini-tabla'), body = el('tbody'); t.setAttribute('aria-label', titulo); filas.forEach(([nombre, valor]) => { const fila = el('tr'), th = el('th', nombre, 'kit-ficha-rotulo'), td = el('td'); th.scope = 'row'; td.append(valor); fila.append(th, td); body.append(fila); }); t.append(body); n.append(t); }
   async function fichaRiesgo(ctx, r) {
     const panel = ctx.dialogo(`${r.codigo} · ${r.nombre}`);
     panel.classList.add('kr-ficha-riesgo');
@@ -84,16 +82,24 @@
     const columnas = el('div', null, 'kit-ficha-rejilla'), izquierda = el('div', null, 'kit-ficha-pila'), derecha = el('div', null, 'kit-ficha-pila');
     columnas.append(izquierda, derecha); panel.append(columnas);
     const c = tecnica(ctx, r.id), g = K.gravedad(c, ctx.cfg), oficial = caja(izquierda, 'Calificación técnica');
-    miniTabla(oficial, 'Calificación técnica', [['Gravedad', g?.nivel], ['Probabilidad', c?.probabilidad], ['Prioridad', K.prioridad(c, ctx.cfg)]].map(([nombre, nivel]) => {
-      const valor = el('div', null, 'kr-nivel'); valor.append(etiqueta(nivel));
-      if (nombre === 'Gravedad' && g) valor.append(el('small', 'Promedio ' + new Intl.NumberFormat('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(g.promedio), 'kit-ficha-nota'));
-      return [nombre, valor];
-    }));
-    oficial.append(el('h3', 'Criterios de gravedad'));
-    miniTabla(oficial, 'Criterios de gravedad', ctx.cfg.gravedad.criterios.map(k => [
-      ({ escala: 'Escala', alcance: 'Alcance', irremediabilidad: 'Carácter de irremediabilidad' })[k],
-      [1,2,3].includes(c?.[k]) ? el('span', String(c[k]), 'kr-criterio kr-' + ({ 1: 'baja', 2: 'media', 3: 'alta' })[c[k]]) : el('span', 'Sin calificar', 'kit-ficha-nota')
-    ]));
+    const tablaTecnica = el('table', null, 'kit-mini-tabla kr-tecnica'), cuerpo = el('tbody');
+    tablaTecnica.setAttribute('aria-label', 'Calificación técnica');
+    function filaTecnica(nombre, nivel, valor = nivel) {
+      const fila = el('tr'), th = el('th', nombre), td = el('td', valor || 'Sin calificar');
+      th.scope = 'row';
+      if (['Alta', 'Media', 'Baja'].includes(nivel)) td.className = 'kr-' + nivel.toLowerCase();
+      fila.append(th, td); cuerpo.append(fila);
+    }
+    filaTecnica('Gravedad', g?.nivel, g ? g.nivel + ' · promedio ' + new Intl.NumberFormat('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(g.promedio) : null);
+    filaTecnica('Probabilidad', c?.probabilidad);
+    filaTecnica('Prioridad', K.prioridad(c, ctx.cfg));
+    const subtitulo = el('tr'), th = el('th', 'Criterios de gravedad', 'kr-tecnica-subtitulo');
+    th.setAttribute('colspan', '2'); subtitulo.append(th); cuerpo.append(subtitulo);
+    ctx.cfg.gravedad.criterios.forEach(k => {
+      const nivel = ({ 1: 'Baja', 2: 'Media', 3: 'Alta' })[c?.[k]];
+      filaTecnica(({ escala: 'Escala', alcance: 'Alcance', irremediabilidad: 'Carácter de irremediabilidad' })[k], nivel, nivel ? c[k] + ' · ' + nivel : null);
+    });
+    tablaTecnica.append(cuerpo); oficial.append(tablaTecnica);
     function dato(n, nombre, valores) { const d = el('div', null, 'kit-ficha-dato'); d.append(el('span', nombre, 'kit-ficha-rotulo')); valores.forEach(v => d.append(el('p', v))); n.append(d); return d; }
     const derechos = caja(derecha, 'Afectación');
     dato(derechos, 'Derecho humano afectado', [r.derecho_humano || 'Sin asignar']);
@@ -140,9 +146,7 @@
     await ctx.cargar(['riesgos', 'riesgos-calificacion', 'riesgos-validaciones', 'riesgos-medidas']); if (!ctx.activo()) return;
     const riesgos = ctx.listas.riesgos; contenedor.classList.add('kr');
     if (!riesgos.length) texto(contenedor, 'Esta empresa aún no tiene riesgos registrados. Registra el riesgo y su calificación técnica para ubicarlo en la matriz.');
-    const resumen = el('div', null, 'kr-resumen');
-    cfg.niveles.forEach(p => { const cifra = el('div'); cifra.append(el('strong', numero(riesgos.filter(r => prioridad(ctx, r.id) === p).length)), el('span', 'Prioridad ' + p.toLowerCase())); resumen.append(cifra); });
-    contenedor.append(resumen);
+
     const marco = el('div', null, 'kr-marco'); marco.append(el('div', 'Gravedad', 'kr-eje-gravedad'));
     const mapa = el('div', null, 'kr-mapa'); mapa.setAttribute('role', 'table'); mapa.setAttribute('aria-label', 'Matriz de riesgos: gravedad en filas, probabilidad en columnas');
     const cab = el('div', null, 'kr-fila'); cab.setAttribute('role', 'row'); cab.append(el('span'));

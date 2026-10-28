@@ -1,11 +1,6 @@
 /* Adaptación del mapa y fichas de Riesgos y del panel y pilares del capítulo 06. */
 .kr { display: grid; gap: var(--e5); min-width: 0; }
 .kr h2, .kr h3 { margin-bottom: var(--e3); }
-.kr-resumen { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); background:var(--kit-desplegable-fondo); border:1px solid var(--kit-desplegable-borde); border-radius:8px; padding:var(--e3) 0; }
-.kr-resumen > div { display:grid; text-align:center; padding:var(--e2); }
-.kr-resumen > div + div { border-left:1px solid var(--kit-desplegable-borde); }
-.kr-resumen strong { font-size:var(--t-display); font-weight:700; color:var(--principal); line-height:1.15; }
-.kr-resumen span { font-size:var(--t-chico); }
 .kr-marco { display:grid; grid-template-columns:auto minmax(0,1fr); gap:var(--e2); padding:var(--e4); border:1px solid var(--borde); border-radius:var(--radio); background:var(--superficie); }
 .kr-eje-gravedad { writing-mode:vertical-rl; transform:rotate(180deg); text-align:center; font-weight:700; }
 .kr-eje-probabilidad { grid-column:2; text-align:center; font-weight:700; }
@@ -61,9 +56,8 @@
 .kr-lista summary, .kr-mas summary { cursor:pointer; padding:var(--e3) 0; font-weight:700; }
 .kr-descripcion, .kr-mas p { white-space:pre-line; }
 .kr-etiqueta { display:inline-block; padding:var(--e1) var(--e2); border-radius:var(--radio-chico); font-weight:700; }
-.kr-criterio { display:inline-grid; place-items:center; width:2rem; height:2rem; border-radius:50%; font-weight:700; }
 .kr-sin-validar { background:var(--sem-gris-fondo); color:var(--texto-suave); }
-.kr-validacion-detalle, .kr-nivel small { font-size:var(--t-chico); }
+.kr-validacion-detalle { font-size:var(--t-chico); }
 @media (max-width:540px) {
   .kr-marco { padding:var(--e2); gap:var(--e1); }
   .kr-fila > strong { font-size:var(--t-micro); }
@@ -71,5 +65,8 @@
   .kr-ficha-columnas > div + div { border-left:0; padding-left:0; }
 }
 
-.kr-nivel { display:grid; justify-items:start; gap:var(--e2); }
 .kr-mas > .kit-caja { margin-top:var(--e3); }
+
+.kit-ficha .kr-tecnica th, .kit-ficha .kr-tecnica td { border:1px solid var(--borde); font-weight:700; }
+.kit-ficha .kr-tecnica th[scope="row"] { font-size:var(--t-chico); text-transform:none; letter-spacing:normal; }
+.kit-ficha .kr-tecnica .kr-tecnica-subtitulo { font-size:var(--t-micro); text-transform:uppercase; letter-spacing:.1em; color:var(--oro-texto); }

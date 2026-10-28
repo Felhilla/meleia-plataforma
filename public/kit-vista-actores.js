@@ -182,11 +182,23 @@
   }
   async function abrirResumen(ctx) {
     if (!ctx.activo()) return;
-    const p = ctx.dialogo(`${numero(ctx.organizaciones.length)} organizaciones`, false, true); p.classList.add('ka-resumen-dialogo');
+    const p = ctx.dialogo('Organizaciones identificadas', false, true); p.classList.add('ka-resumen-dialogo');
     try { await ctx.logos(); if (!ctx.activo() || ctx.panelActual !== p) return;
       const columnas = el('div',null,'ka-resumen-columnas'), izquierda = el('div'), derecha = el('div');
-      categorias.forEach(([categoria,nombre]) => { const actores = ctx.listas.actores.filter(a => a.categoria === categoria); const fila = el('p', null, 'ka-resumen-fila'); fila.append(el('strong', numero(agrupar(actores).length)), el('span', `${nombre} · ${actores.length === 1 ? '1 actor' : numero(actores.length) + ' actores'}`)); izquierda.append(fila); });
-      posiciones.forEach((pos,i) => { const caja = el('p',null,'ka-etiqueta ka-' + pos.toLowerCase()); caja.append(el('strong',numero(ctx.organizaciones.filter(o => o.registros.some(a => a.posicion === pos)).length)),el('span',plurales[i])); derecha.append(caja); });
+      const encabezado = p.querySelector('.kit-titulo') || p.querySelector('h2'); encabezado.className = 'ka-resumen-titulo';
+      encabezado.append(el('strong', numero(ctx.organizaciones.length)));
+      const tabla = el('table', null, 'ka-resumen-tabla'), body = el('tbody');
+      tabla.setAttribute('aria-label', 'Organizaciones por categoría');
+      categorias.forEach(([categoria,nombre]) => {
+        const cantidad = agrupar(ctx.listas.actores.filter(a => a.categoria === categoria)).length;
+        if (!cantidad) return;
+        const fila = el('tr'), th = el('th', nombre); th.scope = 'row'; fila.append(th, el('td', numero(cantidad))); body.append(fila);
+      });
+      tabla.append(body); izquierda.append(tabla);
+      posiciones.forEach((pos,i) => {
+        const fila = el('div',null,'ka-resumen-posicion'), clase = 'ka-' + pos.toLowerCase();
+        fila.append(el('strong',numero(ctx.organizaciones.filter(o => o.registros.some(a => a.posicion === pos)).length),'ka-resumen-numero '+clase),el('span',plurales[i],'ka-etiqueta '+clase)); derecha.append(fila);
+      });
       { const mixtas = ctx.organizaciones.filter(o => posicion(o.registros) === 'Mixta').length; if (mixtas) derecha.append(el('small',`${orgs(mixtas)} con cargos de distinta posición; por eso cuentan en más de una caja.`)); }
       columnas.append(izquierda,derecha); p.append(columnas);
     } catch(e) { ctx.error(p,e); }
@@ -211,7 +223,7 @@
       const compartidas = miembros.filter(o => unicos(o.registros.map(a => K.nivelFinal(a,ctx.cfg))).length > 1).length;
       if (compartidas) q.append(el('small',`Incluye ${orgs(compartidas)} que también ${compartidas === 1 ? 'está' : 'están'} en otro cuadrante`)); mapa.append(q);
     });
-    const centro = boton(null,() => abrirResumen(ctx)); centro.className = 'ka-centro'; centro.setAttribute('aria-label',`${numero(actores.length)} Actores identificados`); centro.append(el('strong',numero(actores.length)),el('span','Actores identificados')); mapa.append(centro); contenedor.append(mapa);
+    const centro = boton(null,() => abrirResumen(ctx)); centro.className = 'ka-centro'; centro.setAttribute('aria-label',`${numero(ctx.organizaciones.length)} Organizaciones identificadas`); centro.append(el('strong',numero(ctx.organizaciones.length)),el('span','Organizaciones identificadas')); mapa.append(centro); contenedor.append(mapa);
     const fecha = ctx.listas['actores-resumen'].find(r => r.id === 'resumen')?.fecha_corte;
     const valida = typeof fecha === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(fecha) && !Number.isNaN(Date.parse(fecha)) && new Date(fecha).toISOString().slice(0,10) === fecha;
     texto(contenedor,'Metodología AA1000SES (AccountAbility).' + (valida ? ` Mapeo con corte a ${new Intl.DateTimeFormat('es-CO',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(fecha))}.` : '') + ' Los datos de contacto de comunidades y organizaciones sociales son de ejemplo (Ley 1581 de 2012).');

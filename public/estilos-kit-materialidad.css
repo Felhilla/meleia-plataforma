@@ -39,16 +39,11 @@
 .mat-leyenda > span { display:inline-flex; align-items:center; gap:var(--e1); }
 .mat-leyenda svg { width:24px; height:24px; }
 .materialidad summary { cursor:pointer; }
-.mat-tabla { max-width:100%; margin:var(--e3) 0; }
-.materialidad table { width:100%; table-layout:fixed; border-collapse:collapse; }
+.mat-tabla { min-width:0; overflow-x:auto; max-width:100%; margin:var(--e3) 0; }
+.materialidad table { width:100%; table-layout:auto; border-collapse:collapse; }
 .materialidad caption { text-align:left; font-weight:700; padding:var(--e2) 0; }
-.materialidad th,.materialidad td { padding:var(--e2) var(--e1); border-bottom:1px solid var(--borde); text-align:left; overflow-wrap:anywhere; font-size:var(--t-micro); }
+.materialidad th,.materialidad td { padding:var(--e2) var(--e1); border-bottom:1px solid var(--borde); text-align:left; overflow-wrap:normal; word-break:normal; hyphens:manual; font-size:var(--t-micro); }
 .materialidad th:first-child { width:22%; }
-.mat-ficha { position:relative; width:min(800px,94vw); max-height:90vh; height:auto; padding:var(--e4); overflow-y:auto; box-sizing:border-box; }
-.mat-ficha .mat-ficha-cab { position:static; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:var(--e3); align-items:center; color:inherit; }
-.mat-dimension { display:grid; gap:var(--e1); border-left:1px solid var(--borde); padding-left:var(--e3); }
-.mat-dimension span { font-size:var(--t-micro); color:var(--texto-suave); }
-.mat-dimension strong { font-weight:700; }
 .mat-ficha th,.mat-ficha td { vertical-align:middle; }
 .mat-calificacion { display:inline-flex; align-items:center; gap:var(--e2); flex-wrap:wrap; }
 .mat-circulo { display:inline-flex; align-items:center; justify-content:center; min-width:2.6rem; height:2.6rem; border-radius:50%; font-size:var(--t-h3); font-weight:700; color:var(--sobre-semaforo,var(--texto)); }
@@ -71,7 +66,17 @@
  .mat-lateral { border-right:0; border-bottom:1px solid var(--borde); }
  .mat-resultado,.mat-lateral { padding:var(--e3); }
  .mat-tablero .mat-tabla table { table-layout:auto; }
- .mat-tablero .mat-tabla th,.mat-tablero .mat-tabla td { padding:var(--e1) 1px; font-size:var(--t-micro); word-break:break-word; }
+ .mat-tablero .mat-tabla th,.mat-tablero .mat-tabla td { padding:var(--e1) 1px; font-size:var(--t-micro); word-break:normal; }
 }
 
 .mat-ficha .mat-tabla caption { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+
+.materialidad th { font-size:var(--t-micro); letter-spacing:.04em; text-transform:none; }
+.materialidad details { min-width:0; max-width:100%; }
+.mat-ficha.dim-ficha { width:min(1100px,94vw); padding:0; box-sizing:border-box; }
+.mat-ficha .dim-ficha-calif { padding:var(--e5); padding-top:var(--e6); gap:var(--e4); }
+.mat-ficha .dim-ficha-rotulo { white-space:normal; }
+.mat-ficha .mat-nota { display:grid; grid-template-columns:auto 1fr; gap:var(--e2); align-items:baseline; }
+.mat-nota .dim-ficha-rotulo { grid-column:1 / -1; }
+.mat-ficha-estado { display:flex; flex-wrap:wrap; gap:var(--e3); align-items:baseline; }
+.mat-ficha-estado h3, .mat-ficha-estado p { margin:0; }

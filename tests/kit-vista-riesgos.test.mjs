@@ -119,12 +119,12 @@ test('E33: accesos al pie según permiso y regreso desde ambas vistas secundaria
     }
   }
 });
-test('E33: tres cifras exactas, ejes accesibles y cuatro filtros dentro de details cerrado', async () => {
+test('E33: sin banda de cifras, ejes accesibles y cuatro filtros dentro de details cerrado', async () => {
   const riesgos = [r1, ...[2, 3, 4].map(n => ({ ...r1, id: 'r-0' + n, codigo: 'R-0' + n, nombre: 'Riesgo ficticio ' + n, derecho_humano: 'Otro derecho', ambitos: ['Otro grupo'] }))];
   const m = await montar('matriz', true, { riesgos, 'riesgos-calificacion': [c1, { ...c1, riesgo: 'r-02', probabilidad: 'Media' }, { ...c1, riesgo: 'r-03', escala: 1, alcance: 1, irremediabilidad: 1, probabilidad: 'Baja' }] });
   const banda = m.contenedor.todos().find(n => n.className === 'kr-resumen');
-  assert.equal(banda.children.length, 3);
-  assert.deepEqual(banda.children.map(n => n.textContent), ['1 Prioridad alta', '1 Prioridad media', '1 Prioridad baja']);
+  assert.equal(banda, undefined);
+  assert.doesNotMatch(read('estilos-kit-riesgos.css'), /kr-resumen/);
   const mapa = m.contenedor.todos().find(n => n.attrs.role === 'table');
   assert.equal(mapa.todos().filter(n => n.attrs.role === 'cell').length, 9);
   assert.deepEqual(mapa.todos().filter(n => n.attrs.role === 'rowheader').map(n => n.textContent), ['3 · Alta', '2 · Media', '1 · Baja']);
@@ -147,10 +147,15 @@ test('E33: ficha con niveles, criterios, medidas por pilar, validación y textos
     { codigo: 'A-04', titulo: 'No vinculada', componente: 'componente-1', estado: 'Pendiente', riesgos: ['r-02'] }
   ] });
   const origen = buscar(m.contenedor, 'R-01'); origen.focus(); await origen.onclick(); const p = panel(m);
-  const niveles = p.todos().filter(n => n.className === 'kr-nivel');
-  assert.deepEqual(niveles.map(n => n.children[0].className), ['kr-etiqueta kr-media', 'kr-etiqueta kr-alta', 'kr-etiqueta kr-alta']);
-  assert.match(niveles[0].textContent, /Promedio 2,3/);
-  assert.deepEqual(p.todos().filter(n => n.className?.startsWith('kr-criterio ')).map(n => [n.textContent, n.className]), [['3', 'kr-criterio kr-alta'], ['2', 'kr-criterio kr-media'], ['2', 'kr-criterio kr-media']]);
+  const tabla = p.todos().find(n => n.className === 'kit-mini-tabla kr-tecnica');
+  const filas = tabla.todos().filter(n => n.tagName === 'TR'), valores = tabla.todos().filter(n => n.tagName === 'TD');
+  assert.equal(filas.length, 7); assert.equal(valores.length, 6);
+  assert.deepEqual(valores.map(n => n.className), ['kr-media','kr-alta','kr-alta','kr-alta','kr-media','kr-media']);
+  assert.deepEqual(valores.map(n => n.textContent), ['Media · promedio 2,3','Alta','Alta','3 · Alta','2 · Media','2 · Media']);
+  assert.equal(filas[3].children[0].attrs.colspan, '2');
+  assert.equal(filas[3].textContent, 'Criterios de gravedad');
+  assert.equal(tabla.todos().filter(n => n.scope === 'row').length, 6);
+  assert.ok(!tabla.todos().some(n => n.tagName === 'SPAN'));
   const pilares = p.todos().filter(n => n.className === 'kit-ficha-dato' && n.children[0]?.textContent === 'Pilar');
   assert.equal(pilares.length, 2); assert.match(pilares[0].textContent, /Fortalecimiento del compromiso organizacional.*A-01.*A-03/);
   assert.match(pilares[1].textContent, /Articulación estructurada.*A-02/); assert.doesNotMatch(p.textContent, /A-04/);
@@ -168,6 +173,7 @@ test('E33: ficha con niveles, criterios, medidas por pilar, validación y textos
 test('E33: sin validar es gris, sin medidas y sin calificar; criterio bajo conserva el número', async () => {
   const m = await montar('matriz', true, { 'riesgos-validaciones': [], 'riesgos-calificacion': [] });
   await buscar(m.contenedor, `${r1.codigo} · ${r1.nombre}`).onclick(); const p = panel(m);
+  assert.equal(p.todos().filter(n => n.tagName === 'TD' && n.textContent === 'Sin calificar' && !n.className).length, 6);
   assert.match(p.textContent, /Sin medidas asociadas/); assert.match(p.textContent, /Sin calificar/);
   assert.ok(p.todos().some(n => n.textContent === 'Sin validar' && n.className === 'kr-etiqueta kr-sin-validar'));
   assert.ok(!p.todos().some(n => n.textContent === 'Validado'));
@@ -175,13 +181,20 @@ test('E33: sin validar es gris, sin medidas y sin calificar; criterio bajo conse
   await buscar(bajo.contenedor, 'R-01').onclick();
   assert.ok(panel(bajo).todos().some(n => n.textContent === 'Validado' && n.className === 'kr-etiqueta kr-baja'));
   assert.ok(panel(bajo).todos().some(n => n.className?.split(' ').includes('kr-validacion-detalle') && n.textContent === 'Acueducto veredal: Confirma'));
-  assert.equal(panel(bajo).todos().filter(n => n.className === 'kr-criterio kr-baja' && n.textContent === '1').length, 3);
+  assert.equal(panel(bajo).todos().filter(n => n.tagName === 'TD' && n.className === 'kr-baja' && n.textContent === '1 · Baja').length, 3);
 });
 
 test('E34: riesgo usa recuadros ordenados, mini tablas y cierre común sin hr',async()=>{
  const m=await montar();const origen=buscar(m.contenedor,'R-01');origen.focus();await origen.onclick();const p=panel(m),cerrar=p.todos().find(n=>n.attrs['aria-label']==='Cerrar');
  assert.equal(cerrar.className,'kit-cerrar');assert.equal(cerrar.textContent,'×');assert.equal(cerrar.type,'button');assert.equal(m.document.activeElement,cerrar);
  assert.deepEqual(p.todos().filter(n=>n.className==='kit-caja').slice(0,5).map(n=>n.children[0].textContent),['Descripción del riesgo','Calificación técnica','Afectación','Medidas de gestión','Validación de los grupos de interés']);
- const tablas=p.todos().filter(n=>n.className==='kit-mini-tabla');assert.equal(tablas.length,2);assert.ok(tablas.every(t=>t.todos().filter(n=>n.tagName==='TR').length===3));
+ const tablas=p.todos().filter(n=>n.className==='kit-mini-tabla kr-tecnica');assert.equal(tablas.length,1);assert.equal(tablas[0].todos().filter(n=>n.tagName==='TR').length,7);
  assert.ok(!p.todos().some(n=>n.tagName==='HR'));p.parent.onclick({target:p.parent});assert.equal(panel(m),undefined);assert.equal(m.document.activeElement,origen);
+});
+
+test('E35: tabla técnica conserva bordes y fondos por nivel en ambos temas',()=>{
+ const css=read('estilos-kit-riesgos.css');
+ assert.match(css,/\.kit-ficha \.kr-tecnica th, \.kit-ficha \.kr-tecnica td \{ border:1px solid var\(--borde\); font-weight:700/);
+ for(const nivel of ['alta','media','baja'])assert.ok(css.includes('.kr-'+nivel+' { background: var(--'+nivel+'-fondo); color: var(--'+nivel+'); }'));
+ assert.doesNotMatch(css,/kr-criterio|kr-resumen/);
 });

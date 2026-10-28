@@ -18,29 +18,27 @@
     n.append(circulo,el('span',nivel.etiqueta));return n;
   }
   function ficha(a,tema,tipo,boton,vigente,umbrales){
-    const fondo=el('div',null,'fondo-dialogo centrado'),d=el('section',null,'panel materialidad mat-ficha kit-ficha'),cerrar=U.boton('×',()=>limpiar());
+    const fondo=el('div',null,'fondo-dialogo centrado'),d=el('section',null,'panel materialidad mat-ficha dim-ficha'),cerrar=U.boton('×',()=>limpiar());
     cerrar.className='kit-cerrar';cerrar.type='button';cerrar.setAttribute('aria-label','Cerrar');
     d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.setAttribute('aria-labelledby','mat-ficha-titulo');
     const h=el('h2',a.nombre);h.id='mat-ficha-titulo';
-    const cab=el('header',null,'mat-ficha-cab kit-caja kit-caja-destacada kit-ficha-encabezado');const dimension=el('div',null,'mat-dimension');dimension.append(el('span','Dimensión ESG'),el('strong',a.dimension));cab.append(h,dimension);
+    const cab=el('header',null,'dim-ficha-cabeza'),titulo=el('div',null,'dim-ficha-titulo');
     const validado=a.validado==='Sí',descripcion=validado&&tema?.descripcion?.trim()?tema.descripcion:a.definicion;
-    function caja(titulo,clase=''){const n=el('section',null,'kit-caja '+clase);n.append(el('h3',titulo));return n;}
-    const descripcionCaja=caja('Descripción');descripcionCaja.append(el('p',descripcion,'kit-ficha-cuerpo'));
-    d.append(cerrar,cab,descripcionCaja);
-    const medio=el('div',null,'kit-ficha-rejilla'),izquierda=el('div',null,'kit-ficha-pila'),referencias=el('div',null,'kit-ficha-pila'),notas=caja('Calificación');
+    titulo.append(el('p',a.dimension,'antetitulo'),h,el('p',descripcion,'nota'));
     const campos=tipo==='doble'?[variables.doble[1],variables.doble[0]]:tipo==='impacto'?[variables.impacto[1],variables.impacto[0]]:[variables.financiera[1],variables.financiera[0]];
-    const mini=el('table',null,'kit-mini-tabla'),body=el('tbody');mini.setAttribute('aria-label','Calificación');
-    campos.forEach(([k,l])=>{const r=el('tr',null,'mat-nota'),rotulo=el('th',l,'kit-ficha-rotulo'),valor=el('td');rotulo.scope='row';valor.append(calificacion(a[k]));r.append(rotulo,valor);body.append(r);});
-    mini.append(body);notas.append(mini);izquierda.append(notas);
+    const notas=el('div',null,'dim-ficha-calif sem-fondo-'+M.nivel(a[campos[0][0]]).color);
+    campos.forEach(([k,l])=>{const n=el('div',null,'mat-nota');n.append(el('span',l,'dim-ficha-rotulo'),el('strong',numero(a[k],1)),el('span',M.nivel(a[k]).etiqueta,'dim-ficha-nivel'));notas.append(n);});
+    cab.append(titulo,notas);
+    const estado=el('section',null,'dim-ficha-hallazgos mat-ficha-estado');estado.append(el('h3','Estado'),el('p',M.estado(a,tipo,umbrales),'mat-estado'));
     const ul=el('ul'),indicadores=validado&&tema?.indicadores?.trim()?tema.indicadores.split(';'):a.marco.split(' / ');
     indicadores.map(x=>x.trim()).filter(Boolean).forEach(x=>ul.append(el('li',x)));
-    const estandares=caja('Estándares relacionados');estandares.append(ul);
-    const estado=caja('Estado','kit-caja-destacada');estado.append(el('p',M.estado(a,tipo,umbrales),'mat-estado kit-ficha-cuerpo'));
-    referencias.append(estandares,estado);medio.append(izquierda,referencias);d.append(medio);
-    function cajaTabla(titulo,columnas,filas){const n=caja(titulo);n.append(tabla(titulo,columnas,filas));d.append(n);}
+    const estandares=el('section',null,'dim-ficha-estandares-fila');estandares.append(el('h3','Estándares relacionados'),ul);
+    const cuerpo=el('section',null,'dim-ficha-cuerpo');
+    function cajaTabla(titulo,columnas,filas){cuerpo.append(el('h3',titulo),tabla(titulo,columnas,filas));}
     if(tipo!=='financiera')cajaTabla('Calificación de los grupos de interés',['Grupo','Importancia','Probabilidad'],[['col','Colaboradores'],['cli','Clientes'],['pro','Proveedores']].map(([k,l])=>[l,calificacion(a[k+'_importancia']),calificacion(a[k+'_probabilidad'])]));
     if(tipo!=='impacto')cajaTabla('Calificación del taller financiero',['Variable','Calificación'],taller.map(([k,l])=>[l,calificacion(a[k])]));
-    d.append(el('p','Escala de 0 (nulo) a 5 (muy alto).','kit-ficha-nota'));
+    cuerpo.append(el('p','Escala de 0 (nulo) a 5 (muy alto).','mat-micro'));
+    d.append(cerrar,cab,estado,estandares,cuerpo);
     const regiones=[...document.querySelectorAll('body > header, body > main, body > footer, body > .saltar')],inertes=regiones.map(n=>n.inert);regiones.forEach(n=>{n.inert=true;});
     fondo.append(d);document.body.append(fondo);document.body.classList.add('dialogo-abierto');cerrar.focus();let limpio=false;
     function limpiar(){if(limpio)return;limpio=true;document.removeEventListener('keydown',teclado);regiones.forEach((n,i)=>{n.inert=inertes[i];});fondo.remove();document.body.classList.remove('dialogo-abierto');if(vigente())boton.focus();}
