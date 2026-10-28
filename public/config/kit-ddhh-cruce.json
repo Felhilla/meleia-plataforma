@@ -866,7 +866,7 @@
     "CMSI": "Estándar Minero Consolidado (Consolidated Mining Standard Initiative), borrador de consulta pública, octubre de 2024",
     "TSM": "Hacia una Minería Sostenible (TSM): protocolos de agua, relaves, cambio climático, biodiversidad, seguridad y salud, trabajo infantil y forzoso, diversidad e inclusión, y relacionamiento",
     "RGMP": "World Gold Council, Responsible Gold Mining Principles",
-    "Copper Mark": "The Copper Mark, estándar de debida diligencia",
+    "Copper Mark": "Veramark Assurance (antes The Copper Mark), Risk Readiness Assessment Criteria Guide v3.0 (2023), versión en español de 2024",
     "DRE": "PDAC, Driving Responsible Exploration: Principles & Guidance Notes"
    },
    "grupos": [
@@ -914,7 +914,13 @@
           "ref": "p. 11 del PDF"
          }
         ],
-        "Copper Mark": [],
+        "Copper Mark": [
+         {
+          "codigo": "Criterio 28",
+          "nombre": "Gestión hídrica",
+          "ref": "p. 210 del PDF"
+         }
+        ],
         "DRE": [
          {
           "codigo": "7",
@@ -955,7 +961,13 @@
           "ref": "p. 10 del PDF"
          }
         ],
-        "Copper Mark": [],
+        "Copper Mark": [
+         {
+          "codigo": "Criterio 31",
+          "nombre": "Gestión de relaves",
+          "ref": "p. 232 del PDF"
+         }
+        ],
         "DRE": []
        }
       },
@@ -1000,7 +1012,18 @@
           "ref": "p. 11 del PDF"
          }
         ],
-        "Copper Mark": [],
+        "Copper Mark": [
+         {
+          "codigo": "Criterio 26",
+          "nombre": "Acción climática",
+          "ref": "p. 195 del PDF"
+         },
+         {
+          "codigo": "Criterio 27",
+          "nombre": "Reducción de las emisiones de GEI",
+          "ref": "p. 202 del PDF"
+         }
+        ],
         "DRE": [
          {
           "codigo": "7",
@@ -1051,7 +1074,13 @@
           "ref": "p. 10 del PDF"
          }
         ],
-        "Copper Mark": [],
+        "Copper Mark": [
+         {
+          "codigo": "Criterio 32",
+          "nombre": "Biodiversidad y tierras productivas",
+          "ref": "p. 234 del PDF"
+         }
+        ],
         "DRE": [
          {
           "codigo": "7",
@@ -1096,7 +1125,13 @@
           "ref": "p. 10 del PDF"
          }
         ],
-        "Copper Mark": [],
+        "Copper Mark": [
+         {
+          "codigo": "Criterio 33",
+          "nombre": "Contaminación",
+          "ref": "p. 244 del PDF"
+         }
+        ],
         "DRE": []
        }
       },
@@ -1135,7 +1170,18 @@
           "ref": "p. 10 del PDF"
          }
         ],
-        "Copper Mark": [],
+        "Copper Mark": [
+         {
+          "codigo": "Criterio 29",
+          "nombre": "Gestión de residuos",
+          "ref": "p. 220 del PDF"
+         },
+         {
+          "codigo": "Criterio 33",
+          "nombre": "Contaminación",
+          "ref": "p. 244 del PDF"
+         }
+        ],
         "DRE": [
          {
           "codigo": "7",
@@ -1164,7 +1210,13 @@
         ],
         "TSM": [],
         "RGMP": [],
-        "Copper Mark": [],
+        "Copper Mark": [
+         {
+          "codigo": "Criterio 30",
+          "nombre": "Economía circular",
+          "ref": "p. 226 del PDF"
+         }
+        ],
         "DRE": []
        }
       }
@@ -1211,9 +1263,19 @@
         ],
         "Copper Mark": [
          {
-          "codigo": "5.2.4",
-          "nombre": "Evaluación de riesgos de derechos humanos",
-          "ref": "p. 28 del PDF"
+          "codigo": "Criterio 1",
+          "nombre": "Sistema de gestión",
+          "ref": "p. 23 del PDF · coincidencia parcial"
+         },
+         {
+          "codigo": "Criterio 7",
+          "nombre": "Mecanismo de quejas",
+          "ref": "p. 53 del PDF"
+         },
+         {
+          "codigo": "Criterio 22",
+          "nombre": "Seguridad y derechos humanos",
+          "ref": "p. 170 del PDF"
          }
         ],
         "DRE": [
@@ -1268,9 +1330,14 @@
         ],
         "Copper Mark": [
          {
-          "codigo": "5.2.4",
-          "nombre": "Trabajo forzado y peores formas infantiles",
-          "ref": "p. 28 del PDF"
+          "codigo": "Criterio 11",
+          "nombre": "Trabajo infantil",
+          "ref": "p. 93 del PDF"
+         },
+         {
+          "codigo": "Criterio 12",
+          "nombre": "Trabajo forzoso",
+          "ref": "p. 100 del PDF"
          }
         ],
         "DRE": []
@@ -1317,7 +1384,18 @@
           "ref": "p. 7 del PDF"
          }
         ],
-        "Copper Mark": [],
+        "Copper Mark": [
+         {
+          "codigo": "Criterio 17",
+          "nombre": "Salud y seguridad en el trabajo",
+          "ref": "p. 133 del PDF"
+         },
+         {
+          "codigo": "Criterio 18",
+          "nombre": "Preparación ante emergencias",
+          "ref": "p. 143 del PDF"
+         }
+        ],
         "DRE": [
          {
           "codigo": "8",
@@ -1375,9 +1453,19 @@
         ],
         "Copper Mark": [
          {
-          "codigo": "5.1.5",
+          "codigo": "Criterio 8",
+          "nombre": "Interacción con las partes interesadas",
+          "ref": "p. 61 del PDF"
+         },
+         {
+          "codigo": "Criterio 7",
           "nombre": "Mecanismo de quejas",
-          "ref": "p. 17 del PDF · coincidencia parcial"
+          "ref": "p. 53 del PDF"
+         },
+         {
+          "codigo": "Criterio 20",
+          "nombre": "Desarrollo comunitario",
+          "ref": "p. 156 del PDF"
          }
         ],
         "DRE": [
@@ -1430,7 +1518,18 @@
           "ref": "p. 8 del PDF"
          }
         ],
-        "Copper Mark": [],
+        "Copper Mark": [
+         {
+          "codigo": "Criterio 15",
+          "nombre": "Diversidad, equidad e inclusión",
+          "ref": "p. 118 del PDF"
+         },
+         {
+          "codigo": "Criterio 14",
+          "nombre": "Discriminación y acoso",
+          "ref": "p. 112 del PDF"
+         }
+        ],
         "DRE": []
        }
       }
@@ -1466,9 +1565,9 @@
         ],
         "Copper Mark": [
          {
-          "codigo": "5.2.4.1",
-          "nombre": "Evaluaciones legales en terreno",
-          "ref": "p. 31 del PDF · coincidencia parcial"
+          "codigo": "Criterio 5",
+          "nombre": "Cumplimiento legal",
+          "ref": "p. 44 del PDF"
          }
         ],
         "DRE": [
@@ -1522,9 +1621,9 @@
         ],
         "Copper Mark": [
          {
-          "codigo": "5.2.4",
-          "nombre": "Riesgos de soborno y fraude",
-          "ref": "p. 28 del PDF"
+          "codigo": "Criterio 3",
+          "nombre": "Integridad empresarial",
+          "ref": "p. 37 del PDF"
          }
         ],
         "DRE": [
@@ -1579,9 +1678,14 @@
         ],
         "Copper Mark": [
          {
-          "codigo": "5.5",
-          "nombre": "Informes de debida diligencia",
-          "ref": "p. 40 del PDF"
+          "codigo": "Criterio 4",
+          "nombre": "Transparencia en los ingresos",
+          "ref": "p. 41 del PDF"
+         },
+         {
+          "codigo": "Criterio 6",
+          "nombre": "Informes de sostenibilidad",
+          "ref": "p. 48 del PDF"
          }
         ],
         "DRE": [
@@ -1636,14 +1740,14 @@
         ],
         "Copper Mark": [
          {
-          "codigo": "5.1",
-          "nombre": "Sistema de gestión de debida diligencia",
-          "ref": "p. 15 del PDF"
+          "codigo": "Criterio 2",
+          "nombre": "Evaluación de riesgo",
+          "ref": "p. 30 del PDF"
          },
          {
-          "codigo": "5.2.4",
-          "nombre": "Evaluación de riesgos de suministro",
-          "ref": "p. 28 del PDF"
+          "codigo": "Criterio 10",
+          "nombre": "Cadenas de suministro responsables",
+          "ref": "p. 76 del PDF"
          }
         ],
         "DRE": [
@@ -1663,8 +1767,8 @@
     "Las páginas de este sector son las del archivo PDF, no las impresas.",
     "«Coincidencia parcial»: el requisito trata el aspecto solo en parte.",
     "El CMSI citado es el borrador de consulta pública de octubre de 2024, no una versión final.",
-    "The Copper Mark se cruzó con su estándar de debida diligencia. Por eso los aspectos ambientales, salud y seguridad, y diversidad aparecen sin correspondencia: esos temas están en sus criterios de producción responsable, que no se revisaron.",
-    "GRI 14 es un estándar de reporte: sus contenidos piden informar, no equivalen a una obligación operativa."
+    "GRI 14 es un estándar de reporte: sus contenidos piden informar, no equivalen a una obligación operativa.",
+    "The Copper Mark se llama Veramark Assurance desde 2026. La columna usa sus 33 criterios de producción responsable (guía RRA v3.0); las páginas son las de la versión en español. Veramark anunció un nuevo estándar minero global, desarrollado con la Consolidated Mining Standard Initiative, para los próximos meses."
    ]
   }
  ]
