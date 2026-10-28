@@ -40,7 +40,7 @@
       focoOrigen = origen;
       const anterior = origen, fondo = el('div', null, centrado ? 'ka-fondo ka-fondo-centro' : 'ka-fondo'), panel = el('section', null, 'ka-dialogo');
       panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-labelledby', 'ka-dialogo-titulo'); panel.tabIndex = -1;
-      const h = App.tituloMarca ? App.tituloMarca(titulo) : el('h2', titulo); h.id = 'ka-dialogo-titulo-' + pila.length; panel.setAttribute('aria-labelledby', h.id);
+      const h = App.tituloMarca ? App.tituloMarca(titulo, 'h2') : el('h2', titulo); h.id = 'ka-dialogo-titulo-' + pila.length; panel.setAttribute('aria-labelledby', h.id);
       const regiones = [...root.document.body.children].map(n => [n, n.inert]); regiones.forEach(([n]) => { n.inert = true; });
       const cerrar = () => { root.document.removeEventListener('keydown', teclado); fondo.remove(); regiones.forEach(([n, previo]) => { n.inert = previo; }); if (activo()) { if (anterior?.isConnected) anterior.focus(); else contenedor.focus(); } pila.pop(); ctx.panelActual = pila.at(-1)?.panel; focoOrigen = null; };
       const teclado = e => {
@@ -129,7 +129,7 @@
     cajas.append(pos); info.append(cajas); cabecera.append(logo(ctx,org), info); p.append(cabecera);
     p.append(el('h3','CARACTERIZACIÓN','ka-franja-gris'));
     const textos = unicos(registros.map(a => a.caracterizacion?.trim()));
-    (textos.length ? textos : ['Sin caracterización registrada.']).forEach(t => texto(p,t));
+    (textos.length ? textos : ['Sin caracterización registrada.']).forEach(t => p.append(el('p',t,'ka-caracterizacion')));
     p.append(el('h3','Listado de actores identificados'));
     tablaFicha(p, [['Nombre'],['Cargo'],['Posición'],['Impacto','impacto'],['Influencia','influencia'],['Contacto']], registros.map(a => {
       const contacto = ctx.listas['actores-contactos'].find(c => c.id === a.id) || {}, nombre = el('div', contacto.nombre || 'No registrado'), datos = el('div');
@@ -202,7 +202,9 @@
       q.className = 'ka-cuadro'; q.dataset.cuadrante = n.nombre; q.style.gridRow = n.fila; q.style.gridColumn = n.columna;
       q.dataset.color = n.nombre === 'Gestión activa' ? 'azul' : n.nombre === 'Involucramiento estratégico' ? 'verde' : 'naranja';
       q.setAttribute('aria-label',`${n.nombre}: ${orgs(miembros.length)}, ${porcentaje} %`);
-      q.append(el('strong',n.nombre),el('span',n.descripcion),el('span',`${orgs(miembros.length)} · ${porcentaje} %`,'ka-cifra'));
+      const cifra = el('span',null,'ka-cifra');
+      cifra.append(el('strong',numero(miembros.length)), el('span',` ${miembros.length === 1 ? 'organización' : 'organizaciones'} · ${porcentaje} %`));
+      q.append(el('strong',n.nombre),el('span',n.descripcion),cifra);
       const compartidas = miembros.filter(o => unicos(o.registros.map(a => K.nivelFinal(a,ctx.cfg))).length > 1).length;
       if (compartidas) q.append(el('small',`Incluye ${orgs(compartidas)} que también ${compartidas === 1 ? 'está' : 'están'} en otro cuadrante`)); mapa.append(q);
     });

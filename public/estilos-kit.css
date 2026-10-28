@@ -65,14 +65,15 @@ button:disabled { opacity: .65; cursor: wait; }
 .kit-persona { display: flex; flex-direction: column; gap: var(--e2); min-width: 0; }
 .kit-persona img, .kit-persona-foto-vacia { width: 112px; height: 112px; border-radius: 50%; object-fit: cover; background: var(--superficie); border: 1px solid var(--kit-desplegable-borde); }
 .kit-persona h3 { margin: var(--e2) 0 0; font-size: var(--t-h3); }
-.kit-persona-cargo { margin: 0; color: var(--principal); font-weight: 700; }
+.kit-persona-cargo { margin: 0; font-size: var(--t-chico); color: var(--principal); font-weight: 700; }
 .kit-persona-experiencia { margin: 0; font-size: var(--t-chico); color: var(--texto-suave); line-height: 1.5; }
 .kit-modulos.kit-rejilla { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: var(--e5); }
 .kit-modulo { display: flex; flex-direction: column; gap: var(--e2); padding: var(--e4); background: var(--kit-tarjeta-gris); border: 1px solid var(--borde-fuerte); border-radius: var(--radio-chico); color: var(--texto); text-decoration: none; transition: transform .2s var(--ease-out), box-shadow .2s var(--ease-out); }
 .kit-modulo:hover { transform: translateY(-2px); box-shadow: var(--sombra); }
-.kit-modulo-numero { font-size: var(--t-h3); font-weight: 700; }
-.kit-modulo h2 { margin: 0; font-size: var(--t-cuerpo); }
+.kit-modulo-numero { font-size: var(--t-micro); font-weight: 700; text-transform: uppercase; letter-spacing: .14em; color: var(--oro-texto); }
+.kit-modulo h2 { margin: 0; font-size: var(--t-h3); font-weight: 700; }
 .kit-modulo p { margin: 0; }
+.kit-modulo p:not(.nota) { font-size: var(--t-chico); color: var(--texto-suave); }
 .kit-modulo .nota { margin-top: auto; padding-top: var(--e2); font-size: var(--t-chico); color: var(--texto-suave); }
 @media (prefers-reduced-motion: reduce) { .kit-modulo { transition: none; } .kit-modulo:hover { transform: none; } }
 @media (max-width: 960px) { .kit-rejilla, .kit-modulos.kit-rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kit-equipo .kit-persona:nth-child(odd) { border-left: 0; padding-left: 0; } }

@@ -29,6 +29,8 @@ async function montar(vista = 'mapa', editar = true, extras = {}) {
   const registros = { actores: actores(), 'actores-contactos': [], 'actores-resumen': [], 'actores-logos': [], ...extras };
   const datos = { listar: async (empresa, c) => { consultas.push([empresa, c]); return structuredClone(registros[c]); }, guardar: async (...args) => { guardados.push(args); return args[3]; }, borrar: async (...args) => borrados.push(args), historial: async (...args) => { historial.push(args); return []; } };
   const root = { document, Intl, crypto: { randomUUID: () => 'nuevo' }, fetch: async p => ({ ok: true, json: async () => JSON.parse(read(p)) }), App: { el: (tag, txt, clase) => { const n = new Nodo(tag, document); if (txt != null) n.textContent = txt; n.className = clase; return n; }, registrarVista: (k, v) => { vistas[k] = v; }, actualizarVista() {} } };
+  vm.runInNewContext(read('kit-armazon.js'), root);
+  root.App.registrarVista = (k, v) => { vistas[k] = v; };
   for (const f of ['kit-validacion.js', 'kit-actores.js', 'kit-vista-actores.js']) vm.runInNewContext(read(f), root);
   let vigente = true; const params = { empresa: 'empresa-1', puedeEditar: editar, rol: editar ? 'responsable' : 'demostrador', vigente: () => vigente };
   const limpiar = await vistas['actores/' + vista].render(contenedor, datos, params);
@@ -81,7 +83,7 @@ function muestra() {
 test('E24: agrupa instituciones exactas, cuenta organizaciones por cuadrante y registros en círculo', async () => {
   const m = await montar('mapa',true,{actores:muestra()});
   assert.match(cuadro(m).attrs['aria-label'],/6 organizaciones, 100 %/);
-  assert.match(cuadro(m,estrategico).textContent,/1 organización · .*Incluye 1 organización que también está en otro cuadrante/);
+  assert.match(cuadro(m,estrategico).textContent,/1\s+organización · .*Incluye 1 organización que también está en otro cuadrante/);
   assert.match(cuadro(m).textContent,/Incluye 1 organización que también está en otro cuadrante/);
   assert.match(centro(m).textContent,/8 Actores identificados/);
   assert.deepEqual(m.consultas.map(c => c[1]),['actores','actores-contactos','actores-resumen']);
@@ -174,4 +176,33 @@ test('E24: ficha de un solo cargo muestra valores únicos y caracterización vac
   const m = await montar('mapa',true,{actores:[actores()[1]]}); await cuadro(m).onclick(); tarjetas(m)[0].onclick();
   assert.match(panel(m).textContent,/Impacto 2 · Baja Influencia 4 · Alta Posición Neutral/);
   assert.match(panel(m).textContent,/Sin caracterización registrada/); assert.doesNotMatch(panel(m).textContent,/Mixta/);
+});
+
+test('E25: ventanas usan h2 y el título de página conserva h1', async () => {
+  const m = await montar('mapa',true,{actores:muestra()});
+  const pagina = m.root.App.tituloMarca('Módulo I · Mapeo de actores');
+  m.contenedor.append(pagina);
+  assert.equal(pagina.children[0].tagName,'H1');
+  const comprobar = () => {
+    const p = panel(m);
+    assert.equal(p.todos().filter(n => n.tagName === 'H1').length,0);
+    assert.equal(p.todos().filter(n => n.tagName === 'H2').length,1);
+    assert.ok(p.todos().some(n => n.id === p.attrs['aria-labelledby']));
+    assert.equal(m.document.body.todos().filter(n => n.tagName === 'H1').length,1);
+  };
+  await cuadro(m).onclick(); comprobar();
+  tarjetas(m)[0].onclick(); comprobar(); escape(m); escape(m);
+  await centro(m).onclick(); comprobar();
+});
+
+test('E25: cifra separa número y contexto conservando texto y aria-label', async () => {
+  const m = await montar('mapa',true,{actores:muestra()});
+  for (const [nombre,cantidad,porcentaje] of [[activa,6,'100'],[estrategico,1,'17'],[periferico,0,'0'],[cautelosa,0,'0']]) {
+    const q = cuadro(m,nombre), cifra = q.children.find(n => n.className === 'ka-cifra');
+    const contexto = `${cantidad === 1 ? 'organización' : 'organizaciones'} · ${porcentaje} %`;
+    assert.deepEqual(cifra.children.map(n => n.tagName),['STRONG','SPAN']);
+    assert.equal(cifra.children[0].textContent,String(cantidad));
+    assert.equal(cifra.children.map(n => n.textContent).join(''),`${cantidad} ${contexto}`);
+    assert.equal(q.attrs['aria-label'],`${nombre}: ${cantidad} ${cantidad === 1 ? 'organización' : 'organizaciones'}, ${porcentaje} %`);
+  }
 });
