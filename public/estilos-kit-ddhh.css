@@ -315,7 +315,7 @@ button.enlace:focus-visible { outline: 2px solid var(--principal); outline-offse
 .ddhh-cruce-region:focus-visible { outline: 3px solid var(--principal); outline-offset: 4px; }
 .ddhh-cruce-tabla { width: 100%; table-layout: fixed; border-collapse: separate; border-spacing: 0; }
 .ddhh-cruce-tabla caption { text-align: left; padding: var(--e3); color: var(--texto-suave); }
-.ddhh-cruce-tema { width: 14rem; }
+.ddhh-cruce-tema { width: 12rem; }
 .ddhh-cruce-tabla th, .ddhh-cruce-tabla td { vertical-align: top; text-align: left; padding: var(--e3); border-bottom: 1px solid var(--borde); overflow-wrap: anywhere; }
 .ddhh-cruce-tabla th + th, .ddhh-cruce-tabla td { border-left: 1px solid var(--borde); }
 .ddhh-cruce-tabla thead th { background: var(--kit-titulo-fondo); font-weight: 700; }

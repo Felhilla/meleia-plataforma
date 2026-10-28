@@ -361,7 +361,7 @@
           region.tabIndex = 0; region.setAttribute('role', 'region');
           region.setAttribute('aria-label', 'Cruce de estándares · ' + sector.nombre);
           const tabla = el('table', null, 'ddhh-cruce-tabla');
-          tabla.style.minWidth = (14 + sector.columnas.length * 10) + 'rem';
+          tabla.style.minWidth = (12 + sector.columnas.length * 9) + 'rem';
           tabla.append(el('caption', 'Cruce de estándares · ' + sector.nombre));
           const cols = el('colgroup'), temaCol = el('col'); temaCol.className = 'ddhh-cruce-tema'; cols.append(temaCol);
           sector.columnas.forEach(() => cols.append(el('col'))); tabla.append(cols);
