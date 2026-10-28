@@ -1,0 +1,46 @@
+{
+  "actores": {
+    "hojas": [
+      {
+        "categoria": "Instituciones gubernamentales",
+        "nombres": ["Ins. Gub", "Instituciones gubernamentales"]
+      },
+      {
+        "categoria": "Comunidades y asociaciones",
+        "nombres": ["Com. Aso", "Comunidades y asociaciones"]
+      },
+      {
+        "categoria": "Academia",
+        "nombres": ["Aca. Ldo", "Academia"]
+      },
+      {
+        "categoria": "Empresas y gremios",
+        "nombres": ["Emp. Gre", "Gre. Inv. Sec", "Empresas y gremios"]
+      },
+      {
+        "categoria": "Medios de comunicación",
+        "nombres": ["Medios de comunicación"]
+      },
+      {
+        "categoria": "Empleados, contratistas y proveedores",
+        "nombres": ["Proveedores", "Empleados, Contratistas y prove", "Empleados, contratistas y proveedores"]
+      }
+    ],
+    "columnas": [
+      { "campo": "institucion", "encabezados": ["Institución", "Institución u organización", "Organización"] },
+      { "campo": "subgrupo", "encabezados": ["Subgrupo de interés"] },
+      { "campo": "orden", "encabezados": ["Orden", "Alcance"] },
+      { "campo": "dependencia_area", "encabezados": ["Dependencia"], "escala": false },
+      { "campo": "dependencia", "encabezados": ["Dependencia"], "escala": true },
+      { "campo": "cargo", "encabezados": ["Cargo", "Cargo o rol"] },
+      { "campo": "nombre_servidor", "encabezados": ["Nombre", "Actor"] },
+      { "campo": "caracterizacion", "encabezados": ["Caracterización"] },
+      { "campo": "posicion", "encabezados": ["Posición"] },
+      { "campo": "tension", "encabezados": ["Tensión"] },
+      { "campo": "responsabilidad", "encabezados": ["Responsabilidad"] },
+      { "campo": "influencia", "encabezados": ["Influencia"] },
+      { "campo": "impacto", "encabezados": ["Impacto"] },
+      { "campo": "nivel_archivo", "encabezados": ["Nivel de relacionamiento"] }
+    ]
+  }
+}
