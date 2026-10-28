@@ -15,7 +15,7 @@ class Nodo {
   focus() { this.doc.activeElement = this; }
   remove() { if (this.parent) this.parent.children = this.parent.children.filter(n => n !== this); this.parent = null; }
   closest() { return this.hidden ? this : this.parent?.closest(); }
-  querySelectorAll() { return this.todos().filter(n => ['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'A'].includes(n.tagName)); }
+  querySelectorAll() { return this.todos().filter(n => ['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'A', 'SUMMARY'].includes(n.tagName)); }
 }
 const read = p => readFileSync(new URL('../public/' + p, import.meta.url), 'utf8');
 const r1 = { id: 'r-01', codigo: 'R-01', nombre: 'Afectación del derecho al agua por disminución del caudal de fuentes usadas por la comunidad', derecho_humano: 'Derecho a la salud', ambitos: ['Operación propia'] };
@@ -100,7 +100,101 @@ test('Grupos ofrece las categorías del Módulo I y no permite inventar una cate
 test('Tab queda dentro del diálogo y al cerrar ficha de acción retorna al pilar original', async () => {
   const m = await montar('medidas', false, { 'riesgos-medidas': [{ id: 'a-01', codigo: 'A-01', titulo: 'Reparar', componente: 'componente-1', estado: 'Pendiente' }] });
   const pilar = m.contenedor.todos().find(n => n.className === 'kr-pilar'); pilar.focus(); pilar.onclick(); buscar(panel(m), 'A-01 · Reparar').onclick();
-  const cerrar = buscar(panel(m), 'Cerrar'); cerrar.focus(); let prevenido = false;
+  const cerrar = panel(m).todos().find(n => n.attrs['aria-label'] === 'Cerrar'); cerrar.focus(); let prevenido = false;
   m.document.eventos.keydown({ key: 'Tab', shiftKey: true, preventDefault() { prevenido = true; } }); assert.equal(prevenido, true);
   cerrar.onclick(); assert.equal(m.document.activeElement, pilar);
+});
+
+test('E33: accesos al pie según permiso y regreso desde ambas vistas secundarias', async () => {
+  for (const editar of [false, true]) {
+    const m = await montar('matriz', editar);
+    const links = m.contenedor.todos().filter(n => n.tagName === 'A');
+    assert.deepEqual(links.map(n => n.textContent), editar ? ['Medidas de gestión', 'Alimentación'] : ['Medidas de gestión']);
+    assert.ok(links.every(n => n.className === 'boton secundario'));
+    for (const vista of ['medidas', 'alimentacion']) {
+      const secundaria = await montar(vista, editar);
+      const regreso = secundaria.contenedor.children[0];
+      assert.equal(regreso.textContent, '← Volver a la matriz');
+      assert.equal(regreso.href, '#/e/empresa-1/riesgos/matriz');
+    }
+  }
+});
+test('E33: sin banda de cifras, ejes accesibles y cuatro filtros dentro de details cerrado', async () => {
+  const riesgos = [r1, ...[2, 3, 4].map(n => ({ ...r1, id: 'r-0' + n, codigo: 'R-0' + n, nombre: 'Riesgo ficticio ' + n, derecho_humano: 'Otro derecho', ambitos: ['Otro grupo'] }))];
+  const m = await montar('matriz', true, { riesgos, 'riesgos-calificacion': [c1, { ...c1, riesgo: 'r-02', probabilidad: 'Media' }, { ...c1, riesgo: 'r-03', escala: 1, alcance: 1, irremediabilidad: 1, probabilidad: 'Baja' }] });
+  const banda = m.contenedor.todos().find(n => n.className === 'kr-resumen');
+  assert.equal(banda, undefined);
+  assert.doesNotMatch(read('estilos-kit-riesgos.css'), /kr-resumen/);
+  const mapa = m.contenedor.todos().find(n => n.attrs.role === 'table');
+  assert.equal(mapa.todos().filter(n => n.attrs.role === 'cell').length, 9);
+  assert.deepEqual(mapa.todos().filter(n => n.attrs.role === 'rowheader').map(n => n.textContent), ['3 · Alta', '2 · Media', '1 · Baja']);
+  assert.deepEqual(mapa.todos().filter(n => n.attrs.role === 'columnheader').map(n => n.textContent), ['1 · Baja', '2 · Media', '3 · Alta']);
+  const lista = m.contenedor.todos().find(n => n.className === 'kr-lista');
+  assert.equal(lista.tagName, 'DETAILS'); assert.ok(!lista.open); assert.equal(lista.children[0].textContent, 'Ver lista de riesgos');
+  const filtros = lista.todos().filter(n => n.tagName === 'SELECT'); assert.equal(filtros.length, 4);
+  for (const [i, valor, esperado] of [[0, 'Derecho a la salud', 'R-01'], [1, 'Operación propia', 'R-01'], [2, 'Media', 'R-02'], [2, 'Sin calificación', 'R-04'], [3, 'Todos confirman', null], [3, 'Con ajustes', 'R-01']]) {
+    filtros.forEach(n => { n.value = ''; }); filtros[i].value = valor; filtros[i].onchange();
+    const botones = lista.todos().filter(n => n.tagName === 'BUTTON');
+    assert.equal(botones.length, esperado ? 1 : 0);
+    if (esperado) assert.ok(botones[0].textContent.startsWith(esperado));
+  }
+});
+test('E33: ficha con niveles, criterios, medidas por pilar, validación y textos seguros', async () => {
+  const m = await montar('matriz', true, { riesgos: [{ ...r1, nombre: '<script>Nombre ficticio</script>', descripcion: 'Primera línea\nSegunda línea' }], 'riesgos-medidas': [
+    { codigo: 'A-01', titulo: '<script>Medida ficticia</script>', componente: 'componente-1', estado: 'Pendiente', riesgos: ['r-01'] },
+    { codigo: 'A-02', titulo: 'Otra medida', componente: 'componente-2', estado: 'Cumplida', riesgos: ['r-01'] },
+    { codigo: 'A-03', titulo: 'Tercera medida', componente: 'componente-1', estado: 'En curso', riesgos: ['r-01'] },
+    { codigo: 'A-04', titulo: 'No vinculada', componente: 'componente-1', estado: 'Pendiente', riesgos: ['r-02'] }
+  ] });
+  const origen = buscar(m.contenedor, 'R-01'); origen.focus(); await origen.onclick(); const p = panel(m);
+  const tabla = p.todos().find(n => n.className === 'kit-mini-tabla kr-tecnica');
+  const filas = tabla.todos().filter(n => n.tagName === 'TR'), valores = tabla.todos().filter(n => n.tagName === 'TD');
+  assert.equal(filas.length, 7); assert.equal(valores.length, 6);
+  assert.deepEqual(valores.map(n => n.className), ['kr-media','kr-alta','kr-alta','kr-alta','kr-media','kr-media']);
+  assert.deepEqual(valores.map(n => n.textContent), ['Media · promedio 2,3','Alta','Alta','3 · Alta','2 · Media','2 · Media']);
+  assert.equal(filas[3].children[0].attrs.colspan, '2');
+  assert.equal(filas[3].textContent, 'Criterios de gravedad');
+  assert.equal(tabla.todos().filter(n => n.scope === 'row').length, 6);
+  assert.ok(!tabla.todos().some(n => n.tagName === 'SPAN'));
+  const pilares = p.todos().filter(n => n.className === 'kit-ficha-dato' && n.children[0]?.textContent === 'Pilar');
+  assert.equal(pilares.length, 2); assert.match(pilares[0].textContent, /Fortalecimiento del compromiso organizacional.*A-01.*A-03/);
+  assert.match(pilares[1].textContent, /Articulación estructurada.*A-02/); assert.doesNotMatch(p.textContent, /A-04/);
+  assert.ok(p.todos().some(n => n.textContent === 'Validado' && n.className === 'kr-etiqueta kr-baja'));
+  assert.ok(p.todos().some(n => n.className?.split(' ').includes('kr-validacion-detalle') && n.textContent === 'Productores agrícolas: Propone ajuste'));
+  const mas = p.todos().find(n => n.tagName === 'DETAILS'); assert.ok(!mas.open); assert.equal(mas.children[0].textContent, 'Más información'); assert.match(mas.textContent, /Con el ajuste/);
+  assert.match(p.textContent, /<script>Nombre ficticio/); assert.ok(!p.todos().some(n => n.tagName === 'SCRIPT'));
+  assert.equal(p.todos().find(n => n.className === 'kr-descripcion').textContent, 'Primera línea\nSegunda línea');
+  const resumen = mas.children[0]; resumen.focus(); let atrapado = false;
+  m.document.eventos.keydown({ key: 'Tab', preventDefault() { atrapado = true; } });
+  assert.ok(atrapado); assert.equal(m.document.activeElement, p.todos().find(n => n.attrs['aria-label'] === 'Cerrar'));
+  p.todos().find(n => n.attrs['aria-label'] === 'Cerrar').focus(); m.document.eventos.keydown({ key: 'Tab', shiftKey: true, preventDefault() {} }); assert.equal(m.document.activeElement, resumen);
+  m.document.eventos.keydown({ key: 'Escape', preventDefault() {} }); assert.equal(m.document.activeElement, origen);
+});
+test('E33: sin validar es gris, sin medidas y sin calificar; criterio bajo conserva el número', async () => {
+  const m = await montar('matriz', true, { 'riesgos-validaciones': [], 'riesgos-calificacion': [] });
+  await buscar(m.contenedor, `${r1.codigo} · ${r1.nombre}`).onclick(); const p = panel(m);
+  assert.equal(p.todos().filter(n => n.tagName === 'TD' && n.textContent === 'Sin calificar' && !n.className).length, 6);
+  assert.match(p.textContent, /Sin medidas asociadas/); assert.match(p.textContent, /Sin calificar/);
+  assert.ok(p.todos().some(n => n.textContent === 'Sin validar' && n.className === 'kr-etiqueta kr-sin-validar'));
+  assert.ok(!p.todos().some(n => n.textContent === 'Validado'));
+  const bajo = await montar('matriz', true, { 'riesgos-calificacion': [{ ...c1, escala: 1, alcance: 1, irremediabilidad: 1, probabilidad: 'Baja' }], 'riesgos-validaciones': [{ riesgo: 'r-01', grupo: 'g-1', resultado: 'Confirma' }] });
+  await buscar(bajo.contenedor, 'R-01').onclick();
+  assert.ok(panel(bajo).todos().some(n => n.textContent === 'Validado' && n.className === 'kr-etiqueta kr-baja'));
+  assert.ok(panel(bajo).todos().some(n => n.className?.split(' ').includes('kr-validacion-detalle') && n.textContent === 'Acueducto veredal: Confirma'));
+  assert.equal(panel(bajo).todos().filter(n => n.tagName === 'TD' && n.className === 'kr-baja' && n.textContent === '1 · Baja').length, 3);
+});
+
+test('E34: riesgo usa recuadros ordenados, mini tablas y cierre común sin hr',async()=>{
+ const m=await montar();const origen=buscar(m.contenedor,'R-01');origen.focus();await origen.onclick();const p=panel(m),cerrar=p.todos().find(n=>n.attrs['aria-label']==='Cerrar');
+ assert.equal(cerrar.className,'kit-cerrar');assert.equal(cerrar.textContent,'×');assert.equal(cerrar.type,'button');assert.equal(m.document.activeElement,cerrar);
+ assert.deepEqual(p.todos().filter(n=>n.className==='kit-caja').slice(0,5).map(n=>n.children[0].textContent),['Descripción del riesgo','Calificación técnica','Afectación','Medidas de gestión','Validación de los grupos de interés']);
+ const tablas=p.todos().filter(n=>n.className==='kit-mini-tabla kr-tecnica');assert.equal(tablas.length,1);assert.equal(tablas[0].todos().filter(n=>n.tagName==='TR').length,7);
+ assert.ok(!p.todos().some(n=>n.tagName==='HR'));p.parent.onclick({target:p.parent});assert.equal(panel(m),undefined);assert.equal(m.document.activeElement,origen);
+});
+
+test('E35: tabla técnica conserva bordes y fondos por nivel en ambos temas',()=>{
+ const css=read('estilos-kit-riesgos.css');
+ assert.match(css,/\.kit-ficha \.kr-tecnica th, \.kit-ficha \.kr-tecnica td \{ border:1px solid var\(--borde\); font-weight:700/);
+ for(const nivel of ['alta','media','baja'])assert.ok(css.includes('.kr-'+nivel+' { background: var(--'+nivel+'-fondo); color: var(--'+nivel+'); }'));
+ assert.doesNotMatch(css,/kr-criterio|kr-resumen/);
 });

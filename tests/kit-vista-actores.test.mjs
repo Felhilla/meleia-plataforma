@@ -16,6 +16,7 @@ class Nodo {
   focus() { this.doc.activeElement = this; }
   remove() { if (this.parent) this.parent.children = this.parent.children.filter(n => n !== this); this.parent = null; }
   closest() { return this.hidden ? this : this.parent?.closest(); }
+  querySelector(selector) { return this.todos().find(n => selector.startsWith('.') ? n.className?.split(' ').includes(selector.slice(1)) : n.tagName === selector.toUpperCase()); }
   querySelectorAll() { return this.todos().filter(n => ['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'A'].includes(n.tagName)); }
 }
 const read = p => readFileSync(new URL('../public/' + p, import.meta.url), 'utf8');
@@ -85,11 +86,11 @@ test('E24: agrupa instituciones exactas, cuenta organizaciones por cuadrante y r
   assert.match(cuadro(m).attrs['aria-label'],/6 organizaciones, 100 %/);
   assert.match(cuadro(m,estrategico).textContent,/1\s+organización · .*Incluye 1 organización que también está en otro cuadrante/);
   assert.match(cuadro(m).textContent,/Incluye 1 organización que también está en otro cuadrante/);
-  assert.match(centro(m).textContent,/8 Actores identificados/);
+  assert.match(centro(m).textContent,/6 Organizaciones identificadas/);
   assert.deepEqual(m.consultas.map(c => c[1]),['actores','actores-contactos','actores-resumen']);
   assert.equal(m.contenedor.todos().filter(n => n.tagName === 'BUTTON').length,5);
   const exacta = await montar('mapa',true,{actores:[...muestra(),{...muestra()[0],id:'i',institucion:'organización Nube'}]});
-  await centro(exacta).onclick(); assert.match(panel(exacta).textContent,/7 organizaciones/);
+  await centro(exacta).onclick(); assert.match(panel(exacta).textContent,/Organizaciones identificadas\s+7/);
 });
 test('E24: filtros combinables, posiciones mixtas y autoridades ordenadas', async () => {
   const m = await montar('mapa',true,{actores:muestra()}); await cuadro(m).onclick();
@@ -121,12 +122,18 @@ test('E24: ficha completa, contactos, intensidad, detalle plegado y foco de vent
   escape(m); assert.equal(panel(m),undefined); assert.equal(m.document.activeElement,q); assert.equal(m.contenedor.inert,undefined);
   await q.onclick(); m.salir(); assert.equal(panel(m),undefined); assert.equal(m.document.eventos.keydown,undefined);
 });
-test('E24: resumen conserva seis categorías y posiciones superpuestas', async () => {
+test('E24: resumen omite categorías vacías y posiciones superpuestas', async () => {
   const m = await montar('mapa',false,{actores:muestra()}); await centro(m).onclick();
-  assert.match(panel(m).textContent,/6 organizaciones/);
-  for (const nombre of ['Autoridades','Comunidades y asociaciones','Gremios','Academia','Proveedores','Medios de comunicación']) assert.match(panel(m).textContent,new RegExp(nombre));
+  assert.match(panel(m).textContent,/Organizaciones identificadas\s+6/);
+  assert.equal(centro(m).attrs['aria-label'],'6 Organizaciones identificadas');
+  for (const nombre of ['Autoridades','Academia']) assert.match(panel(m).textContent,new RegExp(nombre));
   assert.ok(m.document.body.todos().some(x => x.className === 'ka-fondo ka-fondo-centro'), 'el resumen abre como ventana centrada');
-  assert.match(panel(m).textContent,/0\s*Gremios · 0 actores/); assert.match(panel(m).textContent,/1\s*Academia · 1 actor\b/);
+  const tabla=panel(m).todos().find(n=>n.className==='ka-resumen-tabla');
+  assert.equal(tabla.tagName,'TABLE');assert.doesNotMatch(tabla.textContent,/actores|Gremios|Comunidades|Proveedores|Medios/);
+  assert.ok(tabla.todos().filter(n=>n.tagName==='TD').every(n=>Number(n.textContent)>0));
+  assert.match(tabla.textContent,/Academia 1/);
+  const posiciones=panel(m).todos().filter(n=>n.className==='ka-resumen-posicion');
+  assert.equal(posiciones.length,3);posiciones.forEach(n=>{assert.equal(n.children[0].tagName,'STRONG');assert.ok(n.children[1].className.includes('ka-etiqueta'));});
   assert.match(panel(m).textContent,/2\s*Favorables/); assert.match(panel(m).textContent,/4 Neutrales/); assert.match(panel(m).textContent,/2 Desfavorables/); assert.match(panel(m).textContent,/1 organización con cargos de distinta posición/);
 });
 test('E24: logos se piden bajo demanda una vez, rechazan SVG y URL', async () => {
@@ -219,4 +226,10 @@ test('E26: dentro del mismo orden, gobernación antes que asamblea y alcaldía a
   ];
   const m = await montar('mapa',true,{actores:lista}); await cuadro(m).onclick();
   assert.deepEqual(tarjetas(m).map(n => n.children[1].textContent),['Gobernación de Prueba','Asamblea Departamental de Prueba','Contraloría de Prueba','Alcaldía de Prueba','Concejo Municipal de Prueba','Aguas de Prueba']);
+});
+
+test('E34: ficha de actor usa cierre común accesible con foco inicial',async()=>{
+ const m=await montar('mapa',true,{actores:muestra()});await cuadro(m).onclick();const origen=tarjetas(m)[0];origen.focus();origen.onclick();
+ const p=panel(m),cerrar=p.todos().find(n=>n.attrs['aria-label']==='Cerrar');assert.equal(cerrar.className,'kit-cerrar');assert.equal(cerrar.textContent,'×');assert.equal(cerrar.type,'button');assert.equal(m.document.activeElement,cerrar);
+ cerrar.onclick();assert.equal(m.document.activeElement,origen);
 });

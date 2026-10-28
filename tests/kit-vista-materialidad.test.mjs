@@ -21,8 +21,6 @@ test('E30: esquema completo y vínculo validado/tema_id',()=>{
 test('E30: cifras, plurales, niveles y orden independiente del arreglo de entrada',()=>{
  const a=(id,orden,cuadrante,importancia,financiera,validado='Sí')=>({id,orden,cuadrante,importancia,financiera,probabilidad:3,validado});
  const rs=[a('a',3,'Impacto',4,2),a('b',2,'Doble',3,3),a('c',1,'Doble',3,3),a('d',4,'Financiera',2,5),a('e',5,'No material',5,5,'No')];
- assert.deepEqual(M.cifras(rs).map(x=>x.valor),[4,2,1,1]);assert.equal(M.cifras(rs)[3].etiqueta,'financiero');
- assert.equal(M.cifras([rs[0]])[0].etiqueta,'Tema material');assert.equal(M.cifras([])[3].etiqueta,'financieros');
  assert.deepEqual(M.top(rs,'doble').map(x=>x.id),['e','d','c','b','a']);
  assert.deepEqual(M.top(rs,'impacto').map(x=>x.id),['e','a','c','b','d']);
  assert.deepEqual(M.top(rs,'financiera').map(x=>x.id),['d','e','c','b','a']);
@@ -34,7 +32,7 @@ test('E30: cifras, plurales, niveles y orden independiente del arreglo de entrad
 test('E30: tres consultas exactas, cifras, fuente y selector sin recargar',async()=>{
  const m=await vista();
  assert.deepEqual(m.consultas.map(x=>x[1]),M.colecciones);assert.ok(m.consultas.every(x=>x[0]==='empresa-1'));
- assert.deepEqual(m.contenedor.querySelector('.mat-cifras').children.map(n=>n.children[0].textContent),['10','4','3','3']);
+ assert.ok(!m.contenedor.querySelector('.mat-cifras')); // Felipe, 28-oct: sin banda de cifras en el Módulo III
  assert.match(m.contenedor.textContent,/Fuente: Informe de muestra de Empresa Aurora/);
  for(const tipo of ['doble','impacto','financiera']){
   cambiar(m,tipo);
@@ -54,14 +52,14 @@ test('E30: ficha por vista, tablas, Enter, Espacio, foco, inert y cierre',async(
  for(const tipo of ['doble','impacto','financiera']){
   cambiar(m,tipo);const punto=puntos(m)[0];abrir(m);
   const d=panel(m);assert.ok(d);assert.equal(m.contenedor.inert,true);
-  const titulos=d.querySelectorAll('h3').map(n=>n.textContent);
+  const titulos=d.querySelectorAll('.dim-ficha-rotulo').map(n=>n.textContent);
   assert.equal(titulos.includes('Importancia'),tipo==='impacto');
   assert.equal(titulos.includes('Materialidad financiera'),tipo!=='impacto');
   assert.equal(d.querySelectorAll('table').length,tipo==='doble'?2:1);
   assert.match(d.textContent,/Marco inventado/);
-  let previno=false;m.document.eventos.keydown({key:'Tab',preventDefault(){previno=true;}});assert.ok(previno);assert.equal(m.document.activeElement,boton(d,'Cerrar ×'));
+  let previno=false;m.document.eventos.keydown({key:'Tab',preventDefault(){previno=true;}});assert.ok(previno);assert.equal(m.document.activeElement,d.querySelector('[aria-label=\"Cerrar\"]'));
   m.document.eventos.keydown({key:'Escape',preventDefault(){}});assert.equal(panel(m),undefined);assert.equal(m.document.activeElement,punto);assert.equal(m.contenedor.inert,false);
-  punto.onkeydown({key:' ',preventDefault(){}});boton(panel(m),'Cerrar ×').onclick();assert.equal(m.document.activeElement,punto);
+  punto.onkeydown({key:' ',preventDefault(){}});panel(m).querySelector('[aria-label=\"Cerrar\"]').onclick();assert.equal(m.document.activeElement,punto);
  }
  abrir(m);m.salir();assert.equal(panel(m),undefined);assert.equal(m.document.eventos.keydown,undefined);
 });
@@ -73,7 +71,7 @@ test('E30: descripción e indicadores validados, sustitución y texto seguro',as
  assert.match(panel(m).textContent,/Empresa Aurora desarrolla/);assert.match(panel(m).textContent,/Indicador uno/);
  assert.ok(panel(m).textContent.includes('<script>prueba</script>'));assert.equal(m.document.body.querySelectorAll('script').length,0);
  assert.ok(!m.document.body.textContent.includes('{empresa}'));
- boton(panel(m),'Cerrar ×').onclick();assert.equal(m.document.activeElement,b);
+ panel(m).querySelector('[aria-label=\"Cerrar\"]').onclick();assert.equal(m.document.activeElement,b);
 });
 test('E30: permisos, botón y estados vacíos',async()=>{
  for(const editar of [true,false]){
@@ -121,15 +119,14 @@ test('E30: contraste de ámbar y amarillo supera 4,5 en ambos temas',()=>{
  for(const fondo of ['DDAE3E','E6D267'])for(const texto of ['1F332B','182C24'])assert.ok(contraste(fondo,texto)>=4.5);
 });
 
-test('E30b: cabecera de ficha agrupa título y dimensión en la misma fila',async()=>{
- const m=await vista();abrir(m);
- const cab=panel(m).querySelector('.mat-ficha-cab');
- assert.equal(cab.children[0].tagName,'H2');
- assert.equal(cab.children[1].className,'mat-dimension');
- assert.equal(cab.querySelector('span').textContent,'Dimensión ESG');
- assert.ok(['Ambiental','Social','Gobernanza'].includes(cab.querySelector('strong').textContent));
+test('E35: ficha comparte cabecera, antetítulo y panel de calificación con el Módulo II',async()=>{
+ const m=await vista();abrir(m);const d=panel(m),cab=d.querySelector('.dim-ficha-cabeza');
+ assert.ok(cab.querySelector('.dim-ficha-titulo').querySelector('h2'));
+ assert.ok(['Ambiental','Social','Gobernanza'].includes(cab.querySelector('.antetitulo').textContent));
+ assert.equal(cab.querySelector('.dim-ficha-calif').querySelectorAll('strong').length,2);
+ const a=listas['materialidad-aspectos'].find(a=>a.nombre===cab.querySelector('h2').textContent);
+ assert.ok(cab.querySelector('.dim-ficha-calif').className.includes('sem-fondo-'+M.nivel(a.importancia).color));
 });
-
 
 test('E30b: el mapa adapta viewBox al contenedor y desconecta el observador al salir',async()=>{
  const m=await vista();m.limpiar();m.contenedor.replaceChildren();
@@ -228,14 +225,35 @@ test('E31: estado por vista y sin validado visible en lista ni ficha',async()=>{
    assert.doesNotMatch(d.textContent,/validado/i);
    assert.equal(d.querySelector('.mat-estado').textContent,M.estado(a,tipo,M.umbrales(listas['materialidad-resumen'][0],listas['materialidad-aspectos'],tipo)));
    if(tipo==='financiera'){
-    assert.deepEqual(d.querySelectorAll('.mat-nota').map(n=>n.querySelector('h3').textContent),['Materialidad financiera','Probabilidad']);
+    assert.deepEqual(d.querySelectorAll('.mat-nota').map(n=>n.querySelector('.dim-ficha-rotulo').textContent),['Materialidad financiera','Probabilidad']);
     assert.match(d.textContent,/Calificación del taller financiero/);assert.match(d.textContent,/Impacto en la rentabilidad/);assert.match(d.textContent,/Impacto en el gasto operativo/);
    }
-   boton(d,'Cerrar ×').onclick();
+   d.querySelector('[aria-label=\"Cerrar\"]').onclick();
   }
  }
  for(const tipo of ['impacto','financiera'])for(const [x,y,esperado] of [[4,4,'Alta N y alta probabilidad'],[2,4,'Alta N, baja probabilidad'],[4,2,'Baja N, alta probabilidad'],[2,2,'Baja N y baja probabilidad'],[3,3,'Baja N y baja probabilidad']]){
   assert.equal(M.estado({probabilidad:x,importancia:y,financiera:y},tipo,[3,3]),esperado.replace('N',tipo==='impacto'?'importancia':'materialidad financiera'));
  }
  for(const [cuadrante,esperado] of Object.entries({Doble:'Doble materialidad',Impacto:'Material por impacto',Financiera:'Material financiero','No material':'No material'}))assert.equal(M.estado({cuadrante},'doble',[3,3]),esperado);
+});
+
+test('E34: materialidad organiza recuadros y mini tabla, con cierre accesible y sin hr', async()=>{
+ const m=await vista();abrir(m);const d=panel(m),cerrar=d.querySelector('[aria-label="Cerrar"]');
+ assert.equal(cerrar.className,'kit-cerrar');assert.equal(cerrar.textContent,'×');assert.equal(cerrar.type,'button');assert.equal(m.document.activeElement,cerrar);
+ assert.equal(d.querySelectorAll('.kit-caja').length,0);assert.equal(d.querySelectorAll('.kit-ficha-rejilla').length,0);
+ assert.ok(d.querySelector('.dim-ficha-hallazgos').querySelector('.mat-estado'));
+ assert.equal(d.querySelector('.dim-ficha-estandares-fila').querySelector('h3').textContent,'Estándares relacionados');
+ assert.ok(d.querySelector('.dim-ficha-estandares-fila').querySelectorAll('li').length);
+ assert.deepEqual(d.querySelector('.dim-ficha-cuerpo').querySelectorAll('h3').map(n=>n.textContent),['Calificación de los grupos de interés','Calificación del taller financiero']);
+ assert.equal(d.querySelectorAll('.mat-circulo').length,8);
+ assert.equal(d.querySelectorAll('hr').length,0);
+ d.parentNode.onclick({target:d.parentNode});assert.equal(panel(m),undefined);
+});
+
+test('E35: tablas sin cortes de palabra y desplazamiento dentro del contenedor',()=>{
+ const css=read('estilos-kit-materialidad.css');
+ assert.match(css,/\.mat-tabla\s*\{[^}]*overflow-x:auto/);
+ assert.match(css,/\.materialidad th,\.materialidad td\s*\{[^}]*overflow-wrap:normal; word-break:normal; hyphens:manual/);
+ assert.match(css,/\.materialidad th\s*\{[^}]*font-size:var\(--t-micro\); letter-spacing:\.04em; text-transform:none/);
+ assert.doesNotMatch(css,/word-break:break-word/);
 });
