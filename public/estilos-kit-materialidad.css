@@ -28,6 +28,12 @@
 .mat-eje { fill:var(--texto); font-size:var(--t-chico); }
 .mat-cuadrante { fill:var(--texto-suave); font-size:12px; }
 .mat-forma { fill:var(--principal); }
+/* Color por dimensión ESG, con tokens existentes (sin colores del semáforo, que en la ficha significan nivel). */
+.mat-dim-ambiental { fill:var(--forest); }
+.mat-dim-social { fill:var(--oro-texto); }
+.mat-dim-gobernanza { fill:var(--ka-azul-borde); }
+:root[data-tema="oscuro"] .mat-dim-ambiental { fill:var(--principal); }
+@media (prefers-color-scheme: dark) { :root:not([data-tema="claro"]) .mat-dim-ambiental { fill:var(--principal); } }
 .mat-hueco { fill:var(--superficie); stroke:var(--texto-suave); stroke-width:2; }
 .mat-numero { fill:var(--superficie); font-size:var(--t-chico); font-weight:700; pointer-events:none; }
 .mat-toque { fill:transparent; }
