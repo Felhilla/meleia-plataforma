@@ -15,7 +15,6 @@
 .mat-lateral ol,.mat-lateral ul { padding-left:var(--e3); }
 .mat-lateral li { margin:var(--e2) 0; font-size:var(--t-chico); }
 .mat-lateral button { display:inline; vertical-align:top; text-align:left; padding:var(--e1); border:0; background:transparent; color:var(--principal); white-space:normal; }
-.mat-validado { display:block; font-size:var(--t-micro); color:var(--texto-suave); }
 .mat-resultado { min-width:0; padding:var(--e4); }
 .mat-resultado h2 { margin-top:0; }
 .mat-umbrales,.mat-fuente { color:var(--texto-suave); font-size:var(--t-chico); }
@@ -26,10 +25,8 @@
 .mat-zona-financiera { fill:var(--kit-desplegable-fondo); }
 .mat-rejilla { stroke:var(--borde); stroke-width:1; }
 .mat-umbral { stroke:var(--texto); stroke-width:2; }
-.mat-guia { stroke:var(--texto-suave); stroke-width:1; }
 .mat-eje { fill:var(--texto); font-size:var(--t-chico); }
 .mat-cuadrante { fill:var(--texto-suave); font-size:12px; }
-.mat-real { fill:var(--principal); }
 .mat-forma { fill:var(--principal); }
 .mat-hueco { fill:var(--superficie); stroke:var(--texto-suave); stroke-width:2; }
 .mat-numero { fill:var(--superficie); font-size:var(--t-chico); font-weight:700; pointer-events:none; }

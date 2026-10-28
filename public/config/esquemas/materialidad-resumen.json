@@ -62,6 +62,13 @@
       "min": 0,
       "max": 100000,
       "obligatorio": false
+    },
+    "umbral_probabilidad": {
+      "tipo": "decimal",
+      "etiqueta": "Umbral de probabilidad",
+      "min": 0,
+      "max": 5,
+      "obligatorio": false
     }
   },
   "registroUnico": "resumen"
