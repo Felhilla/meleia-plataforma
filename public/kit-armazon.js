@@ -21,10 +21,10 @@
     if (sub && !tabs.includes(sub)) return portada;
     return { clave: modulo.id + (sub ? '/' + sub : ''), empresa, modulo, sub, hash: '#/' + modulo.id + '/' + empresa.id + (sub ? '/' + sub : '') };
   }
-      function tituloMarca(texto) {
+      function tituloMarca(texto, nivel = 'h1') {
         const el = App.el;
         const banda = el('div', null, 'kit-titulo'), arco = el('span', null, 'kit-titulo-arco');
-        arco.setAttribute('aria-hidden', 'true'); banda.append(el('h1', texto), arco); return banda;
+        arco.setAttribute('aria-hidden', 'true'); banda.append(el(nivel === 'h2' ? 'h2' : 'h1', texto), arco); return banda;
       }
   const vistas = new Map();
   const App = {
