@@ -41,7 +41,7 @@
     fondo.onclick=e=>{if(e.target===fondo)limpiar();};document.addEventListener('keydown',teclado);return limpiar;
   }
   function forma(dimension,x,y,numerado){
-    const attrs={class:numerado?'mat-forma':'mat-hueco'};
+    const attrs={class:numerado?'mat-forma mat-dim-'+String(dimension).toLowerCase():'mat-hueco'};
     if(!numerado)return svg('circle',{...attrs,cx:x,cy:y,r:5});
     if(dimension==='Ambiental')return svg('polygon',{...attrs,points:`${x},${y-15} ${x-14},${y+12} ${x+14},${y+12}`});
     if(dimension==='Gobernanza')return svg('rect',{...attrs,x:x-13,y:y-13,width:26,height:26});
