@@ -144,24 +144,8 @@ test('E22: el Módulo III ofrece exclusivamente el caso configurado y sus rutas'
   assert.deepEqual(App.casos(modulo,[...muestras,...casos]).map(e=>e.id),[casos[0].id]);
 });
 
-test('DOM E24: perfil en memoria por empresa, logo válido sin hueco cuando falta', async () => {
-  for (const imagen of [undefined,'https://example.test/logo.png','data:image/svg+xml;base64,YQ==','data:image/png;base64,YQ==']) {
-    const m = await montar({hash:'#/actores/uno',listar:async () => imagen ? [{id:'logo',imagen,alt:'Empresa de prueba'}] : []});
-    const logos = () => m.nodos.contenido.todos().filter(n => n.className === 'kit-empresa-logo');
-    assert.equal(logos().length,imagen === 'data:image/png;base64,YQ==' ? 1 : 0);
-    if (logos().length) assert.equal(logos()[0].alt,'Empresa de prueba');
-    m.root.location.hash = '#/riesgos/uno'; await m.root.App.actualizarVista();
-    assert.equal(m.consultas.filter(c => c[0] === 'uno' && c[1] === 'perfil').length,1);
-    m.root.location.hash = '#/riesgos/dos'; await m.root.App.actualizarVista();
-    assert.equal(m.consultas.filter(c => c[1] === 'perfil').length,2);
-  }
-});
-
-test('DOM E24: una respuesta de perfil tardía no inserta el logo de otra empresa', async () => {
-  let resolver;
-  const m = await montar({hash:'#/actores/uno',listar:async e => e === 'uno' ? new Promise(r => { resolver = r; }) : []});
-  m.root.location.hash = '#/riesgos/dos'; await m.root.App.actualizarVista();
-  resolver([{id:'logo',imagen:'data:image/png;base64,YQ==',alt:'Logo anterior'}]);
-  for (let i=0;i<5;i++) await Promise.resolve();
+test('DOM E24b: el armazón no pide ni muestra logos de empresa', async () => {
+  const m = await montar({hash:'#/actores/uno',listar:async () => [{id:'logo',imagen:'data:image/png;base64,YQ==',alt:'Empresa de prueba'}]});
+  assert.equal(m.consultas.filter(c => c[1] === 'perfil').length,0);
   assert.ok(!m.nodos.contenido.todos().some(n => n.className === 'kit-empresa-logo'));
 });

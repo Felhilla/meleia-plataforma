@@ -34,11 +34,11 @@
     const error = (n, e) => { if (!activo()) return; if (e.sesionCerrada) { App.actualizarVista(); return; } mensaje(n, e.message || 'No se pudo completar la operación.'); };
     const ctx = { contenedor, datos, params, cfg, activo, error, listas: {} };
     ctx.cargar = async nombres => { await Promise.all(nombres.map(async c => { if (!ctx.listas[c]) ctx.listas[c] = await datos.listar(params.empresa, c); })); };
-    ctx.dialogo = (titulo, encima = false) => {
+    ctx.dialogo = (titulo, encima = false, centrado = false) => {
       const origen = encima ? root.document.activeElement : focoOrigen?.isConnected ? focoOrigen : root.document.activeElement;
       if (!encima) while (pila.length) pila.at(-1).cerrar();
       focoOrigen = origen;
-      const anterior = origen, fondo = el('div', null, 'ka-fondo'), panel = el('section', null, 'ka-dialogo');
+      const anterior = origen, fondo = el('div', null, centrado ? 'ka-fondo ka-fondo-centro' : 'ka-fondo'), panel = el('section', null, 'ka-dialogo');
       panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-labelledby', 'ka-dialogo-titulo'); panel.tabIndex = -1;
       const h = App.tituloMarca ? App.tituloMarca(titulo) : el('h2', titulo); h.id = 'ka-dialogo-titulo-' + pila.length; panel.setAttribute('aria-labelledby', h.id);
       const regiones = [...root.document.body.children].map(n => [n, n.inert]); regiones.forEach(([n]) => { n.inert = true; });
@@ -179,7 +179,7 @@
   }
   async function abrirResumen(ctx) {
     if (!ctx.activo()) return;
-    const p = ctx.dialogo(`${numero(ctx.organizaciones.length)} organizaciones`); p.classList.add('ka-resumen-dialogo');
+    const p = ctx.dialogo(`${numero(ctx.organizaciones.length)} organizaciones`, false, true); p.classList.add('ka-resumen-dialogo');
     try { await ctx.logos(); if (!ctx.activo() || ctx.panelActual !== p) return;
       const columnas = el('div',null,'ka-resumen-columnas'), izquierda = el('div'), derecha = el('div');
       categorias.forEach(([categoria,nombre]) => { const actores = ctx.listas.actores.filter(a => a.categoria === categoria); const fila = el('p', null, 'ka-resumen-fila'); fila.append(el('strong', numero(agrupar(actores).length)), el('span', `${nombre} · ${actores.length === 1 ? '1 actor' : numero(actores.length) + ' actores'}`)); izquierda.append(fila); });
