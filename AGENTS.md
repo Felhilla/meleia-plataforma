@@ -21,7 +21,7 @@ La carga por Excel lee lo mismo que guardan los formularios. Para que los cambio
    - correr `npm test`, incluidas las pruebas de contrato (`tests/kit-contrato.test.mjs` y `tests/kit-carga-excel*.test.mjs`);
    - decirlo en la descripción del pull request («toca el contrato de la carga por Excel»).
 4. **Pruebas de contrato.** Unos Excel de muestra con datos inventados (`tests/fixtures/`) se leen en cada `npm test` y deben producir exactamente los registros esperados. Además, una prueba verifica que cada campo de cada esquema tenga su columna en `kit-carga-excel.json` y en la plantilla. Si una prueba de contrato falla, se corrige el cambio o se actualiza el contrato a propósito. Nunca se borra ni se debilita la prueba para que pase.
-5. **Dueños.** `kit-carga-excel.js`, su vista y sus pruebas son de quien construye la carga (Sebastián). El resto del repo es de Felipe, Claude y Codex. Quien necesite cambiar un archivo del otro lado lo pide o lo propone en el pull request; no lo edita por su cuenta.
+5. **Dueños.** Desde el 29-oct-2026 todo el repo, incluida la carga por Excel (`kit-carga-excel.js`, su vista y sus pruebas), es de Felipe, Claude y Codex. Sebastián construyó la carga por Excel (E20) y terminó su encargo.
 6. **Nada nuevo sale de la red.** La librería de Excel (SheetJS 0.20.3, de cdn.sheetjs.com) va copiada en `public/vendor/xlsx.full.min.js`. Una prueba verifica su huella SHA-256. No se carga desde un CDN ni se cambia de versión sin revisión.
 
 ## Diseño
