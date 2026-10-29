@@ -288,7 +288,13 @@
     contenedor.append(zona, verHistorial, historial);
     root.KitVistaCargaExcel.seccion(contenedor, {
       modulo: 'actores',
-      contexto: () => ({ cfg: ctx.cfg, esquema: ctx.esquema, existentes: ctx.listas.actores }),
+      rutaPlantilla: 'plantillas/plantilla-modulo-i.xlsx',
+      nombrePlantilla: 'plantilla-modulo-i.xlsx',
+      contexto: async () => {
+        // Los contactos solo sirven para reconocer a un servidor público ya cargado sin nombre.
+        await ctx.cargar(['actores-contactos']).catch(() => {});
+        return { cfg: ctx.cfg, esquema: ctx.esquema, existentes: ctx.listas.actores, contactos: ctx.listas['actores-contactos'] || [] };
+      },
       guardar: async registrosPorColeccion => {
         const lista = registrosPorColeccion.actores || [];
         if (lista.length) {

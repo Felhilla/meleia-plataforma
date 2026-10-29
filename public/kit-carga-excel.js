@@ -81,8 +81,46 @@
     return { valor: numero ?? valores[0] };
   }
 
-  function claveActor(actor) {
+  // Grupo de un actor: categoría + institución + cargo. Varios actores reales
+  // comparten grupo (14 «Representante» de un mismo municipio, concejales del
+  // mismo partido), así que dentro del grupo se empareja por pasos.
+  function grupoActor(actor) {
     return [actor.categoria, actor.institucion, actor.cargo].map(normalizar).join('\u0000');
+  }
+
+  function firmaActor(registro) {
+    return JSON.stringify(Object.keys(registro).filter(campo => campo !== 'id').sort().map(campo => [campo, normalizar(registro[campo])]));
+  }
+
+  // Empareja las filas del archivo con los actores existentes: primero por
+  // nombre del servidor (el del actor o, si no lo tiene, el de su contacto),
+  // luego por caracterización y, al final, por orden
+  // dentro del grupo. El orden solo se usa si no hay otra señal, y avisa
+  // cuando el grupo tenía más de un candidato.
+  function emparejar(filas, existentes, contactos, avisos) {
+    const libres = new Map(), pendientes = new Map(), contactoDe = new Map(contactos.map(contacto => [contacto.id, contacto]));
+    for (const actor of existentes) {
+      const grupo = grupoActor(actor);
+      if (!libres.has(grupo)) libres.set(grupo, []);
+      libres.get(grupo).push(actor);
+    }
+    const igual = (valorActor, campo) => (actor, registro) => presente(valorActor(actor)) && presente(registro[campo]) && normalizar(valorActor(actor)) === normalizar(registro[campo]);
+    const nombre = actor => presente(actor.nombre_servidor) ? actor.nombre_servidor : contactoDe.get(actor.id)?.nombre;
+    for (const criterio of [igual(nombre, 'nombre_servidor'), igual(actor => actor.caracterizacion, 'caracterizacion')]) {
+      for (const fila of filas) {
+        if (fila.existente) continue;
+        const lista = libres.get(grupoActor(fila.registro)) || [], i = lista.findIndex(actor => criterio(actor, fila.registro));
+        if (i >= 0) fila.existente = lista.splice(i, 1)[0];
+      }
+    }
+    for (const fila of filas) if (!fila.existente) pendientes.set(grupoActor(fila.registro), (pendientes.get(grupoActor(fila.registro)) || 0) + 1);
+    for (const fila of filas) {
+      if (fila.existente) continue;
+      const grupo = grupoActor(fila.registro), lista = libres.get(grupo) || [];
+      if (!lista.length) continue;
+      if (lista.length > 1 || pendientes.get(grupo) > 1) avisos.push({ hoja: fila.hoja, fila: fila.fila, mensaje: 'Se actualizó por orden un actor existente con la misma institución y cargo, porque la caracterización cambió. Revisa que la ficha corresponda a la misma persona u organización.' });
+      fila.existente = lista.shift();
+    }
   }
 
   function idNuevo() {
@@ -108,21 +146,21 @@
   function leerActores(arrayBuffer, contexto) {
     if (!XLSX || !Actores || !configuracion?.actores) throw Error('El lector de carga por Excel no está configurado.');
     const libro = XLSX.read(arrayBuffer, { type: 'array' }), cfg = configuracion.actores;
-    const registros = [], errores = [], avisos = [];
+    const registros = [], errores = [], avisos = [], filas = [], vistas = new Map();
     let nuevos = 0, actualizados = 0;
-    const existentes = new Map((contexto.existentes || []).map(actor => [claveActor(actor), actor]));
 
     for (const nombreHoja of libro.SheetNames) {
       if (/^(indice|metodologia)$/i.test(normalizar(nombreHoja)) || /^comp\./i.test(String(nombreHoja).trim())) continue;
       const categoria = categoriaDe(nombreHoja, cfg);
-      if (!categoria) continue;
+      if (!categoria) { avisos.push({ hoja: nombreHoja, mensaje: 'La hoja no corresponde a ninguna categoría de actores; no se cargó.' }); continue; }
       const hoja = libro.Sheets[nombreHoja], filaEncabezado = encabezado(hoja, cfg);
-      if (filaEncabezado === null) continue;
+      if (filaEncabezado === null) { avisos.push({ hoja: nombreHoja, mensaje: 'No se encontró la fila de encabezados (con «Institución»); la hoja no se cargó.' }); continue; }
       const columnas = columnasDe(hoja, filaEncabezado, cfg);
       const limite = XLSX.utils.decode_range(hoja['!ref'] || 'A1:A1');
       for (let fila = filaEncabezado + 2; fila <= limite.e.r; fila++) {
         const tieneDatos = [...columnas.values()].flat().some(columna => presente(valorDeCelda(hoja, fila, columna)));
         if (!tieneDatos) continue;
+        const erroresAntes = errores.length;
         const registro = Object.fromEntries(Object.keys(contexto.esquema.campos).map(campo => [campo, '']));
         registro.categoria = categoria;
         for (const campo of Object.keys(contexto.esquema.campos)) {
@@ -140,17 +178,24 @@
         if (ajuste?.error) errores.push({ hoja: nombreHoja, fila: fila + 1, campo: 'nivel_ajustado', mensaje: `Nivel de relacionamiento = ${JSON.stringify(nivelArchivo)}, se esperaba ${ajuste.error}` });
         else if (ajuste) Object.assign(registro, ajuste);
 
-        const existente = existentes.get(claveActor(registro));
-        registro.id = existente?.id || idNuevo();
-        const resultado = Actores.validar(registro, contexto.cfg, contexto.esquema, 'carga');
-        if (!resultado.ok || ajuste?.error || errores.some(error => error.hoja === nombreHoja && error.fila === fila + 1)) {
-          resultado.errores.forEach(error => errores.push({ hoja: nombreHoja, fila: fila + 1, campo: error.campo, mensaje: error.mensaje }));
-          continue;
-        }
-        registros.push(resultado.registro);
-        if (existente) actualizados++; else nuevos++;
-        resultado.avisos.forEach(mensaje => avisos.push({ hoja: nombreHoja, fila: fila + 1, mensaje }));
+        const firma = firmaActor(registro), repetida = vistas.get(firma);
+        if (repetida) { errores.push({ hoja: nombreHoja, fila: fila + 1, mensaje: `Fila repetida: es igual a ${repetida.hoja}, fila ${repetida.fila}. Bórrala o distínguela.` }); continue; }
+        vistas.set(firma, { hoja: nombreHoja, fila: fila + 1 });
+        filas.push({ hoja: nombreHoja, fila: fila + 1, registro, conError: errores.length > erroresAntes });
       }
+    }
+
+    emparejar(filas, contexto.existentes || [], contexto.contactos || [], avisos);
+    for (const { hoja, fila, registro, conError, existente } of filas) {
+      registro.id = existente?.id || idNuevo();
+      const resultado = Actores.validar(registro, contexto.cfg, contexto.esquema, 'carga');
+      if (!resultado.ok || conError) {
+        resultado.errores.forEach(error => errores.push({ hoja, fila, campo: error.campo, mensaje: error.mensaje }));
+        continue;
+      }
+      registros.push(resultado.registro);
+      if (existente) actualizados++; else nuevos++;
+      resultado.avisos.forEach(mensaje => avisos.push({ hoja, fila, mensaje }));
     }
     return { registros: { actores: registros }, nuevos, actualizados, errores, avisos };
   }
@@ -205,7 +250,7 @@
     return String(mensaje).replace(new RegExp(`^${escapado}, fila ${fila}:\\s*`), '');
   }
 
-  function procesarFilasRiesgos(libro, cfgHoja, contexto, existentes, registros, errores, conteos) {
+  function procesarFilasRiesgos(libro, cfgHoja, contexto, existentes, registros, errores, conteos, filasPorId) {
     const nombreHoja = libro.SheetNames.find(nombre => normalizar(nombre) === normalizar(cfgHoja.hoja));
     if (!nombreHoja) return;
     const hoja = libro.Sheets[nombreHoja], columnas = columnasRiesgos(hoja, cfgHoja);
@@ -256,6 +301,12 @@
         resultado.errores.forEach(error => errores.push({ hoja: nombreHoja, fila: fila + 1, campo: error.campo, mensaje: sinPrefijoDeError(error.mensaje, esquema.titulo, fila + 1) }));
         continue;
       }
+      const clave = cfgHoja.coleccion + '\u0000' + resultado.registro.id, repetida = filasPorId.get(clave);
+      if (repetida) {
+        errores.push({ hoja: nombreHoja, fila: fila + 1, mensaje: `Registro repetido: corresponde al mismo registro de la fila ${repetida}. Deja una sola fila.` });
+        continue;
+      }
+      filasPorId.set(clave, fila + 1);
       registros[cfgHoja.coleccion].push(resultado.registro);
       if (resultado.existe) conteos.actualizados++; else conteos.nuevos++;
     }
@@ -265,12 +316,14 @@
     if (!XLSX || !Riesgos || !configuracion?.riesgos) throw Error('El lector de carga por Excel no está configurado.');
     const libro = XLSX.read(arrayBuffer, { type: 'array', cellDates: true }), cfg = configuracion.riesgos;
     const registros = Object.fromEntries(COLECCIONES_RIESGOS.map(coleccion => [coleccion, []]));
-    const existentes = contexto.existentes || {}, errores = [], conteos = { nuevos: 0, actualizados: 0 };
+    const existentes = contexto.existentes || {}, errores = [], avisos = [], conteos = { nuevos: 0, actualizados: 0 }, filasPorId = new Map();
+    const conocidas = new Set(cfg.hojas.map(hoja => normalizar(hoja.hoja)));
+    libro.SheetNames.filter(nombre => !conocidas.has(normalizar(nombre))).forEach(nombre => avisos.push({ hoja: nombre, mensaje: 'La hoja no es parte de la plantilla; no se cargó.' }));
     for (const coleccion of COLECCIONES_RIESGOS) {
       const cfgHoja = cfg.hojas.find(hoja => hoja.coleccion === coleccion);
-      procesarFilasRiesgos(libro, cfgHoja, contexto, existentes, registros, errores, conteos);
+      procesarFilasRiesgos(libro, cfgHoja, contexto, existentes, registros, errores, conteos, filasPorId);
     }
-    return { registros, ...conteos, errores, avisos: [] };
+    return { registros, ...conteos, errores, avisos };
   }
 
   function leer(arrayBuffer, modulo, contexto) {
