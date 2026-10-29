@@ -46,5 +46,33 @@
       return [Math.min(5,Math.max(0,x+paso)),y];
     });
   }
-  return {colecciones,validar,variables,umbrales,estado,ordenados,top,nivel,posiciones};
+  // Doble materialidad desde las respuestas crudas (decisiones del 28 y 29-oct-2026). Nadie escribe promedios a mano.
+  // - Blanco = 0: una casilla vacía, o una persona que no calificó un aspecto, cuenta como 0.
+  // - Importancia de una respuesta: la que viene escrita o, si no, el promedio de escala y alcance (impacto
+  //   positivo) o de escala, alcance e irremediabilidad (impacto negativo).
+  // - Si una persona calificó el mismo aspecto dos veces, cuenta la respuesta de mayor importancia.
+  // - Los participantes y los evaluadores vienen en listas propias: quien no respondió nada cuenta con 0.
+  // - Cada grupo promedia a sus participantes; importancia y probabilidad son el promedio simple de los grupos.
+  // - Financiera = promedio de rentabilidad y gasto operativo, cada uno promedio de los evaluadores del taller.
+  // - Umbral de cada eje = promedio de los aspectos; material si supera el umbral de impacto o el financiero.
+  function calcular({aspectos,grupos,participantes:lista,evaluadores,consulta,taller}){
+    const n=v=>typeof v==='number'&&Number.isFinite(v)?v:0, promedio=xs=>xs.length?xs.reduce((a,b)=>a+b,0)/xs.length:0;
+    const importancia=r=>typeof r.importancia==='number'?r.importancia:promedio([r.escala,r.alcance,...(r.signo==='Negativo'?[r.irremediabilidad]:[])].map(n));
+    const participantes=Object.fromEntries(grupos.map(g=>[g,lista.filter(p=>p.grupo===g).map(p=>p.codigo)]));
+    const respuesta=(persona,aspecto)=>consulta.filter(r=>r.participante===persona&&r.aspecto===aspecto).reduce((mejor,r)=>!mejor||importancia(r)>importancia(mejor)?r:mejor,null);
+    const conGrupos=grupos.filter(g=>participantes[g].length);
+    const resultado=aspectos.map(aspecto=>{
+      const por_grupo=Object.fromEntries(conGrupos.map(g=>{
+        const rs=participantes[g].map(p=>respuesta(p,aspecto));
+        return [g,{importancia:promedio(rs.map(r=>r?importancia(r):0)),probabilidad:promedio(rs.map(r=>r?n(r.probabilidad):0))}];
+      }));
+      const fila=e=>taller.find(r=>r.evaluador===e&&r.aspecto===aspecto)||{};
+      const rentabilidad=promedio(evaluadores.map(e=>n(fila(e).rentabilidad))),gasto=promedio(evaluadores.map(e=>n(fila(e).gasto)));
+      return {aspecto,por_grupo,importancia:promedio(conGrupos.map(g=>por_grupo[g].importancia)),probabilidad:promedio(conGrupos.map(g=>por_grupo[g].probabilidad)),rentabilidad,gasto,financiera:(rentabilidad+gasto)/2};
+    });
+    const umbral={impacto:promedio(resultado.map(a=>a.importancia)),financiero:promedio(resultado.map(a=>a.financiera)),probabilidad:promedio(resultado.map(a=>a.probabilidad))};
+    resultado.forEach(a=>{const i=a.importancia>umbral.impacto,f=a.financiera>umbral.financiero;a.cuadrante=i&&f?'Doble':i?'Impacto':f?'Financiera':'No material';});
+    return {aspectos:resultado,umbral,participantes:Object.fromEntries(grupos.map(g=>[g,participantes[g].length])),evaluadores:evaluadores.length};
+  }
+  return {colecciones,validar,variables,umbrales,estado,ordenados,top,nivel,posiciones,calcular};
 }));
