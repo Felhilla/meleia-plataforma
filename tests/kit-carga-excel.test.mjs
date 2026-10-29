@@ -181,3 +181,73 @@ test('Carga Excel Módulo IV: resuelve referencias, componente y fechas nativas'
   assert.equal(medida.componente, 'componente-1'); assert.deepEqual(medida.riesgos, [riesgo.id]);
   assert.equal(medida.plazo, '2027-01-15');
 });
+
+// Copia al final de la hoja la fila que contiene `texto` y aplica `cambios`
+// ({ textoOriginal: textoNuevo }) a las celdas de la copia.
+function conFilaCopiada(fixture, nombreHoja, texto, cambios = {}, extra) {
+  const libro = XLSX.read(new Uint8Array(archivo(fixture)), { type: 'array' }), hoja = libro.Sheets[nombreHoja];
+  const rango = XLSX.utils.decode_range(hoja['!ref']);
+  let origen = -1;
+  for (let r = 0; r <= rango.e.r; r++) for (let c = 0; c <= rango.e.c; c++) if (String(hoja[XLSX.utils.encode_cell({ r, c })]?.v ?? '').includes(texto)) origen = r;
+  const destino = rango.e.r + 1;
+  for (let c = 0; c <= rango.e.c; c++) {
+    const celda = hoja[XLSX.utils.encode_cell({ r: origen, c })];
+    if (celda) hoja[XLSX.utils.encode_cell({ r: destino, c })] = { ...celda, v: cambios[celda.v] ?? celda.v };
+  }
+  rango.e.r = destino; hoja['!ref'] = XLSX.utils.encode_range(rango);
+  extra?.(libro);
+  return XLSX.write(libro, { type: 'array', bookType: 'xlsx' });
+}
+
+test('Carga Excel Módulo I: una fila repetida en el archivo es error y no duplica', () => {
+  const resultado = Carga.leer(conFilaCopiada('mapeo-gh-muestra.xlsx', 'Ins. Gub', 'Alcaldía'), 'actores', base([]));
+  assert.equal(resultado.nuevos, 4);
+  assert.equal(resultado.registros.actores.filter(actor => actor.institucion === 'Alcaldía Municipal de Ejemplo').length, 1);
+  assert.ok(resultado.errores.some(error => error.hoja === 'Ins. Gub' && /Fila repetida/.test(error.mensaje)));
+});
+
+test('Carga Excel Módulo I: actores con la misma institución y cargo se emparejan por caracterización', () => {
+  const dos = conFilaCopiada('mapeo-gh-muestra.xlsx', 'Ins. Gub', 'Alcaldía', {
+    'Persona Inventada Tres': 'Persona Inventada Nueve',
+    'Autoridad municipal del área de influencia.': 'Segunda autoridad inventada.'
+  });
+  const primera = Carga.leer(dos, 'actores', base([]));
+  const alcaldia = lista => lista.filter(actor => actor.institucion === 'Alcaldía Municipal de Ejemplo');
+  assert.equal(alcaldia(primera.registros.actores).length, 2);
+  // Existentes en otro orden y sin nombre (como en la base real): cada fila recupera su id.
+  const existentes = [...primera.registros.actores].reverse().map(actor => ({ ...actor, nombre_servidor: '' }));
+  const segunda = Carga.leer(dos, 'actores', base(existentes));
+  assert.equal(segunda.nuevos, 0); assert.equal(segunda.actualizados, 5);
+  const idPor = resultado => Object.fromEntries(alcaldia(resultado.registros.actores).map(actor => [actor.caracterizacion, actor.id]));
+  assert.deepEqual(idPor(segunda), idPor(primera));
+  assert.equal(new Set(segunda.registros.actores.map(actor => actor.id)).size, 5);
+});
+
+test('Carga Excel Módulo I: avisa las hojas que no reconoce', () => {
+  const resultado = Carga.leer(conFilaCopiada('mapeo-gh-muestra.xlsx', 'Ins. Gub', 'Alcaldía', { 'Persona Inventada Tres': 'Otra' }, libro => {
+    XLSX.utils.book_append_sheet(libro, XLSX.utils.aoa_to_sheet([['Notas sueltas']]), 'Notas');
+  }), 'actores', base([]));
+  assert.ok(resultado.avisos.some(aviso => aviso.hoja === 'Notas' && /no se cargó/.test(aviso.mensaje)));
+});
+
+test('Carga Excel Módulo IV: un código repetido en el archivo es error y no duplica', () => {
+  const libro = XLSX.read(new Uint8Array(plantillaRiesgosValida()), { type: 'array', cellDates: true });
+  XLSX.utils.sheet_add_aoa(libro.Sheets.Riesgos, [['R-03', 'Afectación repetida', '', 'Derecho a la vida', 'Operación propia', '', '', '', '']], { origin: -1 });
+  const resultado = Carga.leer(XLSX.write(libro, { type: 'array', bookType: 'xlsx', cellDates: true }), 'riesgos', baseRiesgos());
+  assert.equal(resultado.registros.riesgos.length, 1);
+  assert.deepEqual(resultado.errores.map(error => [error.hoja, error.fila]), [['Riesgos', 3]]);
+  assert.match(resultado.errores[0].mensaje, /Registro repetido.*fila 2/);
+});
+
+test('Carga Excel Módulo I: servidores idénticos en la base se reconocen por el nombre de su contacto', () => {
+  const dos = conFilaCopiada('mapeo-gh-muestra.xlsx', 'Ins. Gub', 'Alcaldía', { 'Persona Inventada Tres': 'Persona Inventada Nueve' });
+  const primera = Carga.leer(dos, 'actores', base([]));
+  const alcaldia = lista => lista.filter(actor => actor.institucion === 'Alcaldía Municipal de Ejemplo');
+  const idPorNombre = Object.fromEntries(alcaldia(primera.registros.actores).map(actor => [actor.nombre_servidor, actor.id]));
+  // Como en la base real: sin nombre en el actor, el nombre solo está en el contacto.
+  const existentes = [...primera.registros.actores].reverse().map(actor => ({ ...actor, nombre_servidor: '' }));
+  const contactos = alcaldia(primera.registros.actores).map(actor => ({ id: actor.id, nombre: actor.nombre_servidor }));
+  const segunda = Carga.leer(dos, 'actores', { ...base(existentes), contactos });
+  assert.deepEqual(Object.fromEntries(alcaldia(segunda.registros.actores).map(actor => [actor.nombre_servidor, actor.id])), idPorNombre);
+  assert.equal(segunda.avisos.some(aviso => /por orden/.test(aviso.mensaje)), false);
+});

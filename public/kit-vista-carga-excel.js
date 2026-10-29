@@ -37,7 +37,7 @@
         if (avisos.length) {
           const lista = el('ul', null, 'kce-avisos');
           previa.append(el('h4', 'Avisos'));
-          avisos.forEach(({ hoja, fila, mensaje }) => lista.append(el('li', `${hoja}, fila ${fila}: ${mensaje}`)));
+          avisos.forEach(({ hoja, fila, mensaje }) => lista.append(el('li', fila ? `${hoja}, fila ${fila}: ${mensaje}` : `${hoja}: ${mensaje}`)));
           previa.append(lista);
         }
         if (nuevos + actualizados > 0) {

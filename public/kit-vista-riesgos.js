@@ -326,10 +326,13 @@
         };
       },
       guardar: async registrosPorColeccion => {
+        const hechas = [];
         for (const c of colecciones) {
           const lista = registrosPorColeccion[c] || [];
           if (!lista.length) continue;
-          await datos.guardarVarios(params.empresa, c, lista);
+          try { await datos.guardarVarios(params.empresa, c, lista); }
+          catch (e) { throw Error((hechas.length ? `Se guardaron ${hechas.join(', ')}, pero falló ${c}: ` : '') + e.message + ' Puedes volver a subir el mismo archivo: no duplica registros.'); }
+          hechas.push(c);
           const porId = new Map(lista.map(r => [r.id, r]));
           ctx.listas[c] = [...(ctx.listas[c] || []).filter(r => !porId.has(r.id)), ...lista];
         }
