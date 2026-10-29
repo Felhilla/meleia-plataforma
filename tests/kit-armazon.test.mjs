@@ -153,12 +153,12 @@ test('DOM E24b: el armazón no pide ni muestra logos de empresa', async () => {
   assert.ok(!m.nodos.contenido.todos().some(n => n.className === 'kit-empresa-logo'));
 });
 
-test('E37: Alimentación de II visible para quien edita (carga por Excel) y cerrada para los demás',async()=>{
+test('E27: Alimentación de II oculta en barra pero resoluble con permiso',async()=>{
  const m=await montar({hash:'#/ddhh/uno/alimentacion'});
  assert.equal(m.root.location.hash,'#/ddhh/uno/alimentacion');
  const tabs=m.nodos.contenido.todos().find(n=>n.className==='kit-pestanas');
- assert.deepEqual(tabs.children.map(n=>n.textContent),['Resultados','Cruce de estándares','Alimentación']);
- assert.ok(tabs.children.some(n=>n.href.endsWith('/alimentacion')));
+ assert.deepEqual(tabs.children.map(n=>n.textContent),['Resultados','Cruce de estándares']);
+ assert.ok(!tabs.children.some(n=>n.href.endsWith('/alimentacion')));
  m.datos.puedeEditar=()=>false;await m.root.App.actualizarVista();assert.equal(m.root.location.hash,'#/');
 });
 
