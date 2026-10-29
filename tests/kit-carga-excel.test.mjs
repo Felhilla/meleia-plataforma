@@ -251,3 +251,16 @@ test('Carga Excel Módulo I: servidores idénticos en la base se reconocen por e
   assert.deepEqual(Object.fromEntries(alcaldia(segunda.registros.actores).map(actor => [actor.nombre_servidor, actor.id])), idPorNombre);
   assert.equal(segunda.avisos.some(aviso => /por orden/.test(aviso.mensaje)), false);
 });
+
+test('Carga Excel Módulo IV: la plantilla descargable no genera avisos', () => {
+  const contenido = readFileSync(new URL('../public/plantillas/plantilla-modulo-iv.xlsx', import.meta.url));
+  const resultado = Carga.leer(contenido.buffer.slice(contenido.byteOffset, contenido.byteOffset + contenido.byteLength), 'riesgos', baseRiesgos());
+  assert.deepEqual(resultado.avisos, []); assert.deepEqual(resultado.errores, []);
+});
+
+test('Carga Excel Módulo I: la plantilla descargable carga sin avisos de hoja', () => {
+  const contenido = readFileSync(new URL('../public/plantillas/plantilla-modulo-i.xlsx', import.meta.url));
+  const resultado = Carga.leer(contenido.buffer.slice(contenido.byteOffset, contenido.byteOffset + contenido.byteLength), 'actores', base([]));
+  assert.equal(resultado.avisos.some(aviso => !aviso.fila), false);
+  assert.ok(resultado.nuevos > 0);
+});

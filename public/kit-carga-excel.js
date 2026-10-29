@@ -317,7 +317,8 @@
     const libro = XLSX.read(arrayBuffer, { type: 'array', cellDates: true }), cfg = configuracion.riesgos;
     const registros = Object.fromEntries(COLECCIONES_RIESGOS.map(coleccion => [coleccion, []]));
     const existentes = contexto.existentes || {}, errores = [], avisos = [], conteos = { nuevos: 0, actualizados: 0 }, filasPorId = new Map();
-    const conocidas = new Set(cfg.hojas.map(hoja => normalizar(hoja.hoja)));
+    // «Listas» guarda las opciones de los desplegables de la plantilla.
+    const conocidas = new Set([...cfg.hojas.map(hoja => normalizar(hoja.hoja)), 'listas']);
     libro.SheetNames.filter(nombre => !conocidas.has(normalizar(nombre))).forEach(nombre => avisos.push({ hoja: nombre, mensaje: 'La hoja no es parte de la plantilla; no se cargó.' }));
     for (const coleccion of COLECCIONES_RIESGOS) {
       const cfgHoja = cfg.hojas.find(hoja => hoja.coleccion === coleccion);
