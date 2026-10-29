@@ -27,7 +27,15 @@
     const nombreEmpresa=fuente?await nombre(p):'';
     if(!vigente())return;
     const tabs=el('nav',null,'ke-tabs'), cuerpo=el('section'), estado=el('div');tabs.setAttribute('aria-label','Colecciones');
-    c.append(tabs,estado,cuerpo,el('p','Carga por Excel (próximamente)','nota'));
+    c.append(tabs,estado,cuerpo);
+    if(modulo==='ddhh'&&window.KitVistaCargaExcel)window.KitVistaCargaExcel.seccion(c,{
+      modulo:'ddhh',rutaPlantilla:'plantillas/plantilla-modulo-ii.xlsx',nombrePlantilla:'plantilla-modulo-ii.xlsx',
+      contexto:async()=>({cat,esquemas:Object.fromEntries(nombres.map((n,i)=>[n,esquemas[i]])),existentes:await cargar(p,nombres)}),
+      // Primero la evaluación: los demás registros la referencian.
+      guardar:async registros=>{for(const n of ['ddhh-evaluaciones','ddhh-indicadores','ddhh-componentes','ddhh-dimensiones'])if(registros[n]?.length)await App.datos.guardarVarios(p.empresa,n,registros[n]);if(vigente())await abrir(nombres[0]);},
+      error
+    });
+    else c.append(el('p','Carga por Excel (próximamente)','nota'));
     nombres.forEach((n,i)=>tabs.append(boton(esquemas[i].titulo,()=>abrir(n))));
     c.append(boton('Historial de cambios',async()=>{
       const v=++revision;estado.replaceChildren();cuerpo.replaceChildren(el('p','Cargando historial…'));

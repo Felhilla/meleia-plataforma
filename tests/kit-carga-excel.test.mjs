@@ -264,3 +264,94 @@ test('Carga Excel Módulo I: la plantilla descargable carga sin avisos de hoja',
   assert.equal(resultado.avisos.some(aviso => !aviso.fila), false);
   assert.ok(resultado.nuevos > 0);
 });
+
+// Módulo II
+const Estudios = (await import('../public/kit-vista-ddhh-modelo.js')).default;
+const coleccionesDdhh = ['ddhh-evaluaciones', 'ddhh-indicadores', 'ddhh-componentes', 'ddhh-dimensiones'];
+const catDdhh = json('config/kit-ddhh-catalogo.json');
+const baseDdhh = (existentes = {}) => ({
+  cat: catDdhh,
+  esquemas: Object.fromEntries(coleccionesDdhh.map(coleccion => [coleccion, json(`config/esquemas/${coleccion}.json`)])),
+  existentes: Object.fromEntries(coleccionesDdhh.map(coleccion => [coleccion, existentes[coleccion] || []]))
+});
+
+// Llena la plantilla descargable con datos inventados. `ajustar(libro)` permite dañarla a propósito.
+function plantillaDdhh({ fecha = new Date(2026, 11, 1), calificacion = () => 3, ajustar } = {}) {
+  const contenido = readFileSync(new URL('../public/plantillas/plantilla-modulo-ii.xlsx', import.meta.url));
+  const libro = XLSX.read(contenido, { type: 'buffer', cellDates: true });
+  XLSX.utils.sheet_add_aoa(libro.Sheets['Evaluación'], [['Evaluación inventada', fecha]], { origin: 'A2' });
+  const hoja = libro.Sheets.Indicadores;
+  catDdhh.indicadores.forEach((indicador, n) => {
+    const valor = calificacion(indicador, n);
+    if (valor !== null) hoja['H' + (n + 2)] = { t: 'n', v: valor };
+    hoja['E' + (n + 2)] = { t: 's', v: 'Sí' };
+  });
+  XLSX.utils.sheet_add_aoa(libro.Sheets.Hallazgos, [['Hallazgo inventado uno\nHallazgo inventado dos', 'Brecha inventada']], { origin: 'C2' });
+  ajustar?.(libro);
+  return XLSX.write(libro, { type: 'array', bookType: 'xlsx', cellDates: true });
+}
+
+test('Módulo II: calcular promedia criterios, etapas y temas, y el blanco vale 0', () => {
+  const etapa = catDdhh.ejes.find(eje => eje.componentes.length), criterio = etapa.componentes[0];
+  const delCriterio = catDdhh.indicadores.filter(indicador => indicador.componente === criterio.id);
+  const indicadores = catDdhh.indicadores.map(indicador => ({ indicador: indicador.id, calificacion: indicador.id === delCriterio[0].id ? null : 4 }));
+  const { componentes, puntajes } = Estudios.calcular(catDdhh, indicadores);
+  assert.equal(componentes[criterio.id], 4 * (delCriterio.length - 1) / delCriterio.length);
+  assert.equal(puntajes[etapa.id], etapa.componentes.reduce((suma, c) => suma + componentes[c.id], 0) / etapa.componentes.length);
+  const tema = catDdhh.ejes.find(eje => !eje.componentes.length);
+  assert.equal(puntajes[tema.id], 4);
+});
+
+test('Carga Excel Módulo II: la plantilla llena carga la evaluación y la plataforma calcula los promedios', () => {
+  const resultado = Carga.leer(plantillaDdhh({ calificacion: (_, n) => n === 0 ? null : 3 }), 'ddhh', baseDdhh());
+  assert.deepEqual(resultado.errores, []);
+  const r = resultado.registros, evaluacion = r['ddhh-evaluaciones'][0];
+  assert.deepEqual(coleccionesDdhh.map(c => r[c].length), [1, 159, 12, 18]);
+  assert.equal(resultado.nuevos, 190); assert.equal(resultado.actualizados, 0);
+  assert.equal(evaluacion.id, 'eval-2026-12'); assert.equal(evaluacion.fecha, '2026-12-01'); assert.equal(evaluacion.origen, 'cargada');
+  const calculado = Estudios.calcular(catDdhh, r['ddhh-indicadores']);
+  for (const eje of catDdhh.ejes) assert.equal(evaluacion[eje.id], calculado.puntajes[eje.id]);
+  assert.equal(r['ddhh-indicadores'][0].calificacion, 0);
+  assert.equal(r['ddhh-indicadores'][1].incorporado, 'si');
+  assert.equal(r['ddhh-dimensiones'][0].hallazgos, 'Hallazgo inventado uno\nHallazgo inventado dos');
+  assert.ok(resultado.avisos.some(aviso => /1 indicador sin calificación cuenta como 0/.test(aviso.mensaje)));
+  assert.equal(resultado.avisos.some(aviso => /no es parte de la plantilla/.test(aviso.mensaje)), false);
+});
+
+test('Carga Excel Módulo II: una segunda carga del mismo mes reemplaza sin duplicar', () => {
+  const primera = Carga.leer(plantillaDdhh(), 'ddhh', baseDdhh());
+  const segunda = Carga.leer(plantillaDdhh({ calificacion: () => 5 }), 'ddhh', baseDdhh(primera.registros));
+  assert.equal(segunda.nuevos, 0); assert.equal(segunda.actualizados, 190);
+  for (const c of coleccionesDdhh) assert.deepEqual(segunda.registros[c].map(x => x.id), primera.registros[c].map(x => x.id));
+  assert.equal(segunda.registros['ddhh-evaluaciones'][0]['etapa-ocde-1'], 5);
+  assert.ok(segunda.avisos.some(aviso => /se reemplazan sus datos/.test(aviso.mensaje)));
+});
+
+test('Carga Excel Módulo II: con cualquier error no carga nada', () => {
+  const casos = {
+    'calificación fuera de escala': plantillaDdhh({ calificacion: (_, n) => n === 4 ? 7 : 3 }),
+    'fila borrada': plantillaDdhh({ ajustar: libro => { delete libro.Sheets.Indicadores.A10; ['B', 'C', 'D', 'E', 'H'].forEach(c => delete libro.Sheets.Indicadores[c + '10']); } }),
+    'código repetido': plantillaDdhh({ ajustar: libro => { libro.Sheets.Indicadores.A11 = { t: 's', v: catDdhh.indicadores[0].id }; } }),
+    'sin fecha': plantillaDdhh({ fecha: '' })
+  };
+  const esperado = { 'calificación fuera de escala': ['Indicadores', 6, 'calificacion'], 'fila borrada': ['Indicadores', undefined, undefined], 'código repetido': ['Indicadores', 11, 'indicador'], 'sin fecha': ['Evaluación', 2, 'fecha'] };
+  for (const [caso, archivoCaso] of Object.entries(casos)) {
+    const resultado = Carga.leer(archivoCaso, 'ddhh', baseDdhh());
+    assert.equal(resultado.nuevos + resultado.actualizados, 0, caso);
+    assert.ok(resultado.errores.some(e => e.hoja === esperado[caso][0] && e.fila === esperado[caso][1] && e.campo === esperado[caso][2]), caso + ': ' + JSON.stringify(resultado.errores));
+  }
+});
+
+test('Contrato Módulo II: la plantilla tiene cada columna de kit-carga-excel.json y todos los indicadores y dimensiones', () => {
+  const cfg = json('config/kit-carga-excel.json').ddhh;
+  const libro = XLSX.read(readFileSync(new URL('../public/plantillas/plantilla-modulo-ii.xlsx', import.meta.url)), { type: 'buffer' });
+  for (const hoja of cfg.hojas) {
+    const encabezado = XLSX.utils.sheet_to_json(libro.Sheets[hoja.hoja], { header: 1 })[0];
+    for (const columna of hoja.columnas) assert.ok(encabezado.includes(columna.encabezado), `${hoja.hoja}: falta «${columna.encabezado}»`);
+    const esquema = json(`config/esquemas/${hoja.coleccion}.json`);
+    for (const columna of hoja.columnas) assert.ok(esquema.campos[columna.campo], `${hoja.coleccion}: el campo ${columna.campo} no está en el esquema`);
+  }
+  const codigos = hoja => XLSX.utils.sheet_to_json(libro.Sheets[hoja], { header: 1 }).slice(1).map(fila => fila[0]);
+  assert.deepEqual(codigos('Indicadores'), catDdhh.indicadores.map(i => i.id));
+  assert.deepEqual(codigos('Hallazgos'), [...catDdhh.dimensiones.grandes.map(d => d.id), ...catDdhh.ejes.map(e => e.id)]);
+});
