@@ -1,0 +1,8 @@
+.kce { border-top: 1px solid var(--borde); padding-top: var(--e4); margin-top: var(--e4); }
+.kce label { display: grid; gap: var(--e2); max-width: 420px; margin: var(--e3) 0; }
+.kce-plantilla { display: inline-block; margin-bottom: var(--e2); }
+.kce-tabla { overflow-x: auto; max-width: 100%; margin-top: var(--e3); }
+.kce-tabla table { width: 100%; border-collapse: collapse; }
+.kce-tabla td, .kce-tabla th { padding: var(--e3); text-align: left; border-bottom: 1px solid var(--borde); overflow-wrap: anywhere; }
+.kce-avisos { padding-left: var(--e4); color: var(--texto-suave); font-size: var(--t-chico); }
+@media (max-width: 540px) { .kce-tabla td, .kce-tabla th { padding: var(--e2); } }

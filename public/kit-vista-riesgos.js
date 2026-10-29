@@ -301,9 +301,10 @@
     if (!params.puedeEditar) { texto(contenedor, 'Esta sección está disponible para el responsable de la empresa.'); return; }
     const cfg = await json('config/kit-riesgos-config.json'); if (!params.vigente()) return;
     const ctx = contexto(contenedor, datos, params, cfg); contenedor.classList.add('kr');
-    const nav = el('nav', null, 'kr-subtabs'), zona = el('section'); nav.setAttribute('aria-label', 'Tipos de registro'); let revision = 0;
+    const nav = el('nav', null, 'kr-subtabs'), zona = el('section'); nav.setAttribute('aria-label', 'Tipos de registro'); let revision = 0, coleccionActual = 'riesgos';
     const dependencias = { riesgos: [], 'riesgos-calificacion': ['riesgos'], 'riesgos-grupos': [], 'riesgos-validaciones': ['riesgos', 'riesgos-grupos', 'riesgos-calificacion'], 'riesgos-medidas': ['riesgos'] };
     async function abrir(coleccion) {
+      coleccionActual = coleccion;
       const turno = ++revision; zona.replaceChildren(el('p', 'Cargando…'));
       [...nav.children].forEach((b, i) => b.setAttribute('aria-pressed', String(colecciones[i] === coleccion)));
       try {
@@ -348,7 +349,37 @@
       } catch (e) { historial.replaceChildren(); ctx.error(historial, e); }
     });
     contenedor.append(nav, zona, enlaceHistorial, historial);
-    const excel = bloque(contenedor, 'Carga por Excel'); texto(excel, 'Aquí podrás cargar y revisar las cinco hojas de la plantilla. Esta opción estará disponible pronto. Por ahora, usa las fichas manuales.');
+    root.KitVistaCargaExcel.seccion(contenedor, {
+      modulo: 'riesgos',
+      rutaPlantilla: 'plantillas/plantilla-modulo-iv.xlsx',
+      nombrePlantilla: 'plantilla-modulo-iv.xlsx',
+      contexto: async () => {
+        await ctx.cargar(colecciones);
+        const esquemas = {};
+        for (const c of colecciones) esquemas[c] = await json('config/esquemas/' + c + '.json');
+        return {
+          cfg: ctx.cfg,
+          derechos: await json('data/derechos.json'),
+          empresa: params.empresa,
+          esquemas,
+          existentes: Object.fromEntries(colecciones.map(c => [c, ctx.listas[c] || []]))
+        };
+      },
+      guardar: async registrosPorColeccion => {
+        const hechas = [];
+        for (const c of colecciones) {
+          const lista = registrosPorColeccion[c] || [];
+          if (!lista.length) continue;
+          try { await datos.guardarVarios(params.empresa, c, lista); }
+          catch (e) { throw Error((hechas.length ? `Se guardaron ${hechas.join(', ')}, pero falló ${c}: ` : '') + e.message + ' Puedes volver a subir el mismo archivo: no duplica registros.'); }
+          hechas.push(c);
+          const porId = new Map(lista.map(r => [r.id, r]));
+          ctx.listas[c] = [...(ctx.listas[c] || []).filter(r => !porId.has(r.id)), ...lista];
+        }
+        await abrir(coleccionActual);
+      },
+      error: ctx.error
+    });
     await abrir('riesgos'); return ctx.limpiar;
   }
   root.KitVistaRiesgos = { matriz, medidas, alimentacion, validarRegistro };
