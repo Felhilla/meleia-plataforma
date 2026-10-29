@@ -116,5 +116,42 @@
         ]
       }
     ]
+  },
+  "ddhh": {
+    "nota": "Módulo II. Solo se cargan los datos que se califican a mano; la plataforma calcula los promedios (KitEstudios.calcular). Las columnas informativas vienen llenas en la plantilla y no se leen.",
+    "ignoradas": ["Instrucciones", "Listas"],
+    "hojas": [
+      {
+        "hoja": "Evaluación",
+        "coleccion": "ddhh-evaluaciones",
+        "columnas": [
+          {"campo": "nombre", "encabezado": "Nombre de la evaluación"},
+          {"campo": "fecha", "encabezado": "Fecha", "fecha": true}
+        ]
+      },
+      {
+        "hoja": "Indicadores",
+        "coleccion": "ddhh-indicadores",
+        "informativas": ["Etapa o tema", "Criterio", "Pregunta"],
+        "columnas": [
+          {"campo": "indicador", "encabezado": "Código"},
+          {"campo": "incorporado", "encabezado": "Incorporado"},
+          {"campo": "documentos", "encabezado": "Documentos analizados"},
+          {"campo": "descripcion", "encabezado": "Hallazgo"},
+          {"campo": "calificacion", "encabezado": "Calificación (0 a 5)"},
+          {"campo": "brecha", "encabezado": "Brecha y recomendación"}
+        ]
+      },
+      {
+        "hoja": "Hallazgos",
+        "coleccion": "ddhh-dimensiones",
+        "informativas": ["Dimensión"],
+        "columnas": [
+          {"campo": "dimension", "encabezado": "Código"},
+          {"campo": "hallazgos", "encabezado": "Hallazgos (uno por línea)"},
+          {"campo": "brechas", "encabezado": "Brechas (una por línea)"}
+        ]
+      }
+    ]
   }
 }

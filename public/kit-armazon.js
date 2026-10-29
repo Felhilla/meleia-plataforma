@@ -2,7 +2,7 @@
   'use strict';
   const modulos = typeof module !== 'undefined' && module.exports ? require('./config/kit-modulos.json').modulos : [];
   const tabsModulo = { actores: ['mapa', 'alimentacion'], ddhh: ['resultados', 'estandares', 'alimentacion'], materialidad: ['resultados', 'alimentacion'], riesgos: ['matriz', 'medidas', 'alimentacion'] };
-  const ocultas = { riesgos: ['medidas', 'alimentacion'], ddhh: ['alimentacion'], materialidad: ['alimentacion'] };
+  const ocultas = { riesgos: ['medidas', 'alimentacion'], materialidad: ['alimentacion'] };
   const roles = { admin: 'Soporte GH', responsable: 'Responsable', demostrador: 'Demostración' };
   function pestanas(modulo, permiso) { return (tabsModulo[modulo] || []).filter(p => p !== 'alimentacion' || permiso === true || ['admin', 'responsable'].includes(permiso)); }
   function casos(modulo, empresas) { return empresas.filter(e => e.muestra_comercial === false || (e.muestra_comercial === true && modulo.casos.includes(e.id))); }

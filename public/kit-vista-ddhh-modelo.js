@@ -72,10 +72,20 @@
     return {dimensiones:dims,estandares:{ejes,escala:cat.estandares[0].escala.niveles||[]},umbrales:cat.umbrales,
       caso:{metodologia:{calificacion:cat.calificacion}},evaluaciones:ev.map(r=>({...r,fecha:r.fecha.slice(0,7),puntajes:Object.fromEntries(cat.ejes.map(e=>[e.id,r[e.id]]))}))};
   }
+  // Puntajes de una evaluación desde sus indicadores (decisión del 29-oct-2026): la calificación en blanco
+  // vale 0; un criterio es el promedio de sus indicadores; un eje con criterios, el promedio de sus criterios,
+  // y un eje sin criterios, el promedio de sus indicadores. Así no se escriben promedios a mano.
+  function calcular(cat,indicadores) {
+    const valores=new Map(indicadores.map(r=>[r.indicador,typeof r.calificacion==='number'?r.calificacion:0]));
+    const promedio=xs=>xs.length?xs.reduce((a,b)=>a+b,0)/xs.length:0, valor=i=>valores.get(i.id)??0;
+    const componentes=Object.fromEntries(cat.ejes.flatMap(e=>e.componentes).map(c=>[c.id,promedio(cat.indicadores.filter(i=>i.componente===c.id).map(valor))]));
+    const puntajes=Object.fromEntries(cat.ejes.map(e=>[e.id,e.componentes.length?promedio(e.componentes.map(c=>componentes[c.id])):promedio(cat.indicadores.filter(i=>i.eje===e.id).map(valor))]));
+    return {componentes,puntajes};
+  }
   function materialidad(cat,listas) {
     return {grupos:cat.grupos,evaluadores_financieros:cat.evaluadores_financieros,temas:(listas['materialidad-temas']||[]).map(t=>({...t,
       evaluacion_impacto:Object.fromEntries((listas['materialidad-impacto']||[]).filter(r=>r.tema===t.id).map(r=>[r.grupo,r])),
       evaluacion_financiera:Object.fromEntries((listas['materialidad-financiera']||[]).filter(r=>r.tema===t.id).map(r=>[r.evaluador,r]))}))};
   }
-  return {colecciones,escala,reglaEscala,esquema,validar,posicion,mostrar,empresa,reemplazar,ddhh,materialidad};
+  return {colecciones,escala,reglaEscala,esquema,validar,posicion,mostrar,empresa,reemplazar,ddhh,materialidad,calcular};
 }));
