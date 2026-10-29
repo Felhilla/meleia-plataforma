@@ -176,6 +176,7 @@
       datos.observarSesion?.(() => { usuario = null; empresas = []; render().catch(mostrarError); });
       App.actualizarVista = render;
       root.addEventListener('hashchange', () => { render().catch(mostrarError); });
+      if (root.KitCargaExcel) { try { const r = await root.fetch('config/kit-carga-excel.json'); if (r.ok) root.KitCargaExcel.configurar(await r.json()); } catch (_) {} }
       try { if (!modulos.length) { const respuesta = await root.fetch('config/kit-modulos.json'); if (!respuesta.ok) throw Error('No se pudo cargar el catálogo de módulos.'); const config = await respuesta.json(); modulos.push(...config.modulos); } usuario = await datos.usuarioActual(); if (usuario) empresas = await datos.empresas(); await render(); }
       catch (error) {
         if (error.sesionCerrada) { usuario = null; await render(); contenido.querySelector('[role="status"]').textContent = error.message; }

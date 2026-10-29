@@ -3,6 +3,7 @@
   const XLSX = typeof module !== 'undefined' && module.exports ? require('./vendor/xlsx.full.min.js') : root.XLSX;
   let configuracion = typeof module !== 'undefined' && module.exports ? require('./config/kit-carga-excel.json') : root.KitCargaExcelConfig;
   const Actores = typeof module !== 'undefined' && module.exports ? require('./kit-actores.js') : root.KitActores;
+  const Riesgos = typeof module !== 'undefined' && module.exports ? require('./kit-riesgos.js') : root.KitRiesgos;
   const normalizar = valor => String(valor ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, ' ');
   const normalizarHoja = valor => normalizar(valor).replace(/\./g, '');
   const presente = valor => valor !== undefined && valor !== null && !(typeof valor === 'string' && !valor.trim());
@@ -154,10 +155,134 @@
     return { registros: { actores: registros }, nuevos, actualizados, errores, avisos };
   }
 
+  const COLECCIONES_RIESGOS = ['riesgos', 'riesgos-grupos', 'riesgos-calificacion', 'riesgos-validaciones', 'riesgos-medidas'];
+
+  function columnasRiesgos(hoja, cfgHoja) {
+    const limite = XLSX.utils.decode_range(hoja['!ref'] || 'A1:A1');
+    const porEncabezado = new Map();
+    for (let columna = limite.s.c; columna <= limite.e.c; columna++) {
+      const titulo = normalizar(valorDeCelda(hoja, 0, columna));
+      if (titulo) porEncabezado.set(titulo, columna);
+    }
+    return new Map(cfgHoja.columnas.map(regla => [regla.campo, porEncabezado.get(normalizar(regla.encabezado))]).filter(([, columna]) => columna !== undefined));
+  }
+
+  function fechaExcel(valor) {
+    if (valor instanceof Date && Number.isFinite(valor.getTime())) return valor.toISOString().slice(0, 10);
+    if (typeof valor !== 'number') return valor;
+    const fecha = XLSX.SSF.parse_date_code(valor);
+    if (!fecha) return valor;
+    return `${String(fecha.y).padStart(4, '0')}-${String(fecha.m).padStart(2, '0')}-${String(fecha.d).padStart(2, '0')}`;
+  }
+
+  function registroDeRiesgos(hoja, fila, columnas, cfgHoja) {
+    const porCampo = new Map(cfgHoja.columnas.map(regla => [regla.campo, regla]));
+    const registro = {};
+    for (const [campo, columna] of columnas) {
+      const regla = porCampo.get(campo), valor = valorDeCelda(hoja, fila, columna);
+      if (!presente(valor)) continue;
+      registro[campo] = regla.multiple && typeof valor === 'string' ? valor.split(';').map(v => v.trim()).filter(Boolean) : regla.fecha ? fechaExcel(valor) : valor;
+    }
+    return registro;
+  }
+
+  function listasRiesgos(existentes, registros) {
+    return Object.fromEntries(COLECCIONES_RIESGOS.map(coleccion => [coleccion, [...(existentes[coleccion] || []), ...registros[coleccion]]]));
+  }
+
+  function referenciasDeRiesgos(existentes, registros) {
+    const riesgos = new Map(listasRiesgos(existentes, registros).riesgos.map(riesgo => [normalizar(riesgo.codigo), riesgo.id]));
+    return riesgos;
+  }
+
+  function referenciasDeGrupos(existentes, registros) {
+    const grupos = new Map(listasRiesgos(existentes, registros)['riesgos-grupos'].map(grupo => [normalizar(grupo.nombre), grupo.id]));
+    return grupos;
+  }
+
+  function sinPrefijoDeError(mensaje, titulo, fila) {
+    const escapado = String(titulo).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return String(mensaje).replace(new RegExp(`^${escapado}, fila ${fila}:\\s*`), '');
+  }
+
+  function procesarFilasRiesgos(libro, cfgHoja, contexto, existentes, registros, errores, conteos) {
+    const nombreHoja = libro.SheetNames.find(nombre => normalizar(nombre) === normalizar(cfgHoja.hoja));
+    if (!nombreHoja) return;
+    const hoja = libro.Sheets[nombreHoja], columnas = columnasRiesgos(hoja, cfgHoja);
+    const limite = XLSX.utils.decode_range(hoja['!ref'] || 'A1:A1');
+    const esquema = Riesgos.esquema(contexto.esquemas[cfgHoja.coleccion], cfgHoja.coleccion, {
+      derechos: contexto.derechos,
+      riesgos: listasRiesgos(existentes, registros).riesgos,
+      cfg: contexto.cfg,
+      empresa: contexto.empresa
+    });
+    for (let fila = 1; fila <= limite.e.r; fila++) {
+      const tieneDatos = [...columnas.values()].some(columna => presente(valorDeCelda(hoja, fila, columna)));
+      if (!tieneDatos) continue;
+      const registro = registroDeRiesgos(hoja, fila, columnas, cfgHoja);
+      let referenciaInvalida = null;
+      if (['riesgos-calificacion', 'riesgos-validaciones'].includes(cfgHoja.coleccion) && presente(registro.riesgo)) {
+        const id = referenciasDeRiesgos(existentes, registros).get(normalizar(registro.riesgo));
+        if (id) registro.riesgo = id;
+        else referenciaInvalida = { campo: 'riesgo', mensaje: `Riesgo = ${JSON.stringify(registro.riesgo)}, no se reconoció el código ${JSON.stringify(registro.riesgo)}.` };
+      }
+      if (!referenciaInvalida && cfgHoja.coleccion === 'riesgos-validaciones' && presente(registro.grupo)) {
+        const id = referenciasDeGrupos(existentes, registros).get(normalizar(registro.grupo));
+        if (id) registro.grupo = id;
+        else referenciaInvalida = { campo: 'grupo', mensaje: `Grupo = ${JSON.stringify(registro.grupo)}, no se reconoció el nombre ${JSON.stringify(registro.grupo)}.` };
+      }
+      if (!referenciaInvalida && cfgHoja.coleccion === 'riesgos-medidas') {
+        const componentes = (contexto.cfg.componentesPorEmpresa?.[contexto.empresa] || contexto.cfg.componentes || []);
+        if (presente(registro.componente)) registro.componente = componentes.find(componente => normalizar(componente.nombre) === normalizar(registro.componente))?.id || registro.componente;
+        if (Array.isArray(registro.riesgos)) {
+          const referencias = referenciasDeRiesgos(existentes, registros);
+          const sinReconocer = registro.riesgos.find(codigo => !referencias.has(normalizar(codigo)));
+          if (sinReconocer !== undefined) referenciaInvalida = { campo: 'riesgos', mensaje: `Riesgos que atiende = ${JSON.stringify(sinReconocer)}, no se reconoció el código ${JSON.stringify(sinReconocer)}.` };
+          else registro.riesgos = registro.riesgos.map(codigo => referencias.get(normalizar(codigo)));
+        }
+      }
+      if (referenciaInvalida) {
+        errores.push({ hoja: nombreHoja, fila: fila + 1, ...referenciaInvalida });
+        continue;
+      }
+      const resultado = Riesgos.preparar(cfgHoja.coleccion, registro, {
+        esquema,
+        cfg: contexto.cfg,
+        listas: listasRiesgos(existentes, registros),
+        modo: 'carga',
+        fila: fila + 1
+      });
+      if (!resultado.ok) {
+        resultado.errores.forEach(error => errores.push({ hoja: nombreHoja, fila: fila + 1, campo: error.campo, mensaje: sinPrefijoDeError(error.mensaje, esquema.titulo, fila + 1) }));
+        continue;
+      }
+      registros[cfgHoja.coleccion].push(resultado.registro);
+      if (resultado.existe) conteos.actualizados++; else conteos.nuevos++;
+    }
+  }
+
+  function leerRiesgos(arrayBuffer, contexto) {
+    if (!XLSX || !Riesgos || !configuracion?.riesgos) throw Error('El lector de carga por Excel no está configurado.');
+    const libro = XLSX.read(arrayBuffer, { type: 'array', cellDates: true }), cfg = configuracion.riesgos;
+    const registros = Object.fromEntries(COLECCIONES_RIESGOS.map(coleccion => [coleccion, []]));
+    const existentes = contexto.existentes || {}, errores = [], conteos = { nuevos: 0, actualizados: 0 };
+    for (const coleccion of COLECCIONES_RIESGOS) {
+      const cfgHoja = cfg.hojas.find(hoja => hoja.coleccion === coleccion);
+      procesarFilasRiesgos(libro, cfgHoja, contexto, existentes, registros, errores, conteos);
+    }
+    return { registros, ...conteos, errores, avisos: [] };
+  }
+
   function leer(arrayBuffer, modulo, contexto) {
-    if (modulo !== 'actores') throw Error('Módulo de carga por Excel no soportado: ' + modulo);
-    if (!contexto?.cfg || !contexto?.esquema || !Array.isArray(contexto?.existentes)) throw Error('Contexto de carga de actores incompleto.');
-    return leerActores(arrayBuffer, contexto);
+    if (modulo === 'actores') {
+      if (!contexto?.cfg || !contexto?.esquema || !Array.isArray(contexto?.existentes)) throw Error('Contexto de carga de actores incompleto.');
+      return leerActores(arrayBuffer, contexto);
+    }
+    if (modulo === 'riesgos') {
+      if (!contexto?.cfg || !contexto?.derechos || !contexto?.empresa || !contexto?.esquemas || !contexto?.existentes) throw Error('Contexto de carga de riesgos incompleto.');
+      return leerRiesgos(arrayBuffer, contexto);
+    }
+    throw Error('Módulo de carga por Excel no soportado: ' + modulo);
   }
 
   function configurar(cfg) { configuracion = cfg; }

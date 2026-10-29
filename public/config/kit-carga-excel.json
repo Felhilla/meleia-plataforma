@@ -42,5 +42,79 @@
       { "campo": "impacto", "encabezados": ["Impacto"] },
       { "campo": "nivel_archivo", "encabezados": ["Nivel de relacionamiento"] }
     ]
+  },
+  "riesgos": {
+    "hojas": [
+      {
+        "hoja": "Riesgos",
+        "coleccion": "riesgos",
+        "columnas": [
+          { "campo": "codigo", "encabezado": "Código" },
+          { "campo": "nombre", "encabezado": "Nombre" },
+          { "campo": "descripcion", "encabezado": "Descripción" },
+          { "campo": "derecho_humano", "encabezado": "Derecho humano afectado" },
+          { "campo": "ambitos", "encabezado": "Ámbito", "multiple": true },
+          { "campo": "localizacion", "encabezado": "Localización" },
+          { "campo": "actividades", "encabezado": "Actividades que lo generan" },
+          { "campo": "medidas_control", "encabezado": "Medidas de control existentes" },
+          { "campo": "analisis_controles", "encabezado": "Análisis de controles" }
+        ]
+      },
+      {
+        "hoja": "Calificación técnica",
+        "coleccion": "riesgos-calificacion",
+        "columnas": [
+          { "campo": "riesgo", "encabezado": "Riesgo" },
+          { "campo": "escala", "encabezado": "Escala" },
+          { "campo": "alcance", "encabezado": "Alcance" },
+          { "campo": "irremediabilidad", "encabezado": "Irremediabilidad" },
+          { "campo": "probabilidad", "encabezado": "Probabilidad" },
+          { "campo": "tipo_impacto", "encabezado": "Tipo de impacto" },
+          { "campo": "vinculacion", "encabezado": "Vinculación" },
+          { "campo": "justificacion", "encabezado": "Justificación" }
+        ]
+      },
+      {
+        "hoja": "Grupos",
+        "coleccion": "riesgos-grupos",
+        "columnas": [
+          { "campo": "nombre", "encabezado": "Nombre del grupo" },
+          { "campo": "categoria", "encabezado": "Categoría de actor" },
+          { "campo": "participantes", "encabezado": "Número de participantes" },
+          { "campo": "fecha", "encabezado": "Fecha de la sesión", "fecha": true }
+        ]
+      },
+      {
+        "hoja": "Validaciones",
+        "coleccion": "riesgos-validaciones",
+        "columnas": [
+          { "campo": "riesgo", "encabezado": "Riesgo" },
+          { "campo": "grupo", "encabezado": "Grupo" },
+          { "campo": "resultado", "encabezado": "Resultado" },
+          { "campo": "propuesta_escala", "encabezado": "Escala propuesta" },
+          { "campo": "propuesta_alcance", "encabezado": "Alcance propuesta" },
+          { "campo": "propuesta_irremediabilidad", "encabezado": "Irremediabilidad propuesta" },
+          { "campo": "propuesta_probabilidad", "encabezado": "Probabilidad propuesta" },
+          { "campo": "propuesta_tipo_impacto", "encabezado": "Tipo de impacto propuesta" },
+          { "campo": "propuesta_vinculacion", "encabezado": "Vinculación propuesta" },
+          { "campo": "propuesta_justificacion", "encabezado": "Justificación propuesta" },
+          { "campo": "comentario", "encabezado": "Comentario del grupo" }
+        ]
+      },
+      {
+        "hoja": "Medidas",
+        "coleccion": "riesgos-medidas",
+        "columnas": [
+          { "campo": "codigo", "encabezado": "Código" },
+          { "campo": "titulo", "encabezado": "Título" },
+          { "campo": "descripcion", "encabezado": "Descripción" },
+          { "campo": "componente", "encabezado": "Componente" },
+          { "campo": "riesgos", "encabezado": "Riesgos que atiende", "multiple": true },
+          { "campo": "responsable", "encabezado": "Responsable (área o cargo; sin nombres personales)" },
+          { "campo": "plazo", "encabezado": "Plazo", "fecha": true },
+          { "campo": "estado", "encabezado": "Estado" }
+        ]
+      }
+    ]
   }
 }

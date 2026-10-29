@@ -31,7 +31,7 @@ async function montar(vista = 'mapa', editar = true, extras = {}) {
   const root = { document, Intl, crypto: { randomUUID: () => 'nuevo' }, fetch: async p => ({ ok: true, json: async () => JSON.parse(read(p)) }), App: { el: (tag, txt, clase) => { const n = new Nodo(tag, document); if (txt != null) n.textContent = txt; n.className = clase; return n; }, registrarVista: (k, v) => { vistas[k] = v; }, actualizarVista() {} } };
   vm.runInNewContext(read('kit-armazon.js'), root);
   root.App.registrarVista = (k, v) => { vistas[k] = v; };
-  for (const f of ['kit-validacion.js', 'kit-actores.js', 'kit-vista-actores.js']) vm.runInNewContext(read(f), root);
+  for (const f of ['kit-validacion.js', 'kit-actores.js', 'kit-vista-carga-excel.js', 'kit-vista-actores.js']) vm.runInNewContext(read(f), root);
   let vigente = true; const params = { empresa: 'empresa-1', puedeEditar: editar, rol: editar ? 'responsable' : 'demostrador', vigente: () => vigente };
   const limpiar = await vistas['actores/' + vista].render(contenedor, datos, params);
   return { root, document, datos, contenedor, consultas, guardados, borrados, historial, limpiar, salir: () => { vigente = false; limpiar?.(); } };

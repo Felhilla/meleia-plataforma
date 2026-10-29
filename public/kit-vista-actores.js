@@ -285,7 +285,22 @@
         tabla(historial, ['Fecha','Acción','Actor'], cambios.map(c => [new Intl.DateTimeFormat('es-CO', {dateStyle:'short',timeStyle:'short'}).format(new Date(c.fecha)), ({INSERT:'Creación',UPDATE:'Edición',DELETE:'Borrado'})[c.accion] || 'Cambio', ctx.listas.actores.find(a => a.id === c.registro_id)?.institucion || 'Actor retirado']));
       } catch(e) { historial.replaceChildren(); ctx.error(historial,e); }
     });
-    contenedor.append(zona, verHistorial, historial); const excel = bloque(contenedor,'Carga por Excel'); texto(excel,'La carga por Excel estará disponible pronto. Por ahora, usa las fichas manuales.'); pintar(); return ctx.limpiar;
+    contenedor.append(zona, verHistorial, historial);
+    root.KitVistaCargaExcel.seccion(contenedor, {
+      modulo: 'actores',
+      contexto: () => ({ cfg: ctx.cfg, esquema: ctx.esquema, existentes: ctx.listas.actores }),
+      guardar: async registrosPorColeccion => {
+        const lista = registrosPorColeccion.actores || [];
+        if (lista.length) {
+          await datos.guardarVarios(params.empresa, 'actores', lista);
+          const porId = new Map(lista.map(a => [a.id, a]));
+          ctx.listas.actores = [...ctx.listas.actores.filter(a => !porId.has(a.id)), ...lista];
+        }
+        pintar();
+      },
+      error: ctx.error
+    });
+    pintar(); return ctx.limpiar;
   }
   App.registrarVista('actores/mapa', {render:mapa});
   App.registrarVista('actores/alimentacion', {render:alimentacion});

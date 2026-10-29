@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import Carga from '../public/kit-carga-excel.js';
 import Actores from '../public/kit-actores.js';
+import XLSX from '../public/vendor/xlsx.full.min.js';
 
 const json = ruta => JSON.parse(readFileSync(new URL('../public/' + ruta, import.meta.url)));
 const archivo = ruta => {
@@ -15,6 +16,40 @@ const base = existentes => ({
   existentes
 });
 const porInstitucion = resultado => Object.fromEntries(resultado.registros.actores.map(actor => [actor.institucion, actor]));
+const coleccionesRiesgos = ['riesgos', 'riesgos-calificacion', 'riesgos-grupos', 'riesgos-validaciones', 'riesgos-medidas'];
+const baseRiesgos = (existentes = {}) => ({
+  cfg: json('config/kit-riesgos-config.json'),
+  derechos: json('data/derechos.json'),
+  empresa: 'empresa-demo',
+  esquemas: Object.fromEntries(coleccionesRiesgos.map(coleccion => [coleccion, json(`config/esquemas/${coleccion}.json`)])),
+  existentes: Object.fromEntries(coleccionesRiesgos.map(coleccion => [coleccion, existentes[coleccion] || []]))
+});
+
+function plantillaRiesgosValida() {
+  const libro = XLSX.utils.book_new();
+  const agregar = (nombre, filas) => XLSX.utils.book_append_sheet(libro, XLSX.utils.aoa_to_sheet(filas), nombre);
+  agregar('Riesgos', [
+    ['Código', 'Nombre', 'Descripción', 'Derecho humano afectado', 'Ámbito', 'Localización', 'Actividades que lo generan', 'Medidas de control existentes', 'Análisis de controles'],
+    ['R-03', 'Afectación inventada', '', 'Derecho a la vida', 'Operación propia; Comunidades del área de influencia', '', '', '', '']
+  ]);
+  agregar('Calificación técnica', [
+    ['Riesgo', 'Escala', 'Alcance', 'Irremediabilidad', 'Probabilidad', 'Tipo de impacto', 'Vinculación', 'Justificación'],
+    ['R-03', 2, 3, 2, 'Media', 'Potencial', 'Causa', 'Justificación inventada']
+  ]);
+  agregar('Grupos', [
+    ['Nombre del grupo', 'Categoría de actor', 'Número de participantes', 'Fecha de la sesión'],
+    ['Mesa inventada', 'Comunidades y asociaciones', 12, new Date(2026, 9, 1)]
+  ]);
+  agregar('Validaciones', [
+    ['Riesgo', 'Grupo', 'Resultado', 'Escala propuesta', 'Alcance propuesta', 'Irremediabilidad propuesta', 'Probabilidad propuesta', 'Tipo de impacto propuesta', 'Vinculación propuesta', 'Justificación propuesta', 'Comentario del grupo'],
+    ['R-03', 'Mesa inventada', 'Confirma', '', '', '', '', '', '', '', '']
+  ]);
+  agregar('Medidas', [
+    ['Código', 'Título', 'Descripción', 'Componente', 'Riesgos que atiende', 'Responsable (área o cargo; sin nombres personales)', 'Plazo', 'Estado'],
+    ['A-03', 'Medida inventada', '', 'Fortalecimiento del compromiso organizacional', 'R-03', 'Área inventada', new Date(2027, 0, 15), 'Pendiente']
+  ]);
+  return XLSX.write(libro, { type: 'array', bookType: 'xlsx', cellDates: true });
+}
 
 test('Carga Excel Módulo I: contrato de mapeo-gh-muestra.xlsx', () => {
   const contexto = base([]), resultado = Carga.leer(archivo('mapeo-gh-muestra.xlsx'), 'actores', contexto), actores = porInstitucion(resultado);
@@ -105,4 +140,44 @@ test('Carga Excel Módulo I: el registro equivale al formulario tras validar', (
   const validadoManual = Actores.validar(manual, contexto.cfg, contexto.esquema);
   assert.equal(validadoManual.ok, true);
   assert.deepEqual(cargado, validadoManual.registro);
+});
+
+test('Carga Excel Módulo IV: contrato de plantilla-iv-muestra.xlsx', () => {
+  const resultado = Carga.leer(archivo('plantilla-iv-muestra.xlsx'), 'riesgos', baseRiesgos());
+  const riesgo = resultado.registros.riesgos[0], grupo = resultado.registros['riesgos-grupos'][0];
+  assert.equal(resultado.nuevos, 2); assert.equal(resultado.actualizados, 0); assert.deepEqual(resultado.avisos, []);
+  assert.equal(riesgo.id, 'r-01');
+  assert.deepEqual(riesgo.ambitos, ['Operación propia', 'Comunidades del área de influencia']);
+  assert.equal(grupo.nombre, 'Mesa comunitaria inventada');
+  assert.equal(grupo.fecha, '2026-10-01');
+  assert.deepEqual(resultado.errores.map(error => [error.hoja, error.fila, error.campo]), [
+    ['Riesgos', 3, 'codigo'],
+    ['Calificación técnica', 2, 'tipo_impacto'], ['Calificación técnica', 2, 'vinculacion'],
+    ['Validaciones', 2, 'resultado'],
+    ['Medidas', 2, 'componente'], ['Medidas', 2, 'estado']
+  ]);
+  assert.match(resultado.errores[0].mensaje, /Usa un código como R-01\./);
+  assert.equal(resultado.errores.some(error => ['riesgo', 'grupo', 'riesgos'].includes(error.campo)), false);
+  assert.equal(resultado.errores.some(error => /, fila \d+:/.test(error.mensaje)), false);
+});
+
+test('Carga Excel Módulo IV: una segunda carga conserva ids y actualiza', () => {
+  const primera = Carga.leer(archivo('plantilla-iv-muestra.xlsx'), 'riesgos', baseRiesgos());
+  const segunda = Carga.leer(archivo('plantilla-iv-muestra.xlsx'), 'riesgos', baseRiesgos(primera.registros));
+  assert.equal(segunda.nuevos, 0); assert.equal(segunda.actualizados, 2);
+  for (const coleccion of coleccionesRiesgos) {
+    assert.deepEqual(segunda.registros[coleccion].map(registro => registro.id), primera.registros[coleccion].map(registro => registro.id));
+  }
+});
+
+test('Carga Excel Módulo IV: resuelve referencias, componente y fechas nativas', () => {
+  const resultado = Carga.leer(plantillaRiesgosValida(), 'riesgos', baseRiesgos());
+  const riesgo = resultado.registros.riesgos[0], grupo = resultado.registros['riesgos-grupos'][0];
+  const validacion = resultado.registros['riesgos-validaciones'][0], medida = resultado.registros['riesgos-medidas'][0];
+  assert.equal(resultado.nuevos, 5); assert.equal(resultado.actualizados, 0); assert.deepEqual(resultado.errores, []);
+  assert.deepEqual(riesgo.ambitos, ['Operación propia', 'Comunidades del área de influencia']);
+  assert.equal(grupo.fecha, '2026-10-01');
+  assert.equal(validacion.riesgo, riesgo.id); assert.equal(validacion.grupo, grupo.id);
+  assert.equal(medida.componente, 'componente-1'); assert.deepEqual(medida.riesgos, [riesgo.id]);
+  assert.equal(medida.plazo, '2027-01-15');
 });
