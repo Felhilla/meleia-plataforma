@@ -60,6 +60,7 @@ button:disabled { opacity: .65; cursor: wait; }
 .kit-credenciales-boton { padding: var(--e2) var(--e4); background: var(--kit-titulo-fondo); border: 1px solid var(--kit-titulo-borde); border-radius: var(--radio-chico); color: var(--texto); font: inherit; font-weight: 700; cursor: pointer; }
 .kit-credenciales-boton[aria-expanded="true"] { background: var(--principal); color: var(--sobre-principal); }
 .kit-credenciales-panel { position: relative; margin-top: var(--e3); padding: var(--e5) var(--e4) var(--e4); background: var(--kit-desplegable-fondo); border: 1px solid var(--kit-desplegable-borde); border-radius: var(--radio-chico); }
+.kit-rejilla.kit-equipo { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
 .kit-equipo .kit-persona + .kit-persona { border-left: 2px dashed var(--kit-desplegable-borde); padding-left: var(--e4); }
 .kit-persona { display: flex; flex-direction: column; gap: var(--e2); min-width: 0; }
 .kit-persona img, .kit-persona-foto-vacia { width: 112px; height: 112px; border-radius: 50%; object-fit: cover; background: var(--superficie); border: 1px solid var(--kit-desplegable-borde); }
@@ -75,7 +76,8 @@ button:disabled { opacity: .65; cursor: wait; }
 .kit-modulo p:not(.nota) { font-size: var(--t-chico); color: var(--texto-suave); }
 .kit-modulo .nota { margin-top: auto; padding-top: var(--e2); font-size: var(--t-chico); color: var(--texto-suave); }
 @media (prefers-reduced-motion: reduce) { .kit-modulo { transition: none; } .kit-modulo:hover { transform: none; } }
-@media (max-width: 960px) { .kit-rejilla, .kit-modulos.kit-rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kit-equipo .kit-persona:nth-child(odd) { border-left: 0; padding-left: 0; } }
+@media (max-width: 960px) { .kit-rejilla, .kit-modulos.kit-rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .kit-rejilla.kit-equipo { grid-auto-flow: row; grid-template-columns: 1fr; } .kit-equipo .kit-persona + .kit-persona { border-left: 0; padding-left: 0; border-top: 2px dashed var(--kit-desplegable-borde); padding-top: var(--e4); } }
 @media (max-width: 560px) { .kit-rejilla, .kit-modulos.kit-rejilla { grid-template-columns: 1fr; } .kit-equipo .kit-persona + .kit-persona { border-left: 0; padding-left: 0; border-top: 2px dashed var(--kit-desplegable-borde); padding-top: var(--e4); } .kit-titulo { padding: var(--e4); padding-right: 96px; } .kit-titulo-arco { width: 72px; height: 36px; right: 12px; } }
 
 /* E24 · Selector compartido y logo opcional, sin reserva de espacio. */
