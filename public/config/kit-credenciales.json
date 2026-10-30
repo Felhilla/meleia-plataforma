@@ -13,6 +13,11 @@
       "cargo": "Profesional en sostenibilidad y comunicación",
       "experiencia": "Comunicador social y periodista (Universidad Externado de Colombia), con experiencia en sostenibilidad, debida diligencia empresarial y derechos humanos: relacionamiento comunitario, estándares internacionales, materialidad e informes de sostenibilidad. Ha acompañado a organizaciones como Solgas, Sociedad Portuaria El Dique, Proeléctrica, Cementos Pacasmayo y la Universidad EAN."
     },
-    { "nombre": "Sebastián Hillón" }
+    {
+      "nombre": "Sebastián Hillón",
+      "foto": "img/equipo/sebastian.jpg",
+      "cargo": "Profesional en operaciones, automatización y comunicación",
+      "experiencia": "Comunicador social y periodista (Universidad Externado de Colombia), bilingüe (inglés C1), con más de 7 años liderando operaciones de alta escala, gestión de proyectos y equipos multidisciplinarios en logística, hospitalidad y comunicación corporativa. Experto en estandarizar procesos, automatizar flujos de trabajo e integrar inteligencia artificial en la operación. Ha acompañado a organizaciones como Brinks, Novacomex, Yurban Hospitality Group (The Spot & Spotty Hostels) y la Corporación Unificada Nacional de Educación Superior (CUN), incluyendo la apertura de nuevas sedes en Colombia y Perú."
+    }
   ]
 }
