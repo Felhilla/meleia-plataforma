@@ -15,7 +15,7 @@ function falso({ admin = false, rol = 'responsable' } = {}) {
       const q = { range(desde, hasta) { llamada.rango = [desde, hasta]; return q; }, select(columnas) { llamada.columnas = columnas; return q; }, eq(k, v) { llamada.filtros.push([k, v]); return q; }, order(k, opciones) { llamada.orden = [k, opciones]; return q; }, limit(n) { llamada.limite = n; return q; }, upsert(filas, opciones) { llamada.filas = filas; llamada.opciones = opciones; return q; }, delete() { llamada.borrar = true; return q; }, then(resolve, reject) { return Promise.resolve(fallo || { data: tablas[tabla] }).then(resolve, reject); } }; return q;
     }
   };
-  return { api: Kit.crear(cliente), llamadas, error: e => { fallo = e; }, evento: e => evento(e) };
+  return { api: Kit.crear(cliente), llamadas, error: e => { fallo = e; }, evento: (e, sesion) => evento(e, sesion) };
 }
 test('rol efectivo: administrador gana; responsable edita y demostrador no', async () => {
   for (const admin of [true, false]) {
@@ -94,4 +94,18 @@ test('escritura parcial invalida caché aunque falle el segundo lote', async () 
   const api = Kit.crear(cliente); await api.listar('uno', 'riesgos');
   await assert.rejects(api.guardarVarios('uno', 'riesgos', Array.from({ length: 201 }, (_, i) => ({ id: 'r-' + i }))), /No tienes permiso/);
   await api.listar('uno', 'riesgos'); assert.equal(lecturas, 2);
+});
+test('volver a la pestaña (SIGNED_IN del mismo usuario) no borra permisos; otro usuario sí', async () => {
+  const f = falso(); await f.api.empresas(); await f.api.listar('uno', 'riesgos');
+  const antes = f.llamadas.length;
+  f.evento('SIGNED_IN', { user: { id: 'u' } });
+  assert.equal(f.api.puedeEditar('uno'), true);
+  await f.api.listar('uno', 'riesgos'); assert.equal(f.llamadas.length, antes);
+  f.evento('SIGNED_IN', { user: { id: 'otro' } });
+  assert.equal(f.api.puedeEditar('uno'), false);
+});
+test('SIGNED_IN del mismo usuario mientras se cargan los permisos no los pierde', async () => {
+  const f = falso(); const p = f.api.empresas();
+  f.evento('SIGNED_IN', { user: { id: 'u' } });
+  await p; assert.equal(f.api.puedeEditar('uno'), true);
 });

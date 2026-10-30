@@ -14,11 +14,11 @@
   }
   function crear(cliente) {
     const cache = new Map(), pendientes = new Map(), versiones = new Map();
-    let roles = new Map(), generacion = 0;
+    let roles = new Map(), generacion = 0, usuarioId = null;
     const observadores = new Set();
     const copia = v => JSON.parse(JSON.stringify(v));
     const llave = (e, c) => JSON.stringify([e, c]);
-    function limpiar() { generacion++; cache.clear(); pendientes.clear(); versiones.clear(); roles.clear(); }
+    function limpiar() { generacion++; cache.clear(); pendientes.clear(); versiones.clear(); roles.clear(); usuarioId = null; }
     async function pedir(consulta) {
       let r;
       try { r = await consulta; } catch (e) { throw traducir(e); }
@@ -51,7 +51,7 @@
       async empresas() {
         const usuario = await api.usuarioActual();
         if (!usuario) { limpiar(); throw traducir({}, 401); }
-        const g = generacion;
+        const g = generacion; usuarioId = usuario.id;
         const [empresas, miembros, admins] = await Promise.all([
           todas(() => cliente.from('empresas').select('id,nombre,muestra_comercial').order('id')),
           todas(() => cliente.from('miembros').select('empresa_id,rol').eq('user_id', usuario.id).order('empresa_id')),
@@ -103,7 +103,9 @@
         return pedir(q.order('n', { ascending: false }).limit(limite));
       }
     };
-    cliente.auth.onAuthStateChange?.((evento) => {
+    cliente.auth.onAuthStateChange?.((evento, sesion) => {
+      // supabase-js repite SIGNED_IN al volver a la pestaña; solo un usuario distinto limpia permisos y caché.
+      if (evento === 'SIGNED_IN' && usuarioId && sesion?.user?.id === usuarioId) return;
       if (['SIGNED_OUT', 'SIGNED_IN', 'USER_UPDATED'].includes(evento)) limpiar();
       if (evento === 'SIGNED_OUT') observadores.forEach(fn => fn(evento));
     });
