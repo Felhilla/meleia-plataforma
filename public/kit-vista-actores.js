@@ -237,64 +237,167 @@
     texto(contenedor,'Metodología AA1000SES (AccountAbility).' + (valida ? ` Mapeo con corte a ${new Intl.DateTimeFormat('es-CO',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(fecha))}.` : ''));
     contenedor.lastChild.className = 'ka-nota-tecnica'; return ctx.limpiar;
   }
-  function formulario(ctx, n, original, alGuardar) {
-    const form = el('form', null, 'ka-form'), controles = {}, errores = {}; form.noValidate = true;
-    Object.entries(ctx.esquema.campos).forEach(([k,r]) => {
-      const row = el('div', null, 'ka-campo'), label = el('label', r.etiqueta + (r.obligatorio ? ' *' : ''));
-      const input = el(r.tipo === 'lista' ? 'select' : r.tipo === 'texto-largo' ? 'textarea' : 'input');
-      if (r.tipo === 'lista') [{ id:'', nombre:'Sin seleccionar' }, ...(r.valoresManual || r.valores).map(id => ({ id, nombre:id }))].forEach(o => { const op = el('option', o.nombre); op.value = o.id; input.append(op); });
-      input.name = k; input.id = 'ka-' + k; input.value = original?.[k] ?? ''; label.htmlFor = input.id;
-      const error = el('p', '', 'ka-error'); error.id = 'ka-error-' + k; error.setAttribute('aria-live', 'polite'); input.setAttribute('aria-describedby', error.id);
-      row.append(label, input, error);
-      if (ctx.cfg.escalas[k]) { const ul = el('ul', null, 'ka-ayuda'); ul.id = 'ka-ayuda-' + k; ctx.cfg.escalas[k].forEach((d,i) => ul.append(el('li', `${i+1}: ${d}`))); row.append(ul); input.setAttribute('aria-describedby', error.id + ' ' + ul.id); }
-      controles[k] = input; errores[k] = error; form.append(row);
-    });
-    if (original?.motivo_ajuste === ctx.esquema.campos.motivo_ajuste.valores[4]) {
-      controles.motivo_ajuste.value = ''; texto(form, 'Este actor proviene de un mapeo original. Para guardar una edición, selecciona un motivo manual o retira el ajuste.');
-    }
-    const vivo = el('p'), previa = el('div'), aviso = el('p'); vivo.setAttribute('role','status'); aviso.setAttribute('role','status');
-    const leer = () => Object.fromEntries(Object.entries(controles).map(([k,c]) => [k,c.value]));
-    const actualizar = () => {
-      previa.replaceChildren(); const a = leer(); vivo.textContent = 'Nivel calculado: ' + (K.nivelCalculado(a, ctx.cfg) || 'Completa influencia e impacto con valores de 1 a 5.');
-      const ajuste = controles.nivel_ajustado, previo = ajuste.value, permitidos = K.permitidos(a,ctx.cfg);
-      ajuste.replaceChildren(); ['', ...permitidos].forEach(v => { const op = el('option', v || 'Sin ajuste'); op.value = v; ajuste.append(op); }); ajuste.value = permitidos.includes(previo) ? previo : '';
-      if (!ajuste.value) { controles.motivo_ajuste.value = ''; controles.explicacion_ajuste.value = ''; }
-      controles.motivo_ajuste.disabled = controles.explicacion_ajuste.disabled = !ajuste.value;
+  // E41 (boceto de Felipe del 5-nov, página 2): una organización con uno o varios actores.
+  // Valida con las mismas funciones del contrato (KitActores.validar y validarOrganizacion).
+  const ORDEN_EJES = ['influencia', 'impacto', 'dependencia', 'tension', 'responsabilidad'];
+  const hoy = () => new Date().toISOString().slice(0, 10);
+  function campo(n, etiqueta, tipo, valor, opciones = {}) {
+    const fila = el('div', null, 'ka-campo' + (opciones.ancho ? ' ka-campo-ancho' : '')), id = 'ka-' + opciones.nombre;
+    const label = el('label', etiqueta + (opciones.obligatorio ? ' *' : '')), input = el(tipo === 'lista' ? 'select' : tipo === 'texto-largo' ? 'textarea' : 'input');
+    if (tipo === 'lista') [['', 'Sin seleccionar'], ...opciones.valores.map(v => Array.isArray(v) ? v : [v, v])].forEach(([v, t]) => { const op = el('option', t); op.value = v; input.append(op); });
+    if (tipo === 'decimal') { input.type = 'number'; input.min = '1'; input.max = '5'; input.step = '0.1'; input.inputMode = 'decimal'; }
+    if (opciones.max) input.maxLength = opciones.max;
+    input.name = opciones.nombre; input.id = id; label.htmlFor = id; input.value = valor ?? '';
+    const error = el('p', '', 'ka-error'); error.id = id + '-error'; error.setAttribute('aria-live', 'polite'); input.setAttribute('aria-describedby', error.id);
+    fila.append(label, input);
+    if (opciones.max && tipo === 'texto-largo') { const cuenta = el('small', '', 'ka-cuenta'); const act = () => { cuenta.textContent = `${input.value.length} de ${opciones.max} caracteres`; }; input.addEventListener?.('input', act); act(); fila.append(cuenta); }
+    fila.append(error); n.append(fila); return { input, error };
+  }
+  function escala(n, ctx, eje, valor, prefijo) {
+    const grupo = el('fieldset', null, 'ka-escala'), leyenda = el('legend', ctx.esquema.campos[eje].etiqueta + ' *'), botones = el('div', null, 'ka-escala-botones'), error = el('p', '', 'ka-error'), ayuda = el('p', '', 'ka-escala-definicion');
+    let actual = Number(valor) || null; const opciones = [];
+    const marcar = v => { actual = v; opciones.forEach((b, i) => b.setAttribute('aria-checked', String(i + 1 === v))); ayuda.textContent = v ? `${v}: ${ctx.cfg.escalas[eje][v - 1]}` : ''; grupo.dispatchEvent?.(new root.Event('change', { bubbles: true })); };
+    for (let v = 1; v <= 5; v++) { const b = boton(String(v), () => marcar(v)); b.setAttribute('role', 'radio'); b.setAttribute('aria-label', `${v}: ${ctx.cfg.escalas[eje][v - 1]}`); b.title = ctx.cfg.escalas[eje][v - 1]; b.className = 'ka-escala-boton'; opciones.push(b); botones.append(b); }
+    botones.setAttribute('role', 'radiogroup'); botones.setAttribute('aria-labelledby', prefijo + eje);
+    leyenda.id = prefijo + eje; grupo.append(leyenda, botones, ayuda, error); n.append(grupo);
+    if (actual) marcar(actual);
+    return { valor: () => actual, error, foco: () => opciones[0].focus(), grupo };
+  }
+  function formulario(ctx, n, org, alGuardar) {
+    const form = el('form', null, 'ka-form ka-form-org'); form.noValidate = true;
+    const original = org?.registro || null, actoresOriginales = org?.actores || [], contactos = ctx.listas['actores-contactos'] || [];
+    const sOrg = el('section', null, 'ka-form-seccion'); sOrg.append(el('h4', 'La organización'));
+    const c = {
+      nombre: campo(sOrg, 'Nombre de la organización', 'texto', org?.nombre, { nombre: 'org-nombre', obligatorio: true, max: 250 }),
+      categoria: campo(sOrg, 'Grupo de interés', 'lista', org?.categoria, { nombre: 'org-categoria', obligatorio: true, valores: categorias.filter(x => ctx.esquemaOrg.campos.categoria.valores.includes(x[0])).map(x => [x[0], x[1]]) }),
+      posicion: campo(sOrg, 'Posición de la organización', 'lista', org?.posicion, { nombre: 'org-posicion', obligatorio: true, valores: posiciones }),
+      caracterizacion: campo(sOrg, 'Caracterización de la organización', 'texto-largo', org?.caracterizacion, { nombre: 'org-caracterizacion', obligatorio: true, max: 4000, ancho: true })
     };
-    Object.values(controles).forEach(c => { c.oninput = actualizar; c.onchange = actualizar; });
-    const guardar = boton('Revisar y guardar'); guardar.type = 'submit'; form.append(vivo, aviso, guardar, previa); n.append(form); actualizar();
+    const sAct = el('section', null, 'ka-form-seccion'), listaActores = el('div', null, 'ka-form-actores'), bloques = [];
+    sAct.append(el('h4', 'Actores identificados'), el('p', 'Personas de la organización con las que se relaciona el proyecto. Sus calificaciones dan el resultado de la organización.', 'nota'), listaActores);
+    function agregarActor(a) {
+      const caja = el('fieldset', null, 'ka-form-actor'), n0 = bloques.length, pre = `ka-a${n0}-`, contacto = a ? contactos.find(x => x.id === a.id) || {} : {};
+      const titulo = el('legend', `Actor ${n0 + 1}`); caja.append(titulo);
+      const b = { original: a, caja,
+        nombre: campo(caja, 'Nombre del actor', 'texto', a?.nombre_servidor || contacto.nombre, { nombre: pre + 'nombre', obligatorio: true, max: 120 }),
+        cargo: campo(caja, 'Cargo', 'texto', a?.cargo, { nombre: pre + 'cargo', obligatorio: true, max: 250 }),
+        posicion: campo(caja, 'Posición', 'lista', a?.posicion, { nombre: pre + 'posicion', obligatorio: true, valores: posiciones }),
+        caracterizacion: campo(caja, 'Caracterización del actor', 'texto-largo', a?.caracterizacion, { nombre: pre + 'caracterizacion', obligatorio: true, max: Math.max(ctx.cfg.organizacion.caracterizacionMax, (a?.caracterizacion || '').length), ancho: true }),
+        correo: campo(caja, 'Correo (opcional)', 'texto', contacto.correo, { nombre: pre + 'correo', max: 160 }),
+        telefono: campo(caja, 'Teléfono (opcional)', 'texto', contacto.telefono, { nombre: pre + 'telefono', max: 40 }), ejes: {}
+      };
+      caja.append(el('p', 'Los datos de contacto son personales: regístralos solo con autorización de la persona (Ley 1581 de 2012).', 'ka-nota-datos ka-campo-ancho'));
+      const califica = el('div', null, 'ka-escalas-actor ka-campo-ancho'); ORDEN_EJES.forEach(e => { b.ejes[e] = escala(califica, ctx, e, a?.[e], pre); }); caja.append(califica);
+      const quitar = boton('Quitar este actor', () => { if (bloques.filter(x => !x.quitado).length === 1) { aviso.textContent = 'La organización necesita al menos un actor.'; return; } b.quitado = true; caja.remove(); actualizar(); });
+      caja.append(quitar); bloques.push(b); listaActores.append(caja); return b;
+    }
+    (actoresOriginales.length ? actoresOriginales : [null]).forEach(agregarActor);
+    sAct.append(boton('Agregar otro actor', () => { const b = agregarActor(null); b.nombre.input.focus(); actualizar(); }));
+    const sRes = el('section', null, 'ka-form-seccion'), vivo = el('p', '', 'ka-resultado-vivo'); vivo.setAttribute('role', 'status');
+    const modificar = el('input'); modificar.type = 'checkbox'; modificar.id = 'ka-modificar'; modificar.checked = !!org?.ajustado;
+    const lMod = el('label', 'Modificar el resultado final de la organización'); lMod.htmlFor = modificar.id; const filaMod = el('div', null, 'ka-check'); filaMod.append(modificar, lMod);
+    const zonaMod = el('div', null, 'ka-form-modificacion');
+    const m = {
+      influencia: campo(zonaMod, 'Influencia final (1 a 5)', 'decimal', original?.ajuste_influencia, { nombre: 'mod-influencia', obligatorio: true }),
+      impacto: campo(zonaMod, 'Impacto final (1 a 5)', 'decimal', original?.ajuste_impacto, { nombre: 'mod-impacto', obligatorio: true }),
+      justificacion: campo(zonaMod, 'Justificación de la modificación', 'texto-largo', original?.ajuste_justificacion, { nombre: 'mod-justificacion', obligatorio: true, max: 2000, ancho: true }),
+      autor: campo(zonaMod, 'Nombre de quien modifica', 'texto', original?.ajuste_autor, { nombre: 'mod-autor', obligatorio: true, max: 120 })
+    };
+    sRes.append(el('h4', 'Resultado'), vivo, filaMod, zonaMod);
+    const aviso = el('p', '', 'ka-mensaje'), previa = el('div', null, 'ka-previa'); aviso.setAttribute('role', 'status');
+    const guardar = boton('Revisar y guardar'); guardar.type = 'submit';
+    form.append(sOrg, sAct, sRes, aviso, guardar, previa); n.append(form);
+    const vivos = () => bloques.filter(b => !b.quitado);
+    function leerActores(nombreOrg, categoria) {
+      return vivos().map(b => ({ ...(b.original || {}), id: b.original?.id || 'act-' + root.crypto.randomUUID(), institucion: nombreOrg, categoria,
+        nombre_servidor: b.nombre.input.value.trim(), cargo: b.cargo.input.value.trim(), posicion: b.posicion.input.value, caracterizacion: b.caracterizacion.input.value.trim(),
+        ...Object.fromEntries(ORDEN_EJES.map(e => [e, b.ejes[e].valor()])), nivel_ajustado: undefined, motivo_ajuste: undefined, explicacion_ajuste: undefined }));
+    }
+    function actualizar() {
+      zonaMod.hidden = !modificar.checked;
+      const [o] = K.organizaciones(leerActores('Vista previa', ''), [], ctx.cfg);
+      vivo.textContent = o && typeof o.influencia === 'number' && typeof o.impacto === 'number' ? `Promedio de los actores: influencia ${formatoValor(o.influencia)} e impacto ${formatoValor(o.impacto)}. Cuadrante: ${o.cuadrante}.` : 'Califica influencia e impacto de cada actor para ver el resultado.';
+    }
+    form.addEventListener?.('change', actualizar); form.addEventListener?.('input', actualizar); modificar.onchange = actualizar; actualizar();
+    const limpiarErrores = () => form.todos?.().forEach?.(x => { if (x.className === 'ka-error') x.textContent = ''; });
     form.onsubmit = e => {
       e.preventDefault(); if (!ctx.activo() || !ctx.params.puedeEditar) return;
-      previa.replaceChildren(); Object.keys(errores).forEach(k => { errores[k].textContent = ''; controles[k].setAttribute('aria-invalid','false'); });
-      const r = K.validar({ ...leer(), id: original?.id || 'act-' + root.crypto.randomUUID() }, ctx.cfg, ctx.esquema);
-      if (!r.ok) { r.errores.forEach(e => { errores[e.campo].textContent = 'Actores, fila 1: ' + e.mensaje; controles[e.campo].setAttribute('aria-invalid','true'); }); controles[r.errores[0].campo].focus(); return; }
-      Object.entries(ctx.esquema.campos).forEach(([k,regla]) => { if (r.registro[k]) texto(previa, `${regla.etiqueta}: ${r.registro[k]}`); });
-      texto(previa, 'Nivel final: ' + K.nivelFinal(r.registro, ctx.cfg));
+      previa.replaceChildren(); aviso.textContent = ''; root.document.querySelectorAll?.('.ka-form-org .ka-error').forEach(x => { x.textContent = ''; }); limpiarErrores();
+      const problemas = [], falta = (ref, mensaje) => { ref.error.textContent = mensaje; problemas.push(ref); };
+      const nombreOrg = c.nombre.input.value.trim(), categoria = c.categoria.input.value;
+      const registroOrg = { id: K.idOrganizacion(nombreOrg), nombre: nombreOrg, categoria, posicion: c.posicion.input.value, caracterizacion: c.caracterizacion.input.value.trim() };
+      if (modificar.checked) Object.assign(registroOrg, { ajuste_influencia: Number(String(m.influencia.input.value).replace(',', '.')), ajuste_impacto: Number(String(m.impacto.input.value).replace(',', '.')), ajuste_justificacion: m.justificacion.input.value.trim(), ajuste_autor: m.autor.input.value.trim(), ajuste_fecha: original?.ajuste_fecha && original.ajuste_justificacion === m.justificacion.input.value.trim() ? original.ajuste_fecha : hoy() });
+      if (!registroOrg.caracterizacion) falta(c.caracterizacion, 'Describe la organización.');
+      const ro = K.validarOrganizacion(registroOrg, ctx.esquemaOrg);
+      ro.errores.forEach(x => { const ref = { nombre: c.nombre, categoria: c.categoria, posicion: c.posicion, caracterizacion: c.caracterizacion, ajuste_influencia: m.influencia, ajuste_impacto: m.impacto, ajuste_justificacion: m.justificacion, ajuste_autor: m.autor }[x.campo] || c.nombre; falta(ref, x.mensaje); });
+      if (modificar.checked && !(Number.isFinite(registroOrg.ajuste_influencia) && Number.isFinite(registroOrg.ajuste_impacto))) falta(m.influencia, 'Escribe influencia e impacto finales entre 1 y 5.');
+      const otra = (ctx.organizacionesActuales || []).find(o => o.id === registroOrg.id && o.id !== org?.id);
+      if (otra) falta(c.nombre, 'Ya existe una organización con este nombre. Edítala desde la lista.');
+      const actores = leerActores(nombreOrg, categoria), validados = [];
+      actores.forEach((a, i) => {
+        const b = vivos()[i];
+        if (!a.nombre_servidor) falta(b.nombre, 'Escribe el nombre del actor.');
+        if (!a.cargo) falta(b.cargo, 'Escribe el cargo.');
+        if (!a.caracterizacion) falta(b.caracterizacion, 'Describe al actor.');
+        else if (a.caracterizacion.length > ctx.cfg.organizacion.caracterizacionMax && a.caracterizacion !== b.original?.caracterizacion) falta(b.caracterizacion, `Máximo ${ctx.cfg.organizacion.caracterizacionMax} caracteres.`);
+        const r = K.validar(a, ctx.cfg, ctx.esquema, 'manual');
+        r.errores.forEach(x => { const ref = b[x.campo] || b.ejes[x.campo] || (x.campo === 'nombre_servidor' ? b.nombre : null); if (ref) falta(ref, x.mensaje); else if (!['institucion', 'categoria'].includes(x.campo)) falta(b.nombre, x.mensaje); });
+        validados.push(r.registro);
+      });
+      if (problemas.length) { aviso.textContent = `Revisa ${problemas.length === 1 ? 'el campo marcado' : 'los ' + problemas.length + ' campos marcados'}.`; (problemas[0].input || problemas[0]).focus?.(); return; }
+      const contactosNuevos = actores.map((a, i) => ({ id: a.id, nombre: a.nombre_servidor, telefono: vivos()[i].telefono.input.value.trim(), correo: vivos()[i].correo.input.value.trim() })).filter(x => x.telefono || x.correo);
+      const quitados = actoresOriginales.filter(a => !validados.some(v => v.id === a.id));
+      const [res] = K.organizaciones(validados, [ro.registro], ctx.cfg);
+      previa.append(el('h4', 'Vas a guardar'));
+      texto(previa, `${registroOrg.nombre} · ${categorias.find(x => x[0] === categoria)?.[1] || categoria} · ${registroOrg.posicion}`);
+      texto(previa, `${validados.length === 1 ? '1 actor' : validados.length + ' actores'}. Resultado: influencia ${formatoValor(res.influencia)}, impacto ${formatoValor(res.impacto)} (${res.ajustado ? 'modificado' : 'promedio'}). Cuadrante: ${res.cuadrante}.`);
+      if (quitados.length) texto(previa, `Se quitan ${quitados.length === 1 ? '1 actor' : quitados.length + ' actores'}: ${quitados.map(a => a.cargo || a.nombre_servidor || 'sin cargo').join(', ')}. El borrado queda en el historial.`);
       const confirmar = boton('Confirmar guardado', async () => {
         if (!ctx.activo() || !ctx.params.puedeEditar || confirmar.disabled) return; confirmar.disabled = true;
-        try { await ctx.datos.guardar(ctx.params.empresa, 'actores', r.registro.id, r.registro); if (!ctx.activo()) return; ctx.listas.actores = [...ctx.listas.actores.filter(a => a.id !== r.registro.id), r.registro]; alGuardar(); }
-        catch(e) { ctx.error(aviso,e); confirmar.disabled = false; }
-      }); previa.append(confirmar); confirmar.focus();
+        try {
+          const d = ctx.datos, emp = ctx.params.empresa;
+          await d.guardar(emp, 'actores-organizaciones', ro.registro.id, ro.registro);
+          await d.guardarVarios(emp, 'actores', validados);
+          if (contactosNuevos.length) await d.guardarVarios(emp, 'actores-contactos', contactosNuevos);
+          for (const a of quitados) await d.borrar(emp, 'actores', a.id);
+          if (org?.registro && org.registro.id !== ro.registro.id) await d.borrar(emp, 'actores-organizaciones', org.registro.id);
+          if (!ctx.activo()) return;
+          const ids = new Set([...validados, ...quitados].map(a => a.id));
+          ctx.listas.actores = [...ctx.listas.actores.filter(a => !ids.has(a.id)), ...validados];
+          ctx.listas['actores-organizaciones'] = [...(ctx.listas['actores-organizaciones'] || []).filter(o => o.id !== ro.registro.id && o.id !== org?.registro?.id), ro.registro];
+          const conIds = new Set(contactosNuevos.map(x => x.id)); ctx.listas['actores-contactos'] = [...contactos.filter(x => !conIds.has(x.id)), ...contactosNuevos];
+          alGuardar();
+        } catch (e) { ctx.error(aviso, e); confirmar.disabled = false; }
+      });
+      previa.append(confirmar); confirmar.focus();
     };
+    return form;
   }
   async function alimentacion(contenedor, datos, params) {
     if (!params.puedeEditar) { texto(contenedor, 'Esta sección está disponible para el responsable de la empresa.'); return; }
     const ctx = await preparar(contenedor, datos, params); if (!ctx) return;
-    const zona = el('section'), historial = el('section');
+    ctx.esquemaOrg = await json('config/esquemas/actores-organizaciones.json');
+    await ctx.cargar(['actores-organizaciones', 'actores-contactos']); if (!ctx.activo()) return ctx.limpiar;
+    const zona = el('section', null, 'ka-alimentacion'), historial = el('section');
     function pintar() {
-      zona.replaceChildren(); const editor = el('section'), aviso = el('div');
-      const editar = a => { editor.replaceChildren(el('h3', a ? 'Editar actor' : 'Agregar actor')); formulario(ctx, editor, a, pintar); editor.querySelectorAll('select')[0]?.focus(); };
-      zona.append(boton('Agregar', () => editar(null)), aviso);
-      if (!ctx.listas.actores.length) texto(zona, 'Aún no hay actores. Usa Agregar para registrar el primero.');
-      tabla(zona, ['Institución', 'Cargo', 'Nivel final', 'Acciones'], ctx.listas.actores.map(a => {
-        const acciones = el('div', null, 'ka-acciones'); acciones.append(boton('Editar', () => editar(a)), boton('Borrar', () => {
-          aviso.replaceChildren(); texto(aviso, `¿Borrar ${a.institucion}? Esta acción quedará en el historial.`);
+      zona.replaceChildren(); const editor = el('section', null, 'ka-editor'), aviso = el('div');
+      const orgs = K.organizaciones(ctx.listas.actores, ctx.listas['actores-organizaciones'], ctx.cfg); ctx.organizacionesActuales = orgs;
+      const editar = o => { editor.replaceChildren(el('h3', o ? 'Editar organización' : 'Agregar organización')); formulario(ctx, editor, o, pintar); editor.querySelector('input')?.focus(); };
+      zona.append(el('h2', 'Responder el cuestionario'), el('p', 'Registra cada organización con sus actores. También puedes subir la plantilla de Excel más abajo.', 'nota'), boton('Agregar organización', () => editar(null)), aviso);
+      if (!orgs.length) texto(zona, 'Aún no hay organizaciones. Usa Agregar organización para registrar la primera.');
+      else tabla(zona, ['Organización', 'Grupo de interés', 'Actores', 'Cuadrante', 'Acciones'], orgs.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')).map(o => {
+        const acciones = el('div', null, 'ka-acciones'); acciones.append(boton('Editar', () => editar(o)), boton('Borrar', () => {
+          aviso.replaceChildren(); texto(aviso, `¿Borrar ${o.nombre} y sus ${o.actores.length === 1 ? 'un actor' : o.actores.length + ' actores'}? Quedará en el historial.`);
           const confirmar = boton('Confirmar borrado', async () => {
             if (!ctx.activo() || !params.puedeEditar || confirmar.disabled) return; confirmar.disabled = true;
-            try { await datos.borrar(params.empresa, 'actores', a.id); if (!ctx.activo()) return; ctx.listas.actores = ctx.listas.actores.filter(x => x.id !== a.id); pintar(); }
-            catch(e) { ctx.error(aviso,e); confirmar.disabled = false; }
+            try {
+              for (const a of o.actores) await datos.borrar(params.empresa, 'actores', a.id);
+              if (o.registro) await datos.borrar(params.empresa, 'actores-organizaciones', o.registro.id);
+              if (!ctx.activo()) return; const ids = new Set(o.actores.map(a => a.id));
+              ctx.listas.actores = ctx.listas.actores.filter(a => !ids.has(a.id)); ctx.listas['actores-organizaciones'] = (ctx.listas['actores-organizaciones'] || []).filter(x => x.id !== o.id); pintar();
+            } catch (e) { ctx.error(aviso, e); confirmar.disabled = false; }
           }); aviso.append(confirmar, boton('Cancelar', () => aviso.replaceChildren())); confirmar.focus();
-        })); return [a.institucion, a.cargo, K.nivelFinal(a,ctx.cfg), acciones];
+        })); return [o.nombre, categorias.find(c => c[0] === o.categoria)?.[1] || o.categoria, String(o.actores.length), o.cuadrante || 'Sin calificar', acciones];
       })); zona.append(editor);
     }
     const verHistorial = boton('Historial de cambios', async () => {
@@ -303,7 +406,7 @@
         const cambios = await datos.historial(params.empresa, { coleccion:'actores', limite:50 }); if (!ctx.activo()) return;
         historial.replaceChildren(el('h3','Últimos cambios del módulo'));
         if (!cambios.length) texto(historial,'Todavía no hay cambios registrados.');
-        tabla(historial, ['Fecha','Acción','Actor'], cambios.map(c => [new Intl.DateTimeFormat('es-CO', {dateStyle:'short',timeStyle:'short'}).format(new Date(c.fecha)), ({INSERT:'Creación',UPDATE:'Edición',DELETE:'Borrado'})[c.accion] || 'Cambio', ctx.listas.actores.find(a => a.id === c.registro_id)?.institucion || 'Actor retirado']));
+        tabla(historial, ['Fecha','Acción','Organización'], cambios.map(c => [new Intl.DateTimeFormat('es-CO', {dateStyle:'short',timeStyle:'short'}).format(new Date(c.fecha)), ({INSERT:'Creación',UPDATE:'Edición',DELETE:'Borrado',crear:'Creación',editar:'Edición',borrar:'Borrado'})[c.accion] || 'Cambio', ctx.listas.actores.find(a => a.id === c.registro_id)?.institucion || 'Actor retirado']));
       } catch(e) { historial.replaceChildren(); ctx.error(historial,e); }
     });
     contenedor.append(zona, verHistorial, historial);
@@ -312,7 +415,6 @@
       rutaPlantilla: 'plantillas/plantilla-modulo-i.xlsx',
       nombrePlantilla: 'plantilla-modulo-i.xlsx',
       contexto: async () => {
-        // Los contactos solo sirven para reconocer a un servidor público ya cargado sin nombre.
         await ctx.cargar(['actores-contactos']).catch(() => {});
         return { cfg: ctx.cfg, esquema: ctx.esquema, existentes: ctx.listas.actores, contactos: ctx.listas['actores-contactos'] || [] };
       },

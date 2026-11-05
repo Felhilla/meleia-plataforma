@@ -28,8 +28,8 @@ async function montar(vista = 'mapa', editar = true, extras = {}) {
   const document = { eventos: {}, listeners: {}, addEventListener(k, fn) { (this.listeners[k] ||= []).push(fn); this.eventos[k] = e => [...this.listeners[k]].forEach(f => f(e)); }, removeEventListener(k,fn) { this.listeners[k] = this.listeners[k].filter(f => f !== fn); if (!this.listeners[k].length) delete this.eventos[k]; }, createElement(t) { return new Nodo(t, this); } };
   document.createElementNS = (ns, tag) => new Nodo(tag, document); document.body = new Nodo('body', document); const contenedor = new Nodo('main', document); document.body.append(contenedor);
   const consultas = [], guardados = [], borrados = [], historial = [], vistas = {};
-  const registros = { actores: actores(), 'actores-contactos': [], 'actores-resumen': [], 'actores-logos': [], ...extras };
-  const datos = { listar: async (empresa, c) => { consultas.push([empresa, c]); return structuredClone(registros[c]); }, guardar: async (...args) => { guardados.push(args); return args[3]; }, borrar: async (...args) => borrados.push(args), historial: async (...args) => { historial.push(args); return []; } };
+  const registros = { actores: actores(), 'actores-contactos': [], 'actores-resumen': [], 'actores-logos': [], 'actores-organizaciones': [], ...extras };
+  const datos = { listar: async (empresa, c) => { consultas.push([empresa, c]); return structuredClone(registros[c]); }, guardar: async (...args) => { guardados.push(args); return args[3]; }, guardarVarios: async (...args) => { guardados.push(['varios', ...args]); }, borrar: async (...args) => borrados.push(args), historial: async (...args) => { historial.push(args); return []; } };
   const root = { document, Intl, crypto: { randomUUID: () => 'nuevo' }, fetch: async p => ({ ok: true, json: async () => JSON.parse(read(p)) }), App: { el: (tag, txt, clase) => { const n = new Nodo(tag, document); if (txt != null) n.textContent = txt; n.className = clase; return n; }, registrarVista: (k, v) => { vistas[k] = v; }, actualizarVista() {} } };
   vm.runInNewContext(read('kit-armazon.js'), root);
   root.App.registrarVista = (k, v) => { vistas[k] = v; };
@@ -43,21 +43,35 @@ const campo = (n, nombre) => n.todos().find(x => x.name === nombre);
 const form = n => n.todos().find(x => x.tagName === 'FORM');
 const tick = async () => { for (let i = 0; i < 15; i++) await Promise.resolve(); };
 const panel = m => m.document.body.todos().filter(x => x.attrs.role === 'dialog').at(-1);
-test('Formulario rechaza Alto medio, muestra definiciones y solo admite subidas', async () => {
-  const m = await montar('alimentacion'); buscar(m.contenedor,'Editar').onclick();
-  assert.match(m.contenedor.textContent,/no cuenta con recursos o capacidad para incidir/); campo(m.contenedor,'influencia').value = 'Alto medio'; campo(m.contenedor,'influencia').oninput();
-  form(m.contenedor).onsubmit({preventDefault(){}}); assert.equal(campo(m.contenedor,'influencia').attrs['aria-invalid'],'true'); assert.match(m.contenedor.textContent,/Alto medio/); assert.equal(m.guardados.length,0);
-  campo(m.contenedor,'influencia').value = '3'; campo(m.contenedor,'impacto').value = '1'; campo(m.contenedor,'impacto').oninput();
-  assert.match(m.contenedor.textContent,/Nivel calculado: Seguimiento periférico/);
-  assert.deepEqual(campo(m.contenedor,'nivel_ajustado').options.map(o => o.value),['',activa,cautelosa]);
-  assert.ok(!campo(m.contenedor,'motivo_ajuste').options.some(o => o.value === esquema.campos.motivo_ajuste.valores[4]));
+const escalaDe = (n, etiqueta) => n.todos().find(x => x.tagName === 'FIELDSET' && x.children[0]?.textContent === etiqueta + ' *');
+const marcar = (n, etiqueta, v) => escalaDe(n, etiqueta).todos().find(x => x.tagName === 'BUTTON' && x.textContent === String(v)).onclick();
+test('E41 formulario: obligatorios marcados en su campo y escalas con definición', async () => {
+  const m = await montar('alimentacion'); buscar(m.contenedor,'Agregar organización').onclick();
+  const f = form(m.contenedor);
+  assert.ok(escalaDe(f,'Influencia').todos().some(x => String(x.attrs['aria-label']).includes('no cuenta con recursos o capacidad para incidir')));
+  assert.deepEqual(['Influencia','Impacto','Dependencia','Tensión','Responsabilidad'].map(e => !!escalaDe(f,e)), [true,true,true,true,true]);
+  f.onsubmit({preventDefault(){}}); assert.equal(m.guardados.length,0); assert.match(m.contenedor.textContent,/Revisa los \d+ campos marcados/);
+  assert.match(m.contenedor.textContent,/Escribe el nombre del actor\./); assert.match(m.contenedor.textContent,/Describe la organización\./);
+  marcar(f,'Influencia',3); assert.match(m.contenedor.textContent,/3: /);
 });
-test('Guardado con vista previa, ajuste y normalización; solo empresa y colección abiertas', async () => {
-  const m = await montar('alimentacion'); buscar(m.contenedor,'Agregar').onclick();
-  const a = actores()[4]; Object.entries(a).filter(([k]) => k !== 'id').forEach(([k,v]) => { campo(m.contenedor,k).value = v; });
-  campo(m.contenedor,'influencia').value = 'Media'; campo(m.contenedor,'influencia').oninput();
-  form(m.contenedor).onsubmit({preventDefault(){}}); assert.equal(m.guardados.length,0); await buscar(m.contenedor,'Confirmar guardado').onclick();
-  assert.deepEqual(m.guardados[0].slice(0,3),['empresa-1','actores','act-nuevo']); assert.equal(m.guardados[0][3].influencia,3); assert.equal(m.guardados[0][3].nivel_ajustado,activa);
+test('E41 guardado: organización, actores, contactos y modificación con autor', async () => {
+  const m = await montar('alimentacion'); buscar(m.contenedor,'Agregar organización').onclick(); const f = form(m.contenedor);
+  const poner = (nombre, valor) => { campo(f, nombre).value = valor; };
+  poner('org-nombre','Asociación Inventada del Río'); poner('org-categoria','Comunidades y asociaciones'); poner('org-posicion','Neutral'); poner('org-caracterizacion','Organización inventada para la prueba.');
+  poner('ka-a0-nombre','Persona Inventada'); poner('ka-a0-cargo','Presidenta'); poner('ka-a0-posicion','Desfavorable'); poner('ka-a0-caracterizacion','Lidera la mesa inventada.'); poner('ka-a0-correo','persona@example.test');
+  [['Influencia',4],['Impacto',5],['Dependencia',2],['Tensión',4],['Responsabilidad',1]].forEach(([e,v]) => marcar(f,e,v));
+  poner('ka-a0-caracterizacion','x'.repeat(501)); f.onsubmit({preventDefault(){}}); assert.match(m.contenedor.textContent,/Máximo 500 caracteres/); assert.equal(m.guardados.length,0);
+  poner('ka-a0-caracterizacion','Lidera la mesa inventada.');
+  f.todos().find(x => x.id === 'ka-modificar').checked = true; poner('mod-influencia','2,5'); poner('mod-impacto','5'); poner('mod-justificacion','Convoca a toda la vereda.');
+  f.onsubmit({preventDefault(){}}); assert.match(m.contenedor.textContent,/Para modificar el resultado se necesitan/); assert.equal(m.guardados.length,0);
+  poner('mod-autor','Persona Revisora'); f.onsubmit({preventDefault(){}});
+  assert.match(m.contenedor.textContent,/Resultado: influencia 2,5, impacto 5,0 \(modificado\)\. Cuadrante: Gestión cautelosa/);
+  await buscar(m.contenedor,'Confirmar guardado').onclick();
+  const [org, actoresG, contactosG] = m.guardados;
+  assert.deepEqual(org.slice(0,3),['empresa-1','actores-organizaciones','org-asociacion-inventada-del-rio']);
+  assert.equal(org[3].ajuste_autor,'Persona Revisora'); assert.equal(org[3].ajuste_influencia,2.5); assert.match(org[3].ajuste_fecha,/^\d{4}-\d{2}-\d{2}$/);
+  assert.equal(actoresG[2],'actores'); assert.equal(actoresG[3][0].institucion,'Asociación Inventada del Río'); assert.equal(actoresG[3][0].nombre_servidor,'Persona Inventada'); assert.equal(actoresG[3][0].influencia,4); assert.equal(actoresG[3][0].id,'act-nuevo');
+  assert.equal(JSON.stringify(contactosG.slice(2)),JSON.stringify(['actores-contactos',[{id:'act-nuevo',nombre:'Persona Inventada',telefono:'',correo:'persona@example.test'}]]));
 });
 test('Borrado requiere confirmación propia e historial filtra actores', async () => {
   const m = await montar('alimentacion'); buscar(m.contenedor,'Borrar').onclick(); assert.equal(m.borrados.length,0); buscar(m.contenedor,'Cancelar').onclick(); assert.equal(m.borrados.length,0);

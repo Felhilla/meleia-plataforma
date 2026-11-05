@@ -205,3 +205,35 @@ summary.ka-franja-gris { cursor: pointer; }
 .ka-resumen-tarjeta ul { grid-template-columns: minmax(0,1fr); gap: 6px; }
 .ka-resumen-tarjeta li { display: flex; align-items: baseline; gap: var(--e2); overflow-wrap: normal; word-break: normal; hyphens: none; }
 .ka-resumen-tarjeta li strong { min-width: 2.2ch; text-align: right; }
+/* E41: cuestionario de organización con sus actores (estilo del Radar 360). */
+.ka-form-org { display: grid; gap: var(--e4); max-width: 920px; }
+.ka-form-seccion { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--e3); padding: var(--e4); background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); }
+.ka-form-seccion > h4, .ka-form-seccion > .nota, .ka-form-seccion > .ka-form-actores, .ka-form-seccion > button, .ka-form-seccion > .ka-resultado-vivo, .ka-form-seccion > .ka-check, .ka-form-seccion > .ka-form-modificacion { grid-column: 1 / -1; }
+.ka-form-seccion h4 { margin: 0; font-size: var(--t-h3); }
+.ka-campo { display: grid; gap: 4px; align-content: start; }
+.ka-campo-ancho { grid-column: 1 / -1; }
+.ka-campo input, .ka-campo select, .ka-campo textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--borde-fuerte); border-radius: var(--radio-chico); background: var(--superficie); font: inherit; color: var(--texto); }
+.ka-campo textarea { min-height: 96px; resize: vertical; }
+.ka-campo label { font-weight: 600; font-size: var(--t-chico); }
+.ka-cuenta { font-size: var(--t-micro); color: var(--texto-suave); justify-self: end; }
+.ka-form-actores { display: grid; gap: var(--e3); }
+.ka-form-actor { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--e3); margin: 0; padding: var(--e3) var(--e4) var(--e4); border: 1px solid var(--borde); border-radius: 12px; background: var(--fondo); }
+.ka-form-actor > legend { padding: 0 6px; font-family: var(--fuente-titulos); font-weight: 600; }
+.ka-form-actor > button { justify-self: start; }
+.ka-escalas-actor { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--e3); }
+.ka-escala { margin: 0; padding: 10px 14px 12px; border: 1px solid var(--borde); border-radius: 12px; background: var(--superficie); }
+.ka-escala legend { padding: 0 6px; font-weight: 600; }
+.ka-escala-botones { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 6px; }
+.ka-escala-boton { min-height: 44px; padding: 0; border: 1.5px solid var(--borde-fuerte); border-radius: 10px; background: var(--superficie); color: var(--texto); font-weight: 600; cursor: pointer; }
+.ka-escala-boton[aria-checked="true"] { background: var(--principal); border-color: var(--principal); color: var(--sobre-principal); }
+.ka-escala-definicion { margin: 6px 0 0; font-size: var(--t-micro); color: var(--texto-suave); min-height: 1em; }
+.ka-error:empty { display: none; }
+.ka-error { margin: 0; font-size: var(--t-chico); color: var(--alta); }
+.ka-resultado-vivo { margin: 0; padding: var(--e2) var(--e3); background: var(--suave); border-radius: var(--radio-chico); }
+.ka-check { display: flex; align-items: center; gap: var(--e2); }
+.ka-check input { width: 20px; height: 20px; accent-color: var(--principal); }
+.ka-form-modificacion { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--e3); padding: var(--e3); border-left: 4px solid var(--oro); background: var(--kit-desplegable-fondo); border-radius: var(--radio-chico); }
+.ka-form-modificacion[hidden] { display: none; }
+@media (max-width: 700px) { .ka-form-seccion, .ka-form-actor, .ka-escalas-actor, .ka-form-modificacion { grid-template-columns: minmax(0,1fr); padding: var(--e3); } }
+.ka-form.ka-form-org { grid-template-columns: minmax(0,1fr); align-items: start; }
+.ka-form-seccion > button { justify-self: start; }
