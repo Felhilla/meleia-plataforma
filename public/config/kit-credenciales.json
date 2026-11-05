@@ -19,5 +19,83 @@
       "cargo": "Profesional en operaciones, automatización y comunicación",
       "experiencia": "Comunicador social y periodista (Universidad Externado de Colombia), bilingüe (inglés C1), con más de 7 años liderando operaciones de alta escala, gestión de proyectos y equipos multidisciplinarios en logística, hospitalidad y comunicación corporativa. Experto en estandarizar procesos, automatizar flujos de trabajo e integrar inteligencia artificial en la operación. Ha acompañado a organizaciones como Brinks, Novacomex, Yurban Hospitality Group (The Spot & Spotty Hostels) y la Corporación Unificada Nacional de Educación Superior (CUN), incluyendo la apertura de nuevas sedes en Colombia y Perú."
     }
+  ],
+  "fuente": "Presentación de credenciales de Meleia (20261001), resumida el 5-nov. Casos anonimizados como en la presentación.",
+  "quienes": "Somos un laboratorio de ideas y soluciones para la sostenibilidad, el riesgo preventivo y la debida diligencia. Combinamos experiencia en territorio, consultoría estratégica e inteligencia artificial para comprender contextos, anticipar riesgos y transformar información en mejores decisiones.",
+  "servicios": [
+    {
+      "titulo": "Sostenibilidad y debida diligencia",
+      "puntos": [
+        "Estrategia ESG: materialidad, diseño estratégico y alineación con iniciativas de buenas prácticas",
+        "Gestión y reporte: informes de sostenibilidad, rendición de cuentas y tableros ESG",
+        "Debida diligencia en derechos humanos y ESG, y gestión preventiva de riesgos"
+      ]
+    },
+    {
+      "titulo": "Diálogo y gestión territorial",
+      "puntos": [
+        "Inteligencia territorial: mapeo de actores, caracterización socioeconómica e identificación de riesgos territoriales y de derechos humanos",
+        "Relacionamiento: diálogo con grupos de interés y consulta previa",
+        "Articulación: proyectos multiactor y desarrollo de capacidades comunitarias"
+      ]
+    },
+    {
+      "titulo": "IA e inteligencia territorial",
+      "puntos": [
+        "Automatización de la debida diligencia y del cumplimiento ESG",
+        "Tableros con información territorial y de gestión empresarial para decidir",
+        "Identificación y seguimiento de alertas tempranas y riesgos territoriales"
+      ]
+    }
+  ],
+  "experiencia": [
+    {
+      "sector": "Energía, GLP",
+      "tema": "Empresa y derechos humanos",
+      "descripcion": "Empresa líder en gas licuado de petróleo en el Perú, parte de un grupo energético latinoamericano.",
+      "alcance": "9 meses (junio 2025 a febrero 2026), 8 ciudades, 259 participantes de 5 grupos de interés",
+      "logros": [
+        "Brechas de gobernanza frente a la debida diligencia",
+        "Identificación y evaluación de riesgos en derechos humanos",
+        "Estrategia de debida diligencia y gestión de riesgos"
+      ]
+    },
+    {
+      "sector": "Textil y confecciones",
+      "tema": "Sostenibilidad y derechos humanos",
+      "descripcion": "Empresa líder del sector en el Perú, fabricante por contrato para marcas internacionales.",
+      "alcance": "4 meses (diciembre 2024 a marzo 2025), 3 grupos de interés",
+      "logros": [
+        "Diagnóstico en empresa y derechos humanos",
+        "Estrategia de gestión alineada con estándares internacionales y sectoriales"
+      ]
+    },
+    {
+      "sector": "Cemento y construcción",
+      "tema": "Estándares ESG",
+      "descripcion": "Compañía líder de cemento y materiales de construcción en el norte y nororiente del Perú.",
+      "alcance": "5 meses (agosto a diciembre 2024), 3 localidades",
+      "logros": [
+        "Indicadores ESG clave para sus reportes de sostenibilidad y a la bolsa",
+        "Diseño de un tablero ESG de reporte y seguimiento"
+      ]
+    },
+    {
+      "sector": "Agroexportación",
+      "tema": "Doble materialidad",
+      "descripcion": "Empresa agroexportadora en el Perú, subsidiaria de una corporación estadounidense.",
+      "alcance": "6 meses (enero a junio 2024), 4 grupos de interés",
+      "logros": [
+        "Diagnóstico ESG frente a estándares ESG y financieros",
+        "Doble materialidad para el informe de sostenibilidad",
+        "Plan de acción ESG"
+      ]
+    }
+  ],
+  "aliados": [
+    "Consultora de transformación organizacional con más de 15 años y presencia en Argentina, Brasil, Chile, Colombia, el Caribe, España y México",
+    "Consultora en reputación, comunicaciones, asuntos públicos y manejo de crisis",
+    "Firma peruana con más de 10 años en gestión de sostenibilidad y cambio climático",
+    "Organización con más de 15 años en fortalecimiento organizacional, liderazgo y medición de impacto social"
   ]
 }

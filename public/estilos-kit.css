@@ -56,12 +56,8 @@ button:disabled { opacity: .65; cursor: wait; }
 .kit-titulo-arco { position: absolute; right: 20px; bottom: -2px; width: 104px; height: 52px; border: 2px solid var(--oro); border-bottom: 0; border-radius: 104px 104px 0 0; pointer-events: none; }
 .kit-titulo-arco::after { content: ""; position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--oro); }
 .kit-rejilla { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--e4); }
-.kit-credenciales { margin-top: var(--e5); }
 .kit-credenciales-boton { padding: var(--e2) var(--e4); background: var(--kit-titulo-fondo); border: 1px solid var(--kit-titulo-borde); border-radius: var(--radio-chico); color: var(--texto); font: inherit; font-weight: 700; cursor: pointer; }
 .kit-credenciales-boton[aria-expanded="true"] { background: var(--principal); color: var(--sobre-principal); }
-.kit-credenciales-panel { position: relative; margin-top: var(--e3); padding: var(--e5) var(--e4) var(--e4); background: var(--kit-desplegable-fondo); border: 1px solid var(--kit-desplegable-borde); border-radius: var(--radio-chico); }
-.kit-rejilla.kit-equipo { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
-.kit-equipo .kit-persona + .kit-persona { border-left: 2px dashed var(--kit-desplegable-borde); padding-left: var(--e4); }
 .kit-persona { display: flex; flex-direction: column; gap: var(--e2); min-width: 0; }
 .kit-persona img, .kit-persona-foto-vacia { width: 112px; height: 112px; border-radius: 50%; object-fit: cover; background: var(--superficie); border: 1px solid var(--kit-desplegable-borde); }
 .kit-persona h3 { margin: var(--e2) 0 0; font-size: var(--t-h3); }
@@ -77,8 +73,6 @@ button:disabled { opacity: .65; cursor: wait; }
 .kit-modulo .nota { margin-top: auto; padding-top: var(--e2); font-size: var(--t-chico); color: var(--texto-suave); }
 @media (prefers-reduced-motion: reduce) { .kit-modulo { transition: none; } .kit-modulo:hover { transform: none; } }
 @media (max-width: 960px) { .kit-rejilla, .kit-modulos.kit-rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 760px) { .kit-rejilla.kit-equipo { grid-auto-flow: row; grid-template-columns: 1fr; } .kit-equipo .kit-persona + .kit-persona { border-left: 0; padding-left: 0; border-top: 2px dashed var(--kit-desplegable-borde); padding-top: var(--e4); } }
-@media (max-width: 560px) { .kit-rejilla, .kit-modulos.kit-rejilla { grid-template-columns: 1fr; } .kit-equipo .kit-persona + .kit-persona { border-left: 0; padding-left: 0; border-top: 2px dashed var(--kit-desplegable-borde); padding-top: var(--e4); } .kit-titulo { padding: var(--e4); padding-right: 96px; } .kit-titulo-arco { width: 72px; height: 36px; right: 12px; } }
 
 /* E24 · Selector compartido y logo opcional, sin reserva de espacio. */
 .kit-casos { position: relative; display: flex; align-items: center; gap: var(--e3); margin: var(--e3) 0; }
@@ -142,3 +136,26 @@ button:disabled { opacity: .65; cursor: wait; }
 .kit-metodologia h2 { font-size: var(--t-h3); margin-bottom: var(--e2); }
 .kit-metodologia-fuentes { font-size: var(--t-chico); color: var(--texto-suave); }
 @media (max-width: 560px) { #kit-nav.abierto { left: var(--e2); right: var(--e2); min-width: 0; } }
+
+/* E42 (5-nov): portada = ventana de Credenciales de Meleia. */
+.kit-cred { display: grid; gap: var(--e6); margin-top: var(--e5); }
+.kit-cred-seccion h2 { font-size: var(--t-h2); margin-bottom: var(--e3); }
+.kit-cred-quienes p { max-width: 70ch; font-size: 1.125rem; line-height: 1.65; margin: 0; }
+.kit-cred-rejilla { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--e4); }
+.kit-cred-casos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.kit-cred-tarjeta { display: flex; flex-direction: column; gap: var(--e2); padding: var(--e4); background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); box-shadow: var(--sombra); }
+.kit-cred-tarjeta h3 { font-size: var(--t-h3); margin: 0; }
+.kit-cred-tarjeta p { margin: 0; }
+.kit-cred-tarjeta ul, .kit-cred-aliados ul { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; font-size: var(--t-chico); color: var(--texto-suave); }
+.kit-cred-numero { font-family: var(--fuente-titulos); font-size: 1.6rem; color: var(--oro); line-height: 1; }
+.kit-cred-alcance { font-size: var(--t-chico); color: var(--oro-texto); font-weight: 600; }
+.kit-cred-aliados ul { font-size: var(--t-cuerpo); max-width: 80ch; }
+.kit-cred-titulo-modulos { margin-top: var(--e6); font-size: var(--t-h2); }
+.kit-equipo { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--e4); }
+.kit-persona { padding: var(--e4); background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); box-shadow: var(--sombra); }
+.kit-persona-cabeza { display: flex; align-items: center; gap: var(--e3); }
+.kit-persona-cabeza h3 { margin: 0; }
+.kit-persona img, .kit-persona-foto-vacia { flex: none; width: 88px; height: 88px; }
+.kit-modulos { margin-top: var(--e4); }
+@media (max-width: 960px) { .kit-cred-rejilla, .kit-equipo { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 760px) { .kit-cred-casos { grid-template-columns: minmax(0, 1fr); } }
