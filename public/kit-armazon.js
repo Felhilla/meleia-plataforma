@@ -102,36 +102,32 @@
         modulos.forEach(m => { const a = enlace(`${m.numero} · ${m.corto || m.nombre}`, '#/' + m.id, ruta.modulo?.id === m.id); a.setAttribute('aria-label', `Módulo ${m.numero} · ${m.nombre}${casos(m, empresas).length ? '' : ' · Sin casos disponibles para tu cuenta'}`); a.title = `Módulo ${m.numero} · ${m.nombre}`; if (!casos(m, empresas).length) a.append(el('small', 'Sin casos disponibles para tu cuenta')); nav.append(a); });
       }
       // Formato de títulos del sitio: franja verde con el arco y el punto de la marca.
-      // Credenciales: botón que despliega el equipo. El contenido se pide solo al abrirlo.
-      function credenciales() {
-        const caja = el('section', null, 'kit-credenciales'), boton = el('button', 'Credenciales', 'kit-credenciales-boton'), panel = el('div', null, 'kit-credenciales-panel');
-        boton.type = 'button'; boton.setAttribute('aria-expanded', 'false'); boton.setAttribute('aria-controls', 'kit-credenciales-panel'); panel.id = 'kit-credenciales-panel'; panel.hidden = true;
-        let cargado = false;
-        const cerrar = () => { panel.hidden = true; boton.setAttribute('aria-expanded', 'false'); boton.focus(); };
-        boton.onclick = async () => {
-          if (!panel.hidden) { cerrar(); return; }
-          panel.hidden = false; boton.setAttribute('aria-expanded', 'true');
-          if (cargado) { panel.querySelector('.kit-cerrar')?.focus(); return; }
-          panel.replaceChildren(el('p', 'Cargando…', 'nota'));
-          try {
-            const r = await root.fetch('config/kit-credenciales.json'); if (!r.ok) throw Error('No se pudo cargar el equipo.');
-            const cfg = await r.json(); cargado = true;
-            const x = el('button', '×', 'kit-cerrar'); x.type = 'button'; x.setAttribute('aria-label', 'Cerrar credenciales'); x.onclick = cerrar;
-            const lista = el('div', null, 'kit-rejilla kit-equipo');
+      // E42 (5-nov): la portada es la ventana de Credenciales de Meleia. Resume la presentación de
+      // credenciales (quiénes somos, servicios, experiencia, equipo y aliados) y termina en los módulos.
+      async function credenciales(destino) {
+        destino.replaceChildren(el('p', 'Cargando credenciales…', 'nota'));
+        try {
+          const r = await root.fetch('config/kit-credenciales.json'); if (!r.ok) throw Error('No se pudieron cargar las credenciales.');
+          const cfg = await r.json(), seccion = (titulo, clase) => { const s = el('section', null, 'kit-cred-seccion ' + clase); s.append(el('h2', titulo)); return s; };
+          const lista = puntos => { const ul = el('ul'); puntos.forEach(t => ul.append(el('li', t))); return ul; };
+          const partes = [];
+          if (cfg.quienes) { const s = seccion('Quiénes somos', 'kit-cred-quienes'); s.append(el('p', cfg.quienes)); partes.push(s); }
+          if ((cfg.servicios || []).length) { const s = seccion('Servicios', 'kit-cred-servicios'), rej = el('div', null, 'kit-cred-rejilla'); cfg.servicios.forEach((v, i) => { const a = el('article', null, 'kit-cred-tarjeta'); a.append(el('span', String(i + 1).padStart(2, '0'), 'kit-cred-numero'), el('h3', v.titulo), lista(v.puntos)); rej.append(a); }); s.append(rej); partes.push(s); }
+          if ((cfg.experiencia || []).length) { const s = seccion('Experiencia', 'kit-cred-experiencia'), rej = el('div', null, 'kit-cred-rejilla kit-cred-casos'); cfg.experiencia.forEach(v => { const a = el('article', null, 'kit-cred-tarjeta'); a.append(el('p', v.sector, 'antetitulo'), el('h3', v.tema), el('p', v.descripcion), el('p', v.alcance, 'kit-cred-alcance'), lista(v.logros)); rej.append(a); }); s.append(rej); partes.push(s); }
+          if ((cfg.personas || []).length) {
+            const s = seccion('Equipo', 'kit-cred-equipo'), rej = el('div', null, 'kit-equipo');
             cfg.personas.forEach(p => {
-              const ficha = el('article', null, 'kit-persona');
-              if (p.foto) { const img = el('img'); img.src = p.foto; img.alt = 'Foto de ' + p.nombre; img.loading = 'lazy'; ficha.append(img); }
-              else { const vacio = el('div', null, 'kit-persona-foto-vacia'); vacio.setAttribute('aria-hidden', 'true'); ficha.append(vacio); }
-              ficha.append(el('h3', p.nombre));
-              if (p.cargo) ficha.append(el('p', p.cargo, 'kit-persona-cargo'));
+              const ficha = el('article', null, 'kit-persona'), cabeza = el('div', null, 'kit-persona-cabeza'), texto = el('div');
+              if (p.foto) { const img = el('img'); img.src = p.foto; img.alt = 'Foto de ' + p.nombre; img.loading = 'lazy'; cabeza.append(img); }
+              else { const vacio = el('div', null, 'kit-persona-foto-vacia'); vacio.setAttribute('aria-hidden', 'true'); cabeza.append(vacio); }
+              texto.append(el('h3', p.nombre)); if (p.cargo) texto.append(el('p', p.cargo, 'kit-persona-cargo')); cabeza.append(texto); ficha.append(cabeza);
               if (p.experiencia) ficha.append(el('p', p.experiencia, 'kit-persona-experiencia'));
-              lista.append(ficha);
-            });
-            panel.replaceChildren(x, lista); x.focus();
-          } catch (e) { panel.replaceChildren(mensaje(e.message || 'No se pudo cargar el equipo.', true)); }
-        };
-        panel.onkeydown = e => { if (e.key === 'Escape') cerrar(); };
-        caja.append(boton, panel); return caja;
+              rej.append(ficha);
+            }); s.append(rej); partes.push(s);
+          }
+          if ((cfg.aliados || []).length) { const s = seccion('Aliados', 'kit-cred-aliados'); s.append(lista(cfg.aliados)); partes.push(s); }
+          destino.replaceChildren(...partes);
+        } catch (e) { destino.replaceChildren(mensaje(e.message || 'No se pudieron cargar las credenciales.', true)); }
       }
       async function render() {
         const turno = ++revision;
@@ -145,15 +141,15 @@
         const zona = el('section', null, 'kit-vista'); contenido.append(zona); contenido.focus();
         try {
           if (ruta.clave === 'portada') {
-            zona.append(el('p', 'Laboratorio de ideas para la gestión en sostenibilidad.', 'kit-presentacion'));
-            zona.append(credenciales());
+            const cred = el('div', null, 'kit-cred'); zona.append(cred); const pendiente = credenciales(cred);
+            zona.append(el('h2', 'Kit de sostenibilidad', 'kit-cred-titulo-modulos'));
             const tarjetas = el('div', null, 'kit-modulos kit-rejilla');
             modulos.forEach(m => {
               const disponibles = casos(m, empresas), tarjeta = el('a', null, 'kit-modulo');
               tarjeta.href = '#/' + m.id;
               tarjeta.append(el('span', 'Módulo ' + m.numero, 'kit-modulo-numero'), el('h2', m.nombre), el('p', m.descripcion), el('p', disponibles.length ? 'Casos: ' + disponibles.map(e => e.nombre).join(' · ') : 'Sin casos disponibles para tu cuenta', 'nota'));
               tarjetas.append(tarjeta);
-            }); zona.append(tarjetas);
+            }); zona.append(tarjetas); await pendiente;
           } else if (ruta.clave === 'sin-casos') {
             zona.append(mensaje('Sin casos disponibles para tu cuenta'));
           } else {

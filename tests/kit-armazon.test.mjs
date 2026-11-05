@@ -66,7 +66,7 @@ async function montar({ usuario = { id: 'u' }, hash = '#/', listar = async () =>
   const nodos = Object.fromEntries(['contenido', 'kit-cuenta', 'kit-nav', 'tema'].map(id => [id, new Nodo('div')]));
   const salto = new Nodo('a'), eventos = {}, consultas = [], guardado = [];
   const document = { documentElement: new Nodo('html'), createElement: t => new Nodo(t), getElementById: id => nodos[id], querySelector: () => salto, addEventListener() {} };
-  const root = { document, Intl, fetch: async () => ({ok:true,json:async () => JSON.parse(readFileSync(new URL('../public/config/kit-modulos.json', import.meta.url), 'utf8'))}), location: { hash }, history: { replaceState(_, __, hash) { root.location.hash = hash; } }, localStorage: { getItem() { throw Error('bloqueado'); }, setItem(...args) { guardado.push(args); } }, addEventListener: (k, fn) => { eventos[k] = fn; } }; root.window = root;
+  const root = { document, Intl, fetch: async p => ({ok:true,json:async () => JSON.parse(readFileSync(new URL('../public/' + (typeof p === 'string' ? p : 'config/kit-modulos.json'), import.meta.url), 'utf8'))}), location: { hash }, history: { replaceState(_, __, hash) { root.location.hash = hash; } }, localStorage: { getItem() { throw Error('bloqueado'); }, setItem(...args) { guardado.push(args); } }, addEventListener: (k, fn) => { eventos[k] = fn; } }; root.window = root;
   vm.runInNewContext(readFileSync(new URL('../public/kit-armazon.js', import.meta.url), 'utf8'), root);
   const datos = { usuarioActual: async () => usuario, empresas: async () => lista, puedeEditar: id => id === 'uno', listar: async (...args) => { consultas.push(args); return listar(...args); }, iniciarSesion: async () => ({ id: 'u' }), cerrarSesion: async () => {}, observarSesion(fn) { datos.salir = fn; } };
   await root.App.iniciar(datos);
@@ -86,10 +86,12 @@ test('DOM: ingreso accesible, soporte, autenticación y salida', async () => {
 test('DOM: portada global no consulta colecciones ni muestra selector global', async () => {
   const m = await montar();
   assert.match(m.nodos.contenido.textContent, /Meleia/); assert.doesNotMatch(m.nodos.contenido.textContent, /GH Estudio/);
-  assert.match(m.nodos.contenido.textContent, /Laboratorio de ideas para la gestión en sostenibilidad\./);
-  // Home (boceto 27-oct): Credenciales es un botón cerrado; las cuatro tarjetas son enlaces a los módulos.
-  const boton = m.nodos.contenido.todos().find(n => n.className === 'kit-credenciales-boton');
-  assert.equal(boton.attrs['aria-expanded'], 'false');
+  assert.match(m.nodos.contenido.textContent, /laboratorio de ideas y soluciones para la sostenibilidad/i);
+  // E42 (5-nov): la portada es la ventana de Credenciales; después vienen los cuatro módulos.
+  const secciones = m.nodos.contenido.todos().filter(n => String(n.className).startsWith('kit-cred-seccion')).map(n => n.children[0].textContent);
+  assert.deepEqual(secciones, ['Quiénes somos', 'Servicios', 'Experiencia', 'Equipo', 'Aliados']);
+  assert.equal(m.nodos.contenido.todos().filter(n => n.className === 'kit-persona').length, 3);
+  assert.doesNotMatch(m.nodos.contenido.textContent, /ghestudio/);
   assert.deepEqual(m.nodos.contenido.todos().filter(n => n.className === 'kit-modulo').map(n => n.href), ['#/actores', '#/ddhh', '#/materialidad', '#/riesgos']);
   assert.equal(m.consultas.length, 0); assert.equal(m.nodos['kit-cuenta'].querySelector('select'), undefined);
   assert.match(m.nodos['kit-cuenta'].textContent, /Responsable/);
