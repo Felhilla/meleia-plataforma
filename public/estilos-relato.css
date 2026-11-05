@@ -171,5 +171,5 @@
 .res-datos ul.relato-brechas li { display: flex; align-items: center; gap: var(--e3); justify-content: flex-start; font-size: 1.02rem; line-height: 1.4; }
 .res-puntaje { flex-shrink: 0; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; font-size: 1.05rem; font-weight: 700; color: #fff; background: var(--sem-gris); box-shadow: 0 0 0 4px var(--fondo-alterno), 0 0 0 5px var(--borde); }
 .res-puntaje.sem-rojo { background: var(--sem-rojo); } .res-puntaje.sem-naranja { background: var(--sem-naranja); }
-.res-puntaje.sem-ambar { background: var(--sem-ambar); color: var(--texto); } .res-puntaje.sem-amarillo { background: var(--sem-amarillo); color: #1F332B; }
+.res-puntaje.sem-ambar { background: var(--sem-ambar); color: var(--texto); } .res-puntaje.sem-amarillo { background: var(--sem-amarillo); color: #1F241B; }
 .res-puntaje.sem-verde { background: var(--sem-verde); }

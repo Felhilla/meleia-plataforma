@@ -22,10 +22,10 @@ test('E11 conserva diez tokens en ambos temas y calcula AA para texto, señal y 
     for (const c of ['linea','principal','alta','media','baja']) assert.ok(contraste(t[c],t.superficie) >= 3, `SVG: ${c}`);
   }
 });
-test('E11 carga Lato 400/700, cuatro PNG y variantes de logos por tema', () => {
+test('E11 y E40: Fraunces e IBM Plex Sans, solo marca Meleia y variantes de logo por tema', () => {
   const html = leer('public/index.html');
-  assert.match(html,/family=Lato:wght@400;700/); assert.doesNotMatch(html,/Montserrat/);
-  for (const marca of ['gh','meleia']) for (const variante of ['color','blanco']) {
+  assert.match(html,/family=Fraunces/); assert.match(html,/family=IBM\+Plex\+Sans/); assert.doesNotMatch(html,/Montserrat|Lato|logo-gh/);
+  for (const marca of ['meleia']) for (const variante of ['color','blanco']) {
     const nombre = `logo-${marca}-${variante}.png`;
     const png = readFileSync(new URL('../public/img/'+nombre,import.meta.url));
     assert.equal(png.subarray(1,4).toString(),'PNG'); assert.ok(png.length<100000);

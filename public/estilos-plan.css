@@ -76,7 +76,7 @@
 .plan-input { margin-top: 0; }
 .plan-ficha.editando .plan-input { border-color: var(--principal); box-shadow: 0 0 0 3px color-mix(in srgb, var(--principal) 15%, transparent); }
 .plan-soporte, .plan-actualizar { justify-content: center; }
-.plan-soporte.inactivo { opacity: .45; cursor: not-allowed; background: var(--sem-gris); border-color: var(--sem-gris); color: #1F332B; }
+.plan-soporte.inactivo { opacity: .45; cursor: not-allowed; background: var(--sem-gris); border-color: var(--sem-gris); color: #1F241B; }
 .plan-pie-acciones { display: flex; justify-content: flex-end; align-items: center; gap: var(--e3); padding: 0 var(--e5) var(--e4); }
 .plan-mensaje { margin: 0; color: var(--principal); font-weight: 700; }
 .plan-mensaje:empty { display: none; }
