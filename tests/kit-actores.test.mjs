@@ -52,3 +52,27 @@ test('Nivel final descarta ajustes inválidos también al leer registros', () =>
   assert.equal(K.nivelFinal(a,cfg),periferico);
   assert.equal(K.nivelFinal({...a,motivo_ajuste:esquema.campos.motivo_ajuste.valores[0],explicacion_ajuste:7},cfg),periferico);
 });
+
+test('E41: la organización promedia a sus actores, toma la posición más frecuente y admite modificación justificada', async () => {
+  const { readFileSync: leer } = await import('node:fs');
+  const K = (await import('../public/kit-actores.js')).default;
+  const cfg = JSON.parse(leer(new URL('../public/config/kit-actores-config.json', import.meta.url), 'utf8'));
+  const esquema = JSON.parse(leer(new URL('../public/config/esquemas/actores-organizaciones.json', import.meta.url), 'utf8'));
+  const base = { categoria: 'Comunidades y asociaciones', institucion: 'JAC Vereda Ejemplo', dependencia: 3, tension: 2, responsabilidad: 1 };
+  const actores = [{ ...base, posicion: 'Favorable', influencia: 5, impacto: 4 }, { ...base, posicion: 'Desfavorable', influencia: 4, impacto: 2 }, { ...base, posicion: 'Desfavorable', influencia: 3, impacto: 3 }, { ...base, institucion: 'Otra', posicion: 'Neutral', influencia: 1, impacto: 1 }];
+  const [org, otra] = K.organizaciones(actores, [], cfg);
+  assert.equal(org.id, 'org-jac-vereda-ejemplo'); assert.equal(org.actores.length, 3);
+  assert.equal(org.influencia, 4); assert.equal(org.impacto, 3); assert.equal(org.promedios.dependencia, 3);
+  assert.equal(org.posicion, 'Desfavorable'); assert.equal(org.cuadrante, 'Gestión activa'); assert.equal(otra.cuadrante, 'Seguimiento periférico');
+  // Empate: gana la posición más crítica.
+  assert.equal(K.posicionFrecuente([{ posicion: 'Favorable' }, { posicion: 'Neutral' }], cfg), 'Neutral');
+  // Modificación libre: cambia el resultado solo si trae justificación y autor.
+  const registro = { id: org.id, nombre: 'JAC Vereda Ejemplo', categoria: base.categoria, posicion: 'Neutral', ajuste_influencia: 2, ajuste_impacto: 5, ajuste_justificacion: 'Lidera la mesa de concertación.', ajuste_autor: 'Persona Inventada', ajuste_fecha: '2026-11-05' };
+  const [mod] = K.organizaciones(actores, [registro], cfg);
+  assert.equal(mod.posicion, 'Neutral'); assert.equal(mod.ajustado, true); assert.equal(mod.cuadrante, 'Gestión cautelosa'); assert.equal(mod.ajuste.autor, 'Persona Inventada');
+  assert.equal(K.validarOrganizacion(registro, esquema).ok, true);
+  const incompleto = K.validarOrganizacion({ ...registro, ajuste_autor: '' }, esquema);
+  assert.equal(incompleto.ok, false); assert.ok(incompleto.errores.some(e => e.campo === 'ajuste_autor'));
+  assert.equal(K.organizaciones(actores, [{ ...registro, ajuste_justificacion: ' ' }], cfg)[0].ajustado, false);
+  assert.equal(K.validarOrganizacion({ ...registro, id: 'org-otro' }, esquema).ok, false);
+});

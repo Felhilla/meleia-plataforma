@@ -51,7 +51,7 @@
     },
     "nombre_servidor": {
       "tipo": "texto",
-      "etiqueta": "Nombre del servidor público",
+      "etiqueta": "Nombre del actor",
       "obligatorio": false,
       "max": 250
     },

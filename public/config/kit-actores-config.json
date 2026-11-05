@@ -99,8 +99,22 @@
   "escalasFuente": "Hoja «Metodología» de los mapeos de actores de GH (AA1000SES), redacción genérica.",
   "nombreServidor": {
     "categorias": [
-      "Instituciones gubernamentales"
+      "Instituciones gubernamentales",
+      "Comunidades y asociaciones",
+      "Academia",
+      "Empresas y gremios",
+      "Medios de comunicación",
+      "Empleados, contratistas y proveedores"
     ],
-    "nota": "Decisión 27-oct (opción A): solo servidores públicos, verificados; comunidades, medios, academia, gremios y proveedores nunca llevan nombre."
+    "nota": "Decisión del 5-nov (Felipe): todos los actores pueden llevar nombre. Lo carga el responsable de la empresa con sus propios datos y solo se ve dentro de la ficha de la organización, para quien tiene acceso a esa empresa."
+  },
+  "organizacion": {
+    "caracterizacionMax": 500,
+    "desempatePosicion": [
+      "Desfavorable",
+      "Neutral",
+      "Favorable"
+    ],
+    "nota": "Decisión del 5-nov: el resultado de la organización es el promedio de sus actores. Se puede modificar libremente con justificación escrita y nombre de quien modifica. Los ajustes por actor del mapeo original se descartaron (opción A)."
   }
 }

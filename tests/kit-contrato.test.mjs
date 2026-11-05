@@ -47,11 +47,11 @@ test('Nombres: se conservan solo en servidores públicos', () => {
   const r = A.validar(actor, cfgA, esqA, 'carga');
   assert.equal(r.ok, true); assert.equal(r.registro.nombre_servidor, 'Persona Inventada');
 });
-test('Nombres: en otra categoría la carga los descarta y el formulario los rechaza', () => {
+test('Nombres: desde el 5-nov todas las categorías conservan el nombre en la carga y en el formulario', () => {
   const comunidad = { ...actor, categoria: 'Comunidades y asociaciones', institucion: 'JAC Ejemplo', cargo: 'Presidente' };
   const c = A.validar(comunidad, cfgA, esqA, 'carga');
-  assert.equal(c.ok, true); assert.equal('nombre_servidor' in c.registro, false); assert.equal('fecha_verificacion' in c.registro, false); assert.equal(c.avisos.length, 1);
-  assert.equal(A.validar(comunidad, cfgA, esqA, 'manual').ok, false);
+  assert.equal(c.ok, true); assert.equal(c.registro.nombre_servidor, comunidad.nombre_servidor); assert.equal(c.avisos.length, 0);
+  assert.equal(A.validar(comunidad, cfgA, esqA, 'manual').ok, true);
 });
 
 import { createHash } from 'node:crypto';

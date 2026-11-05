@@ -1,0 +1,71 @@
+{
+  "titulo": "Organizaciones del mapa de actores",
+  "campos": {
+    "nombre": {
+      "tipo": "texto",
+      "etiqueta": "Nombre de la organización",
+      "obligatorio": true,
+      "max": 250
+    },
+    "categoria": {
+      "tipo": "lista",
+      "etiqueta": "Grupo de interés",
+      "obligatorio": true,
+      "valores": [
+        "Instituciones gubernamentales",
+        "Comunidades y asociaciones",
+        "Academia",
+        "Empresas y gremios",
+        "Medios de comunicación",
+        "Empleados, contratistas y proveedores"
+      ]
+    },
+    "posicion": {
+      "tipo": "lista",
+      "etiqueta": "Posición de la organización",
+      "obligatorio": true,
+      "valores": [
+        "Favorable",
+        "Neutral",
+        "Desfavorable"
+      ]
+    },
+    "caracterizacion": {
+      "tipo": "texto-largo",
+      "etiqueta": "Caracterización de la organización",
+      "obligatorio": false,
+      "max": 4000
+    },
+    "ajuste_influencia": {
+      "tipo": "decimal",
+      "etiqueta": "Influencia modificada",
+      "obligatorio": false,
+      "min": 1,
+      "max": 5
+    },
+    "ajuste_impacto": {
+      "tipo": "decimal",
+      "etiqueta": "Impacto modificado",
+      "obligatorio": false,
+      "min": 1,
+      "max": 5
+    },
+    "ajuste_justificacion": {
+      "tipo": "texto-largo",
+      "etiqueta": "Justificación de la modificación",
+      "obligatorio": false,
+      "max": 2000
+    },
+    "ajuste_autor": {
+      "tipo": "texto",
+      "etiqueta": "Nombre de quien modificó",
+      "obligatorio": false,
+      "max": 120
+    },
+    "ajuste_fecha": {
+      "tipo": "fecha",
+      "etiqueta": "Fecha de la modificación",
+      "obligatorio": false
+    }
+  }
+}
