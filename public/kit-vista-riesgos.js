@@ -296,8 +296,7 @@
     }
     pintar(); return ctx.limpiar;
   }
-  async function alimentacion(contenedor, datos, params) {
-    volver(contenedor, params.empresa);
+  async function edicionTabla(contenedor, datos, params) {
     if (!params.puedeEditar) { texto(contenedor, 'Esta sección está disponible para el responsable de la empresa.'); return; }
     const cfg = await json('config/kit-riesgos-config.json'); if (!params.vigente()) return;
     const ctx = contexto(contenedor, datos, params, cfg); contenedor.classList.add('kr');
@@ -349,6 +348,9 @@
       } catch (e) { historial.replaceChildren(); ctx.error(historial, e); }
     });
     contenedor.append(nav, zona, enlaceHistorial, historial);
+    await abrir('riesgos'); return ctx.limpiar;
+  }
+  function cargaExcel(contenedor, ctx, datos, params, alGuardar) {
     root.KitVistaCargaExcel.seccion(contenedor, {
       modulo: 'riesgos',
       rutaPlantilla: 'plantillas/plantilla-modulo-iv.xlsx',
@@ -376,11 +378,119 @@
           const porId = new Map(lista.map(r => [r.id, r]));
           ctx.listas[c] = [...(ctx.listas[c] || []).filter(r => !porId.has(r.id)), ...lista];
         }
-        await abrir(coleccionActual);
+        await alGuardar();
       },
       error: ctx.error
     });
-    await abrir('riesgos'); return ctx.limpiar;
+  }
+  function copia(v) { return JSON.parse(JSON.stringify(v || {})); }
+  function textoCampo(textos, coleccion, campo, regla, extras = {}) { return { ...regla, ...(textos.riesgos?.[coleccion]?.[campo] || {}), ...extras }; }
+  function listasConRiesgo(ctx, riesgo, grupo) {
+    return { ...ctx.listas, riesgos: [...(ctx.listas.riesgos || []).filter(x => x.id !== riesgo.id), riesgo], 'riesgos-grupos': grupo ? [...(ctx.listas['riesgos-grupos'] || []).filter(x => x.id !== grupo.id), grupo] : (ctx.listas['riesgos-grupos'] || []) };
+  }
+  async function cuestionarioRiesgo(ctx, zona, original, textos, alVolver) {
+    // En la revisión, las referencias se muestran con su código y nombre, no con el identificador interno.
+    const nombreRevision = (campo, valor, salida) => {
+      const riesgo = id => [...(salida.riesgos || []), ...(ctx.listas.riesgos || [])].find(x => x.id === id);
+      const grupo = id => [...(salida['riesgos-grupos'] || []), ...(ctx.listas['riesgos-grupos'] || [])].find(x => x.id === id);
+      if (campo === 'riesgo') { const x = riesgo(valor); return x ? x.codigo + ' · ' + x.nombre : valor; }
+      if (campo === 'riesgos' && Array.isArray(valor)) return valor.map(id => riesgo(id)?.codigo || id);
+      if (campo === 'grupo') return grupo(valor)?.nombre || valor;
+      return valor;
+    };
+    const base = {};
+    for (const c of colecciones) base[c] = await json('config/esquemas/' + c + '.json');
+    const derechos = await json('data/derechos.json'), parametros = (await json('config/criticidad-config.json')).gravedad.parametros;
+    if (!ctx.activo()) return;
+    const existenteCal = original && ctx.listas['riesgos-calificacion'].find(x => x.riesgo === original.id);
+    const existenteVal = original && ctx.listas['riesgos-validaciones'].find(x => x.riesgo === original.id);
+    const existentesMedidas = original ? ctx.listas['riesgos-medidas'].filter(x => x.riesgos?.includes(original.id)) : [];
+    const estado = {
+      riesgo: copia(original), calificacion: copia(existenteCal || { riesgo: original?.id || '' }), validacion: { ...copia(existenteVal), grupoSeleccion: existenteVal?.grupo || '' }, grupoNuevo: {},
+      medidas: existentesMedidas.map(m => ({ ...copia(m), __original: m.id })), originales: { riesgo: original, calificacion: existenteCal, validacion: existenteVal, medidas: existentesMedidas }
+    };
+    const preparado = () => {
+      const salida = {}, errores = [], conteos = { nuevos: 0, actualizados: 0 };
+      const sinPrefijo = (mensaje, titulo) => String(mensaje).replace(new RegExp('^' + String(titulo).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ', fila 1:\\s*'), '');
+      const agregar = (coleccion, registro, originalRegistro, paso, prefijo, lista = ctx.listas) => {
+        const s = K.esquema(base[coleccion], coleccion, { derechos, riesgos: lista.riesgos || [], cfg: ctx.cfg, empresa: ctx.params.empresa });
+        const r = K.preparar(coleccion, registro, { esquema: s, cfg: ctx.cfg, listas: lista, original: originalRegistro, modo: 'formulario' });
+        if (!r.ok) errores.push(...r.errores.map(e => ({ ...e, campo: e.campo ? prefijo + '.' + e.campo : '', mensaje: sinPrefijo(e.mensaje, s.titulo), paso })));
+        else { (salida[coleccion] ||= []).push(r.registro); conteos[r.existe ? 'actualizados' : 'nuevos']++; }
+        return r;
+      };
+      const riesgo = agregar('riesgos', estado.riesgo, estado.originales.riesgo, 0, 'riesgo');
+      if (!riesgo.ok) return { salida, errores, ...conteos };
+      const listasRiesgo = listasConRiesgo(ctx, riesgo.registro), cal = { ...estado.calificacion, riesgo: riesgo.registro.id };
+      const calificacion = agregar('riesgos-calificacion', cal, estado.originales.calificacion, 1, 'calificacion', listasRiesgo);
+      if (!calificacion.ok) return { salida, errores, ...conteos };
+      const tieneValidacion = estado.validacion?.grupoSeleccion || estado.validacion?.grupo;
+      let grupo;
+      if (tieneValidacion) {
+        if (estado.validacion.grupoSeleccion === '__nuevo__') grupo = agregar('riesgos-grupos', estado.grupoNuevo, undefined, 2, 'grupoNuevo', listasRiesgo);
+        const grupoId = grupo?.registro.id || estado.validacion.grupoSeleccion || estado.validacion.grupo;
+        const { grupoSeleccion, ...validacion } = estado.validacion;
+        if (!grupo || grupo.ok) agregar('riesgos-validaciones', { ...validacion, riesgo: riesgo.registro.id, grupo: grupoId }, estado.originales.validacion, 2, 'validacion', listasConRiesgo(ctx, riesgo.registro, grupo?.registro));
+      }
+      (estado.medidas || []).forEach((m, i) => { const { __original, ...medida } = m; agregar('riesgos-medidas', { ...medida, riesgos: [...new Set([...(medida.riesgos || []), riesgo.registro.id])] }, estado.originales.medidas.find(x => x.id === __original), 3, 'medidas.' + i, listasRiesgo); });
+      return { salida, errores, ...conteos };
+    };
+    const validar = paso => () => preparado().errores.filter(e => e.paso === paso);
+    const regla = (coleccion, campo, extras) => textoCampo(textos, coleccion, campo, base[coleccion].campos[campo], extras);
+    const pintarColeccion = (api, padre, coleccion, prefijo, campos, listas, bloqueados = {}) => campos.forEach(campo => {
+      const r = { ...regla(coleccion, campo, listas?.[campo]), deshabilitado: !!bloqueados[campo] }; const clave = prefijo + '.' + campo;
+      if (r.tipo === 'texto-largo') api.textoLargo(padre, clave, r);
+      else if (r.tipo === 'fecha') api.fecha(padre, clave, r);
+      else if (r.tipo === 'entero') api.numero(padre, clave, r);
+      else if (r.tipo === 'lista') (r.multiple ? api.multiple : api.lista)(padre, clave, r);
+      else if (r.tipo === 'referencia') api.referencia(padre, clave, r);
+      else api.texto(padre, clave, r);
+    });
+    const pasos = [
+      { id: 'riesgo', titulo: 'El riesgo', validar: validar(0), pintar(p, _e, api) { pintarColeccion(api, p, 'riesgos', 'riesgo', Object.keys(base.riesgos.campos), null, original ? { codigo: true } : {}); } },
+      { id: 'calificacion', titulo: 'Calificación', validar: validar(1), pintar(p, _e, api) {
+        ['escala', 'alcance', 'irremediabilidad'].forEach(campo => api.escala(p, 'calificacion.' + campo, regla('riesgos-calificacion', campo, { opciones: parametros[campo === 'irremediabilidad' ? 'irreparable' : campo] })));
+        pintarColeccion(api, p, 'riesgos-calificacion', 'calificacion', ['probabilidad', 'tipo_impacto', 'vinculacion', 'justificacion']);
+        const vivo = el('p', '', 'kq-ayuda'), actualizar = () => { vivo.textContent = calTexto({ ...estado.calificacion, escala: Number(estado.calificacion.escala), alcance: Number(estado.calificacion.alcance), irremediabilidad: Number(estado.calificacion.irremediabilidad) }, ctx.cfg); }; actualizar(); api.alCambiar((_estado, clave) => { if (clave.startsWith('calificacion.')) actualizar(); }); vivo.setAttribute('role', 'status'); p.append(vivo);
+      } },
+      { id: 'validacion', titulo: 'Validación', opcional: true, validar: validar(2), pintar(p, _e, api) {
+        const grupos = [{ id: '', nombre: 'No agregar validación ahora' }, ...(ctx.listas['riesgos-grupos'] || []).map(g => ({ id: g.id, nombre: g.nombre })), { id: '__nuevo__', nombre: 'Crear un grupo nuevo' }];
+        const selector = api.lista(p, 'validacion.grupoSeleccion', { pregunta: '¿Qué grupo revisó este riesgo?', opciones: grupos }); selector.onchange = () => { api.cambiar('validacion.grupoSeleccion', selector.value); api.repintar(); };
+        if (estado.validacion.grupoSeleccion === '__nuevo__') pintarColeccion(api, p, 'riesgos-grupos', 'grupoNuevo', Object.keys(base['riesgos-grupos'].campos));
+        if (estado.validacion.grupoSeleccion) {
+          pintarColeccion(api, p, 'riesgos-validaciones', 'validacion', ['resultado']);
+          const resultado = p.querySelector?.('[name="validacion.resultado"]');
+          if (resultado) resultado.onchange = () => { api.cambiar('validacion.resultado', resultado.value); api.repintar(); };
+          if (K.propuestaVisible(estado.validacion, ctx.cfg)) pintarColeccion(api, p, 'riesgos-validaciones', 'validacion', Object.keys(base['riesgos-validaciones'].campos).filter(k => k.startsWith('propuesta_') || k === 'comentario'));
+          if (K.propuestaVisible(estado.validacion, ctx.cfg)) { const vivo = el('p', '', 'kq-ayuda'), actualizar = () => { const tecnicaActual = { ...estado.calificacion, escala: Number(estado.calificacion.escala), alcance: Number(estado.calificacion.alcance), irremediabilidad: Number(estado.calificacion.irremediabilidad) }; vivo.textContent = 'Con el ajuste: ' + calTexto(K.ajuste(tecnicaActual, estado.validacion, ctx.cfg).calificacion, ctx.cfg); }; actualizar(); api.alCambiar((_estado, clave) => { if (clave.startsWith('validacion.') || clave.startsWith('calificacion.')) actualizar(); }); p.append(vivo); }
+        }
+      } },
+      { id: 'medidas', titulo: 'Medidas', opcional: true, validar: validar(3), pintar(p, _e, api) {
+        (estado.medidas || []).forEach((medida, i) => { const bloque = el('section', null, 'kit-caja'); bloque.append(el('h3', `Medida ${i + 1}`)); const actual = estado.riesgo.codigo ? { id: String(estado.riesgo.codigo).toLowerCase(), codigo: estado.riesgo.codigo, nombre: estado.riesgo.nombre || '' } : null; const opcionesRiesgo = [...(ctx.listas.riesgos || []).filter(r => r.id !== actual?.id), ...(actual ? [actual] : [])].map(r => ({ id: r.id, nombre: r.codigo + ' · ' + r.nombre })); pintarColeccion(api, bloque, 'riesgos-medidas', 'medidas.' + i, Object.keys(base['riesgos-medidas'].campos), { riesgos: { opciones: opcionesRiesgo } }, medida.__original ? { codigo: true } : {}); if (medida.__original) texto(bloque, 'Esta medida ya está guardada. Para borrarla usa «Edición por tabla».'); else bloque.append(boton('Quitar medida', () => { estado.medidas.splice(i, 1); api.cambiar('medidas', estado.medidas); api.repintar(); })); p.append(bloque); });
+        p.append(boton('Agregar medida', () => { estado.medidas.push({ riesgos: [] }); api.cambiar('medidas', estado.medidas); api.repintar(); }));
+      } },
+      { id: 'revision', titulo: 'Revisión', revision: true }
+    ];
+    const clave = 'kq:riesgos:' + ctx.params.empresa + ':' + (original?.id || 'nuevo');
+    root.KitCuestionario.montar(zona, {
+      titulo: original ? `Editar ${original.codigo}` : 'Nuevo riesgo', pasos, estado,
+      persistencia: { clave, almacen: 'sesion' },
+      revisar() { const r = preparado(), secciones = []; for (const c of colecciones) if (r.salida[c]?.length) secciones.push({ titulo: titulos[colecciones.indexOf(c)], filas: r.salida[c].flatMap(x => Object.entries(x).filter(([k]) => k !== 'id' && base[c].campos[k]).map(([k, v]) => [base[c].campos[k].etiqueta || k, nombreRevision(k, v, r.salida)])) }); return { secciones, nuevos: r.nuevos, actualizados: r.actualizados, errores: r.errores }; },
+      async guardar() { if (!ctx.activo() || !ctx.params.puedeEditar) throw Error('Tu sesión ya no permite guardar.'); const r = preparado(); if (r.errores.length) throw Error('Corrige los campos indicados antes de guardar.'); const hechas = []; for (const c of colecciones) { const lista = r.salida[c] || []; if (!lista.length) continue; try { if (ctx.datos.guardarVarios) await ctx.datos.guardarVarios(ctx.params.empresa, c, lista); else for (const registro of lista) await ctx.datos.guardar(ctx.params.empresa, c, registro.id, registro); } catch (e) { throw Error((hechas.length ? `Se guardaron ${hechas.join(', ')}, pero falló ${c}: ` : '') + e.message + ' Puedes reintentar.'); } hechas.push(c); const ids = new Set(lista.map(x => x.id)); ctx.listas[c] = [...(ctx.listas[c] || []).filter(x => !ids.has(x.id)), ...lista]; } return r.salida; },
+      alTerminar() { alVolver('Cambios guardados.'); }, alCancelar() { alVolver(''); }
+    });
+  }
+  async function alimentacion(contenedor, datos, params) {
+    if (!params.puedeEditar) { texto(contenedor, 'Esta sección está disponible para el responsable de la empresa.'); return; }
+    const cfg = await json('config/kit-riesgos-config.json'); if (!params.vigente()) return;
+    const ctx = contexto(contenedor, datos, params, cfg); contenedor.classList.add('kr'); await ctx.cargar(colecciones); if (!ctx.activo()) return;
+    const textos = await json('config/kit-cuestionario.json'); if (!ctx.activo()) return;
+    const opciones = el('div', null, 'kr-acciones'), zona = el('section'), aviso = el('p'); aviso.setAttribute('role', 'status');
+    const lista = () => { zona.replaceChildren(el('h2', 'Riesgos de la empresa')); const riesgos = ctx.listas.riesgos || []; if (!riesgos.length) texto(zona, 'Aún no hay riesgos registrados.'); riesgos.forEach(r => { const fila = el('div', null, 'kit-caja'); fila.append(el('p', `${r.codigo} · ${r.nombre}`), boton('Editar', () => editor(r))); zona.append(fila); }); zona.append(boton('Agregar riesgo', () => editor(null))); };
+    const editor = r => { zona.replaceChildren(); cuestionarioRiesgo(ctx, zona, r, textos, mensaje => { lista(); aviso.textContent = mensaje; }); };
+    const cuestionario = boton('Responder el cuestionario', lista), excel = boton('Subir plantilla de Excel', () => { zona.replaceChildren(); cargaExcel(zona, ctx, datos, params, lista); });
+    opciones.append(cuestionario, excel); contenedor.append(opciones, aviso, zona); texto(zona, 'Elige cómo quieres registrar o actualizar los riesgos.');
+    const detalle = el('details'); detalle.append(el('summary', 'Edición por tabla')); const tecnico = el('div'); detalle.append(tecnico); contenedor.append(detalle); await edicionTabla(tecnico, datos, params); return ctx.limpiar;
   }
   root.KitVistaRiesgos = { matriz, medidas, alimentacion, validarRegistro };
   App.registrarVista('riesgos/matriz', { render: matriz });
