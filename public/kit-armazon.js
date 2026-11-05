@@ -75,7 +75,7 @@
         const estado = mensaje(aviso || 'Ingresa con la cuenta asignada a tu empresa', !!aviso);
         const olvido = el('button', '¿Olvidaste tu contraseña?', 'kit-enlace'); olvido.type = 'button';
         olvido.onclick = () => { estado.setAttribute('role', 'status'); estado.textContent = 'Escribe a soporte GH para restablecerla'; };
-        form.append(lc, correo, lp, clave, enviar, olvido, estado); tarjeta.append(el('p', 'Kit Comercial', 'antetitulo'), titulo, form); contenido.append(tarjeta);
+        form.append(lc, correo, lp, clave, enviar, olvido, estado); tarjeta.append(el('p', 'Kit de sostenibilidad', 'antetitulo'), titulo, form); contenido.append(tarjeta);
         form.onsubmit = async e => {
           e.preventDefault(); enviar.disabled = true; estado.textContent = 'Ingresando…';
           try {
