@@ -169,16 +169,24 @@
   function desplazamiento(id) { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0; return [((h % 37) - 18) / 100, (((h >> 6) % 37) - 18) / 100]; }
   const slugNivel = n => n.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z]+/g, '-');
   function matriz(ctx, lista, alAbrir) {
-    const A = 680, H = 420, m = { i: 56, d: 16, s: 16, b: 48 }, ancho = A - m.i - m.d, alto = H - m.s - m.b;
-    const x = v => m.i + (v - 1) / 4 * ancho, y = v => m.s + (5 - v) / 4 * alto, corte = ctx.cfg.corte;
+    const A = 680, H = 420, m = { i: 56, d: 16, s: 16, b: 48 }, ancho = A - m.i - m.d, alto = H - m.s - m.b, borde = 42, corte = ctx.cfg.corte;
+    // E43 (pedido de Felipe del 5-nov): el corte se dibuja en el centro para que los cuatro cuadrantes
+    // midan lo mismo; de 1 al corte ocupa una mitad y del corte a 5 la otra (escala por tramos).
+    // El borde deja los valores 1 y 5 por dentro de las zonas, sin tapar los nombres de los cuadrantes.
+    const fraccion = v => corte > 1 && corte < 5 ? (v <= corte ? (v - 1) / (corte - 1) / 2 : 0.5 + (v - corte) / (5 - corte) / 2) : (v - 1) / 4;
+    const x = v => m.i + borde + fraccion(v) * (ancho - 2 * borde), y = v => m.s + borde + (1 - fraccion(v)) * (alto - 2 * borde);
+    const izqZona = m.i, derZona = m.i + ancho, arribaZona = m.s, abajoZona = m.s + alto;
+    // El desplazamiento que separa promedios iguales nunca cruza el corte, y un valor igual al corte
+    // se dibuja dentro del cuadrante alto en vez de encima de la línea.
+    const ubicar = (v, d) => { const r = Math.min(5, Math.max(1, v + d)); return v < corte && r > corte - 0.06 ? corte - 0.06 : v >= corte && r < corte + 0.06 ? corte + 0.06 : r; };
     const g = svg('svg', { viewBox: `0 0 ${A} ${H}`, role: 'group', 'aria-label': `Matriz de impacto e influencia con ${orgs(lista.length)}` }); g.classList.add('ka-matriz-svg');
     ctx.cfg.niveles.forEach(n => {
       const izq = n.influencia === 'baja', arriba = n.impacto === 'alto';
-      g.append(svg('rect', { x: izq ? x(1) : x(corte), y: arriba ? y(5) : y(corte), width: izq ? x(corte) - x(1) : x(5) - x(corte), height: arriba ? y(corte) - y(5) : y(1) - y(corte), class: 'ka-zona ka-zona-' + slugNivel(n.nombre) }));
+      g.append(svg('rect', { x: izq ? izqZona : x(corte), y: arriba ? arribaZona : y(corte), width: izq ? x(corte) - izqZona : derZona - x(corte), height: arriba ? y(corte) - arribaZona : abajoZona - y(corte), class: 'ka-zona ka-zona-' + slugNivel(n.nombre) }));
       // Nombres largos en dos líneas para que quepan en las zonas angostas.
       const palabras = n.nombre.split(' '), lineas = n.nombre.length > 16 && palabras.length > 1 ? [palabras[0], palabras.slice(1).join(' ')] : [n.nombre];
-      const t = svg('text', { x: izq ? x(1) + 8 : x(5) - 8, y: arriba ? y(5) + 18 : y(1) - 10 - (lineas.length - 1) * 14, 'text-anchor': izq ? 'start' : 'end', class: 'ka-zona-nombre' });
-      lineas.forEach((l, i) => { const ts = svg('tspan', { x: izq ? x(1) + 8 : x(5) - 8, dy: i ? 14 : 0 }); ts.textContent = l; t.append(ts); }); g.append(t);
+      const tx = izq ? izqZona + 8 : derZona - 8, t = svg('text', { x: tx, y: arriba ? arribaZona + 18 : abajoZona - 10 - (lineas.length - 1) * 14, 'text-anchor': izq ? 'start' : 'end', class: 'ka-zona-nombre' });
+      lineas.forEach((l, i) => { const ts = svg('tspan', { x: tx, dy: i ? 14 : 0 }); ts.textContent = l; t.append(ts); }); g.append(t);
     });
     for (let v = 1; v <= 5; v++) {
       const tx = svg('text', { x: x(v), y: H - m.b + 18, 'text-anchor': 'middle', class: 'ka-eje-valor' }); tx.textContent = v; g.append(tx);
@@ -187,7 +195,7 @@
     const ex = svg('text', { x: m.i + ancho / 2, y: H - 8, 'text-anchor': 'middle', class: 'ka-eje-nombre' }); ex.textContent = 'Influencia →'; g.append(ex);
     const ey = svg('text', { x: 14, y: m.s + alto / 2, 'text-anchor': 'middle', transform: `rotate(-90 14 ${m.s + alto / 2})`, class: 'ka-eje-nombre' }); ey.textContent = 'Impacto →'; g.append(ey);
     lista.filter(o => typeof o.influencia === 'number' && typeof o.impacto === 'number').forEach(o => {
-      const [dx, dy] = desplazamiento(o.id), punto = marca(o.posicion, x(Math.min(5, Math.max(1, o.influencia + dx))), y(Math.min(5, Math.max(1, o.impacto + dy))));
+      const [dx, dy] = desplazamiento(o.id), punto = marca(o.posicion, x(ubicar(o.influencia, dx)), y(ubicar(o.impacto, dy)));
       punto.setAttribute('class', 'ka-punto ka-' + String(o.posicion || 'neutral').toLowerCase()); punto.setAttribute('tabindex', '0'); punto.setAttribute('role', 'button');
       const etiquetaPunto = `${o.nombre}. ${o.posicion || 'Sin posición'}. Influencia ${formatoValor(o.influencia)}, impacto ${formatoValor(o.impacto)}. ${o.cuadrante || ''}`;
       punto.setAttribute('aria-label', etiquetaPunto); const titulo = svg('title'); titulo.textContent = etiquetaPunto; punto.append(titulo);
