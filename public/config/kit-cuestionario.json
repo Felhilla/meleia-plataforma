@@ -1,0 +1,18 @@
+{
+  "riesgos": {
+    "riesgos": {
+      "codigo": { "pregunta": "¿Qué código usarás para este riesgo?", "ayuda": "Usa el formato R-01." },
+      "nombre": { "pregunta": "¿Cómo llamarías este riesgo?", "ayuda": "Escribe un nombre claro y breve." },
+      "descripcion": { "pregunta": "¿Qué puede ocurrir?" }, "derecho_humano": { "pregunta": "¿Qué derecho humano puede verse afectado?" },
+      "ambitos": { "pregunta": "¿En qué ámbitos puede ocurrir?" }, "localizacion": { "pregunta": "¿Dónde puede ocurrir?" },
+      "actividades": { "pregunta": "¿Qué actividades lo generan?" }, "medidas_control": { "pregunta": "¿Qué controles ya existen?" }, "analisis_controles": { "pregunta": "¿Qué tan efectivos son esos controles?" }
+    },
+    "riesgos-calificacion": {
+      "escala": { "pregunta": "¿Qué tan grave sería el daño?" }, "alcance": { "pregunta": "¿A cuántas personas podría afectar?" }, "irremediabilidad": { "pregunta": "¿Qué tan difícil sería reparar el daño?" },
+      "probabilidad": { "pregunta": "¿Qué tan probable es que ocurra?" }, "tipo_impacto": { "pregunta": "¿El impacto ya ocurrió o podría ocurrir?" }, "vinculacion": { "pregunta": "¿Cuál es la relación de la empresa con el impacto?" }, "justificacion": { "pregunta": "¿Por qué asignas esta calificación?" }
+    },
+    "riesgos-grupos": { "nombre": { "pregunta": "¿Qué grupo participó?" }, "categoria": { "pregunta": "¿A qué categoría pertenece?" }, "participantes": { "pregunta": "¿Cuántas personas participaron?" }, "fecha": { "pregunta": "¿Cuándo fue la sesión?" } },
+    "riesgos-validaciones": { "resultado": { "pregunta": "¿El grupo confirma la calificación o propone un ajuste?" }, "comentario": { "pregunta": "¿Qué comentario dejó el grupo?" } },
+    "riesgos-medidas": { "codigo": { "pregunta": "¿Qué código tendrá la medida?", "ayuda": "Usa el formato A-01." }, "titulo": { "pregunta": "¿Cómo se llama la medida?" }, "descripcion": { "pregunta": "¿En qué consiste?" }, "componente": { "pregunta": "¿A qué componente aporta?" }, "riesgos": { "pregunta": "¿Qué riesgos atiende?" }, "responsable": { "pregunta": "¿Qué área o cargo será responsable?" }, "plazo": { "pregunta": "¿Cuál es el plazo?" }, "estado": { "pregunta": "¿En qué estado está?" } }
+  }
+}
