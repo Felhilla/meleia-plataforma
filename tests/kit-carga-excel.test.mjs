@@ -77,14 +77,12 @@ test('Carga Excel Módulo I: contrato de mapeo-gh-muestra.xlsx', () => {
   assert.equal(actores['Gobernación Ficticia'].motivo_ajuste, contexto.esquema.campos.motivo_ajuste.valores[4]);
   assert.equal(Actores.nivelFinal(actores['Gobernación Ficticia'], contexto.cfg), 'Gestión activa');
 
-  assert.deepEqual(resultado.avisos, [
-    { hoja: 'Com. Aso', fila: 14, mensaje: 'Nombre descartado: solo se registra el de servidores públicos.' },
-    { hoja: 'Com. Aso', fila: 15, mensaje: 'Nombre descartado: solo se registra el de servidores públicos.' }
-  ]);
+  // Decisión del 5-nov: todos los actores conservan su nombre; ya no hay avisos de nombre descartado.
+  assert.deepEqual(resultado.avisos, []);
   const serializado = JSON.stringify(resultado.registros.actores);
   assert.equal(/contacto|correo|numero|tel[eé]fono/i.test(serializado), false);
-  assert.equal(actores['JAC vereda El Ejemplo'].nombre_servidor, undefined);
-  assert.equal(actores['Asociación de Productores Ficticios'].nombre_servidor, undefined);
+  assert.equal(actores['JAC vereda El Ejemplo'].nombre_servidor, 'Persona Inventada Uno');
+  assert.equal(typeof actores['Asociación de Productores Ficticios'].nombre_servidor, 'string');
   assert.equal(actores['Colectivo Sin Nombre'], undefined);
 });
 
@@ -113,10 +111,8 @@ test('Carga Excel Módulo I: contrato de mapeo-gh-muestra-b.xlsx', () => {
   assert.equal(emisora.orden, 'Regional');
   assert.equal(emisora.influencia, 3); assert.equal(emisora.impacto, 4);
   assert.equal(Actores.nivelFinal(emisora, contexto.cfg), 'Gestión cautelosa');
-  assert.deepEqual(resultado.avisos, [
-    { hoja: 'Empleados, Contratistas y prove', fila: 11, mensaje: 'Nombre descartado: solo se registra el de servidores públicos.' },
-    { hoja: 'Medios de comunicación', fila: 14, mensaje: 'Nombre descartado: solo se registra el de servidores públicos.' }
-  ]);
+  // Decisión del 5-nov: todos los actores conservan su nombre; ya no hay avisos de nombre descartado.
+  assert.deepEqual(resultado.avisos, []);
   assert.equal(/contacto|correo|numero|tel[eé]fono/i.test(JSON.stringify(resultado.registros.actores)), false);
 });
 

@@ -16,7 +16,7 @@ Hojas ignoradas: «Índice», «Metodología» y «Comp. Ins. Gub» (todas las q
 
 Nombres y contactos:
 - En «Ins. Gub» (servidores públicos), la columna Nombre se guarda en `nombre_servidor`: «Persona Inventada Tres» y «Persona Inventada Cuatro».
-- En «Com. Aso», el nombre se descarta y la vista previa muestra el aviso.
+- Desde el 5-nov todas las categorías conservan el nombre (antes solo los servidores públicos). En «Com. Aso» el nombre se guarda y no hay aviso.
 - Contacto, Correo y Número no aparecen en ningún registro.
 
 ## mapeo-gh-muestra-b.xlsx (Módulo I, estructura de Santa Ana)
@@ -26,8 +26,8 @@ En esta variante no hay columna «Cargo» (queda vacío, por decisión del 27-oc
 | Hoja, fila | Institución | Resultado esperado |
 |---|---|---|
 | Ins. Gub., fila 14 | Concejo Municipal de Ejemplo | Orden «Local». Área «Concejal - Partido Inventado». `nombre_servidor` = «Persona Inventada Cinco». Influencia 4 e impacto 3 → Gestión activa calculada; el archivo dice Involucramiento estratégico (un paso arriba) → ajuste con el motivo 5. |
-| Empleados, Contratistas y prove, fila 11 | Transportes Ficticios S.A.S. | Encabezado en la fila 9. Categoría «Empleados, contratistas y proveedores». Subgrupo «Contratistas». 2/3 → Seguimiento periférico. Nombre descartado, con aviso. |
-| Medios de comunicación, fila 14 | Emisora Inventada Estéreo | «Alcance» se guarda en `orden` = «Regional». 3/4 → Gestión cautelosa. Nombre descartado, con aviso. |
+| Empleados, Contratistas y prove, fila 11 | Transportes Ficticios S.A.S. | Encabezado en la fila 9. Categoría «Empleados, contratistas y proveedores». Subgrupo «Contratistas». 2/3 → Seguimiento periférico. Nombre conservado (decisión del 5-nov). |
+| Medios de comunicación, fila 14 | Emisora Inventada Estéreo | «Alcance» se guarda en `orden` = «Regional». 3/4 → Gestión cautelosa. Nombre conservado (decisión del 5-nov). |
 
 ## plantilla-iv-muestra.xlsx (Módulo IV)
 
