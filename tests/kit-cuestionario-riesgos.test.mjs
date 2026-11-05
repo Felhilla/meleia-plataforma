@@ -51,6 +51,10 @@ async function llenarCaminoCompleto(m) {
   llenarRiesgo(m); siguiente(m); llenarCalificacion(m); siguiente(m);
   elegir(m, 'validacion.grupoSeleccion', '__nuevo__'); await tick(); escribir(m, 'grupoNuevo.nombre', 'Grupo inventado'); elegir(m, 'grupoNuevo.categoria', 'Comunidades y asociaciones'); escribir(m, 'grupoNuevo.participantes', '2'); escribir(m, 'grupoNuevo.fecha', '2026-10-11'); elegir(m, 'validacion.resultado', 'Confirma'); siguiente(m);
   boton(m.contenedor, 'Agregar medida').onclick(); escribir(m, 'medidas.0.codigo', 'A-07'); escribir(m, 'medidas.0.titulo', 'Medida inventada'); elegir(m, 'medidas.0.componente', 'componente-1'); escribir(m, 'medidas.0.responsable', 'Área inventada'); escribir(m, 'medidas.0.plazo', '2027-01-01'); elegir(m, 'medidas.0.estado', 'Pendiente'); siguiente(m); assert.match(m.contenedor.textContent, /Revisión/);
+  // E44: la revisión muestra etiquetas y referencias legibles, no claves internas.
+  const rotulos = m.contenedor.todos().filter(n => n.tagName === 'DT').map(n => n.textContent);
+  assert.ok(rotulos.includes('Código') && !rotulos.includes('codigo') && !rotulos.includes('riesgo'));
+  assert.ok(m.contenedor.todos().filter(n => n.tagName === 'DD').some(n => n.textContent === 'Grupo inventado'));
 }
 
 test('cuestionario IV: la UI produce exactamente los cinco registros del Excel y guarda en orden', async () => {

@@ -296,8 +296,7 @@
     }
     pintar(); return ctx.limpiar;
   }
-  async function edicionTabla(contenedor, datos, params, opciones = {}) {
-    if (!opciones.sinVolver) volver(contenedor, params.empresa);
+  async function edicionTabla(contenedor, datos, params) {
     if (!params.puedeEditar) { texto(contenedor, 'Esta sección está disponible para el responsable de la empresa.'); return; }
     const cfg = await json('config/kit-riesgos-config.json'); if (!params.vigente()) return;
     const ctx = contexto(contenedor, datos, params, cfg); contenedor.classList.add('kr');
@@ -349,7 +348,6 @@
       } catch (e) { historial.replaceChildren(); ctx.error(historial, e); }
     });
     contenedor.append(nav, zona, enlaceHistorial, historial);
-    if (!opciones.sinExcel) cargaExcel(contenedor, ctx, datos, params, () => abrir(coleccionActual));
     await abrir('riesgos'); return ctx.limpiar;
   }
   function cargaExcel(contenedor, ctx, datos, params, alGuardar) {
@@ -391,6 +389,15 @@
     return { ...ctx.listas, riesgos: [...(ctx.listas.riesgos || []).filter(x => x.id !== riesgo.id), riesgo], 'riesgos-grupos': grupo ? [...(ctx.listas['riesgos-grupos'] || []).filter(x => x.id !== grupo.id), grupo] : (ctx.listas['riesgos-grupos'] || []) };
   }
   async function cuestionarioRiesgo(ctx, zona, original, textos, alVolver) {
+    // En la revisión, las referencias se muestran con su código y nombre, no con el identificador interno.
+    const nombreRevision = (campo, valor, salida) => {
+      const riesgo = id => [...(salida.riesgos || []), ...(ctx.listas.riesgos || [])].find(x => x.id === id);
+      const grupo = id => [...(salida['riesgos-grupos'] || []), ...(ctx.listas['riesgos-grupos'] || [])].find(x => x.id === id);
+      if (campo === 'riesgo') { const x = riesgo(valor); return x ? x.codigo + ' · ' + x.nombre : valor; }
+      if (campo === 'riesgos' && Array.isArray(valor)) return valor.map(id => riesgo(id)?.codigo || id);
+      if (campo === 'grupo') return grupo(valor)?.nombre || valor;
+      return valor;
+    };
     const base = {};
     for (const c of colecciones) base[c] = await json('config/esquemas/' + c + '.json');
     const derechos = await json('data/derechos.json'), parametros = (await json('config/criticidad-config.json')).gravedad.parametros;
@@ -468,13 +475,12 @@
     root.KitCuestionario.montar(zona, {
       titulo: original ? `Editar ${original.codigo}` : 'Nuevo riesgo', pasos, estado,
       persistencia: { clave, almacen: 'sesion' },
-      revisar() { const r = preparado(), secciones = []; for (const c of colecciones) if (r.salida[c]?.length) secciones.push({ titulo: titulos[colecciones.indexOf(c)], filas: r.salida[c].flatMap(x => Object.entries(x).filter(([k]) => k !== 'id').map(([k, v]) => [k, v])) }); return { secciones, nuevos: r.nuevos, actualizados: r.actualizados, errores: r.errores }; },
+      revisar() { const r = preparado(), secciones = []; for (const c of colecciones) if (r.salida[c]?.length) secciones.push({ titulo: titulos[colecciones.indexOf(c)], filas: r.salida[c].flatMap(x => Object.entries(x).filter(([k]) => k !== 'id' && base[c].campos[k]).map(([k, v]) => [base[c].campos[k].etiqueta || k, nombreRevision(k, v, r.salida)])) }); return { secciones, nuevos: r.nuevos, actualizados: r.actualizados, errores: r.errores }; },
       async guardar() { if (!ctx.activo() || !ctx.params.puedeEditar) throw Error('Tu sesión ya no permite guardar.'); const r = preparado(); if (r.errores.length) throw Error('Corrige los campos indicados antes de guardar.'); const hechas = []; for (const c of colecciones) { const lista = r.salida[c] || []; if (!lista.length) continue; try { if (ctx.datos.guardarVarios) await ctx.datos.guardarVarios(ctx.params.empresa, c, lista); else for (const registro of lista) await ctx.datos.guardar(ctx.params.empresa, c, registro.id, registro); } catch (e) { throw Error((hechas.length ? `Se guardaron ${hechas.join(', ')}, pero falló ${c}: ` : '') + e.message + ' Puedes reintentar.'); } hechas.push(c); const ids = new Set(lista.map(x => x.id)); ctx.listas[c] = [...(ctx.listas[c] || []).filter(x => !ids.has(x.id)), ...lista]; } return r.salida; },
       alTerminar() { alVolver('Cambios guardados.'); }, alCancelar() { alVolver(''); }
     });
   }
   async function alimentacion(contenedor, datos, params) {
-    volver(contenedor, params.empresa);
     if (!params.puedeEditar) { texto(contenedor, 'Esta sección está disponible para el responsable de la empresa.'); return; }
     const cfg = await json('config/kit-riesgos-config.json'); if (!params.vigente()) return;
     const ctx = contexto(contenedor, datos, params, cfg); contenedor.classList.add('kr'); await ctx.cargar(colecciones); if (!ctx.activo()) return;
@@ -484,7 +490,7 @@
     const editor = r => { zona.replaceChildren(); cuestionarioRiesgo(ctx, zona, r, textos, mensaje => { lista(); aviso.textContent = mensaje; }); };
     const cuestionario = boton('Responder el cuestionario', lista), excel = boton('Subir plantilla de Excel', () => { zona.replaceChildren(); cargaExcel(zona, ctx, datos, params, lista); });
     opciones.append(cuestionario, excel); contenedor.append(opciones, aviso, zona); texto(zona, 'Elige cómo quieres registrar o actualizar los riesgos.');
-    const detalle = el('details'); detalle.append(el('summary', 'Edición por tabla')); const tecnico = el('div'); detalle.append(tecnico); contenedor.append(detalle); await edicionTabla(tecnico, datos, params, { sinVolver: true, sinExcel: true }); return ctx.limpiar;
+    const detalle = el('details'); detalle.append(el('summary', 'Edición por tabla')); const tecnico = el('div'); detalle.append(tecnico); contenedor.append(detalle); await edicionTabla(tecnico, datos, params); return ctx.limpiar;
   }
   root.KitVistaRiesgos = { matriz, medidas, alimentacion, validarRegistro };
   App.registrarVista('riesgos/matriz', { render: matriz });

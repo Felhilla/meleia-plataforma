@@ -105,18 +105,17 @@ test('Tab queda dentro del diálogo y al cerrar ficha de acción retorna al pila
   cerrar.onclick(); assert.equal(m.document.activeElement, pilar);
 });
 
-test('E33: accesos al pie según permiso y regreso desde ambas vistas secundarias', async () => {
+test('E33/E44: accesos al pie según permiso; Medidas regresa a la matriz y Alimentación (pestaña) no', async () => {
   for (const editar of [false, true]) {
     const m = await montar('matriz', editar);
     const links = m.contenedor.todos().filter(n => n.tagName === 'A');
     assert.deepEqual(links.map(n => n.textContent), editar ? ['Medidas de gestión', 'Alimentación'] : ['Medidas de gestión']);
     assert.ok(links.every(n => n.className === 'boton secundario'));
-    for (const vista of ['medidas', 'alimentacion']) {
-      const secundaria = await montar(vista, editar);
-      const regreso = secundaria.contenedor.children[0];
-      assert.equal(regreso.textContent, '← Volver a la matriz');
-      assert.equal(regreso.href, '#/e/empresa-1/riesgos/matriz');
-    }
+    const secundaria = await montar('medidas', editar), regreso = secundaria.contenedor.children[0];
+    assert.equal(regreso.textContent, '← Volver a la matriz');
+    assert.equal(regreso.href, '#/e/empresa-1/riesgos/matriz');
+    const alim = await montar('alimentacion', editar);
+    assert.ok(!alim.contenedor.todos().some(n => n.textContent === '← Volver a la matriz'));
   }
 });
 test('E33: sin banda de cifras, ejes accesibles y cuatro filtros dentro de details cerrado', async () => {
