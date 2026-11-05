@@ -17,12 +17,13 @@ test('portada global y rutas desconocidas sin empresa', () => {
   assert.equal(App.resolverRuta('#/', {}, []).clave, 'portada');
 });
 test('rutas nuevas, primer caso y redirecciones antiguas', () => {
-  for (const ruta of ['actores/mapa', 'actores/alimentacion', 'ddhh/resultados', 'ddhh/estandares', 'ddhh/alimentacion', 'materialidad/resultados', 'materialidad/alimentacion', 'riesgos/matriz', 'riesgos/medidas', 'riesgos/alimentacion']) {
+  for (const ruta of ['actores/metodologia', 'ddhh/metodologia', 'materialidad/metodologia', 'riesgos/metodologia', 'actores/mapa', 'actores/alimentacion', 'ddhh/resultados', 'ddhh/estandares', 'ddhh/alimentacion', 'materialidad/resultados', 'materialidad/alimentacion', 'riesgos/matriz', 'riesgos/medidas', 'riesgos/alimentacion']) {
     const [modulo,sub] = ruta.split('/'), nueva = '#/' + modulo + '/uno' + (sub ? '/' + sub : '');
     assert.equal(resolver(nueva).clave, ruta); assert.equal(resolver('#/e/uno/' + ruta).hash, nueva);
   }
-  assert.equal(App.resolverRuta('#/actores', {}, muestras).hash, '#/actores/' + casosActores[0] + '/mapa');
-  assert.equal(App.resolverRuta('#/ddhh', {}, muestras).hash, '#/ddhh/' + casoDDHH + '/resultados');
+  // Decisión del 5-nov: cada módulo abre en Metodología.
+  assert.equal(App.resolverRuta('#/actores', {}, muestras).hash, '#/actores/' + casosActores[0] + '/metodologia');
+  assert.equal(App.resolverRuta('#/ddhh', {}, muestras).hash, '#/ddhh/' + casoDDHH + '/metodologia');
 });
 test('casos: muestras configuradas y clientes reales visibles en todos los módulos', () => {
   for (const m of App.modulos) {
@@ -41,10 +42,10 @@ test('Alimentación exige permiso sobre la empresa del caso', () => {
 });
 test('entrada del Kit no carga el relato, conserva SDK fijo y orden defer', () => {
   const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
-  assert.match(html, /<title>GH Estudio × Meleia · Kit<\/title>/);
+  assert.match(html, /<title>Meleia · Kit de sostenibilidad<\/title>/); assert.doesNotMatch(html, /GH Estudio|logo-gh/);
   assert.doesNotMatch(html, /src="vista-|caso\.json|src="app.js"|api-supabase.js/);
   const scripts = [...html.matchAll(/<script defer src="([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'vendor/xlsx.full.min.js', 'kit-riesgos.js', 'kit-actores.js', 'kit-carga-excel.js', 'kit-armazon.js', 'kit-vista-carga-excel.js', 'kit-vista-riesgos.js', 'kit-vista-actores.js', 'kit-vista-ddhh-modelo.js', 'kit-vista-ddhh-motor.js', 'kit-vista-ddhh-comun.js', 'kit-vista-ddhh.js', 'kit-vista-materialidad-motor.js', 'kit-vista-materialidad.js']);
+  assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'vendor/xlsx.full.min.js', 'kit-riesgos.js', 'kit-actores.js', 'kit-carga-excel.js', 'kit-armazon.js', 'kit-vista-carga-excel.js', 'kit-vista-riesgos.js', 'kit-vista-actores.js', 'kit-vista-metodologia.js', 'kit-vista-ddhh-modelo.js', 'kit-vista-ddhh-motor.js', 'kit-vista-ddhh-comun.js', 'kit-vista-ddhh.js', 'kit-vista-materialidad-motor.js', 'kit-vista-materialidad.js']);
 });
 
 // DOM mínimo: prueba los flujos reales del armazón sin red ni dependencias de navegador.
@@ -84,7 +85,7 @@ test('DOM: ingreso accesible, soporte, autenticación y salida', async () => {
 });
 test('DOM: portada global no consulta colecciones ni muestra selector global', async () => {
   const m = await montar();
-  assert.match(m.nodos.contenido.textContent, /GH Estudio × Meleia/);
+  assert.match(m.nodos.contenido.textContent, /Meleia/); assert.doesNotMatch(m.nodos.contenido.textContent, /GH Estudio/);
   assert.match(m.nodos.contenido.textContent, /Laboratorio de ideas para la gestión en sostenibilidad\./);
   // Home (boceto 27-oct): Credenciales es un botón cerrado; las cuatro tarjetas son enlaces a los módulos.
   const boton = m.nodos.contenido.todos().find(n => n.className === 'kit-credenciales-boton');
@@ -106,15 +107,15 @@ test('DOM E24: selector accesible con uno o varios casos y pestaña Mapa de acto
   assert.equal(lista.hidden,true); boton.onclick(); assert.equal(lista.hidden,false); assert.equal(boton.attrs['aria-expanded'],'true');
   selector.onkeydown({key:'Escape',preventDefault(){}}); assert.equal(lista.hidden,true); assert.equal(boton.enfocado,true);
   boton.onclick(); const enlace = lista.children[1]; enlace.onclick(); assert.equal(lista.hidden,true);
-  assert.equal(lista.children[0].attrs['aria-current'],'page'); assert.equal(enlace.href,'#/actores/' + casosActores[1] + '/mapa');
+  assert.equal(lista.children[0].attrs['aria-current'],'page'); assert.equal(enlace.href,'#/actores/' + casosActores[1] + '/metodologia');
   varias.root.location.hash = enlace.href; await varias.eventos.hashchange();
-  assert.equal(varias.root.App.resolverRuta(varias.root.location.hash, {}, muestras).clave,'actores/mapa');
-  assert.equal(varias.nodos.contenido.todos().filter(n=>n.className==='kit-pestanas').length,0);
+  assert.equal(varias.root.App.resolverRuta(varias.root.location.hash, {}, muestras).clave,'actores/metodologia');
+  assert.equal(varias.nodos.contenido.todos().filter(n=>n.className==='kit-pestanas').length,1);
   assert.doesNotMatch(varias.nodos.contenido.textContent, /Alimentación/);
   assert.match(varias.nodos['kit-cuenta'].textContent, /Responsable/);
   varias.root.location.hash = '#/actores/' + casosActores[1]; varias.datos.puedeEditar = id => id === casosActores[1]; await varias.root.App.actualizarVista();
   assert.match(varias.nodos.contenido.textContent, /Alimentación/);
-  const soporte = await montar({ empresas:[...empresas,{id:'tres',rol:'admin',muestra_comercial:false}] }); assert.match(soporte.nodos['kit-cuenta'].textContent,/Soporte GH/);
+  const soporte = await montar({ empresas:[...empresas,{id:'tres',rol:'admin',muestra_comercial:false}] }); assert.match(soporte.nodos['kit-cuenta'].textContent,/Soporte Meleia/);
 });
 test('DOM: sin casos se informa en tarjeta, navegación y módulo', async () => {
   const m = await montar({empresas:[]});
@@ -126,14 +127,14 @@ test('DOM: sin casos se informa en tarjeta, navegación y módulo', async () => 
 test('DOM: contrato de vistas, limpieza y respuesta tardía de otra empresa', async () => {
   const m = await montar(); let liberar, limpiado = false, params;
   m.root.App.registrarVista('riesgos/matriz', { async render(c, datos, p) { params = p; await new Promise(resolve => { liberar = resolve; }); if (p.vigente()) c.append(m.root.App.el('p','NO MOSTRAR')); return () => { limpiado = true; }; } });
-  m.root.location.hash = '#/riesgos/uno'; const pendiente = m.root.App.actualizarVista();
+  m.root.location.hash = '#/riesgos/uno/matriz'; const pendiente = m.root.App.actualizarVista();
   assert.equal(params.empresa,'uno'); assert.equal(params.puedeEditar,true);
-  m.root.location.hash = '#/ddhh/dos'; await m.root.App.actualizarVista(); liberar(); await pendiente;
+  m.root.location.hash = '#/ddhh/dos/resultados'; await m.root.App.actualizarVista(); liberar(); await pendiente;
   assert.equal(limpiado,true); assert.equal(params.vigente(),false); assert.doesNotMatch(m.nodos.contenido.textContent,/NO MOSTRAR/);
 });
 test('DOM: error de vista visible y sesión revocada vuelve al ingreso', async () => {
   const m = await montar(); m.root.App.registrarVista('ddhh/resultados',{render(){throw Error('No hay conexión con la base de datos');}});
-  m.root.location.hash = '#/ddhh/uno'; await m.root.App.actualizarVista();
+  m.root.location.hash = '#/ddhh/uno/resultados'; await m.root.App.actualizarVista();
   assert.match(m.nodos.contenido.querySelector('[role="alert"]').textContent,/No hay conexión/);
   m.datos.salir(); assert.equal(m.root.location.hash,'#/ingresar');
 });
@@ -143,7 +144,7 @@ test('E22: el Módulo III ofrece exclusivamente el caso configurado y sus rutas'
   assert.equal(modulo.casos.length,1);
   assert.notEqual(modulo.casos[0],'empresa-demo');
   const casos=[{id:modulo.casos[0],nombre:'Caso de muestra',rol:'demostrador',muestra_comercial:true}];
-  assert.equal(App.resolverRuta('#/materialidad',{},casos).hash,'#/materialidad/'+casos[0].id+'/resultados');
+  assert.equal(App.resolverRuta('#/materialidad',{},casos).hash,'#/materialidad/'+casos[0].id+'/metodologia');
   assert.deepEqual(App.casos(modulo,[...muestras,...casos]).map(e=>e.id),[casos[0].id]);
 });
 
@@ -153,40 +154,39 @@ test('DOM E24b: el armazón no pide ni muestra logos de empresa', async () => {
   assert.ok(!m.nodos.contenido.todos().some(n => n.className === 'kit-empresa-logo'));
 });
 
-test('E27: Alimentación de II oculta en barra pero resoluble con permiso',async()=>{
+test('E40: Alimentación visible como pestaña con permiso y oculta sin él',async()=>{
  const m=await montar({hash:'#/ddhh/uno/alimentacion'});
  assert.equal(m.root.location.hash,'#/ddhh/uno/alimentacion');
  const tabs=m.nodos.contenido.todos().find(n=>n.className==='kit-pestanas');
- assert.deepEqual(tabs.children.map(n=>n.textContent),['Resultados','Cruce de estándares']);
- assert.ok(!tabs.children.some(n=>n.href.endsWith('/alimentacion')));
+ assert.deepEqual(tabs.children.map(n=>n.textContent),['Metodología','Alimentación','Resultados','Cruce de estándares']);
  m.datos.puedeEditar=()=>false;await m.root.App.actualizarVista();assert.equal(m.root.location.hash,'#/');
+ const d=await montar({hash:'#/ddhh/dos/resultados'});
+ assert.deepEqual(d.nodos.contenido.todos().find(n=>n.className==='kit-pestanas').children.map(n=>n.textContent),['Metodología','Resultados','Cruce de estándares']);
 });
 
-test('E30: rutas anteriores convergen y la única pestaña visible no dibuja barra',async()=>{
+test('E30 y E40: rutas anteriores convergen y todos los módulos muestran sus pestañas',async()=>{
  for(const sub of ['doble','impacto','financiera']){
   assert.equal(resolver('#/materialidad/uno/'+sub).hash,'#/materialidad/uno/resultados');
   assert.equal(resolver('#/e/uno/materialidad/'+sub).clave,'materialidad/resultados');
  }
  assert.equal(resolver('#/materialidad/uno/alimentacion').clave,'materialidad/alimentacion');
  assert.equal(resolver('#/materialidad/dos/alimentacion').clave,'portada');
- for(const id of ['uno','dos']){
-  const m=await montar({hash:'#/materialidad/'+id+'/resultados'});
-  assert.equal(m.nodos.contenido.todos().filter(n=>n.className==='kit-pestanas').length,0);
+ for(const [hash,esperadas] of [['#/materialidad/uno/resultados',['Metodología','Alimentación','Resultados']],['#/materialidad/dos/resultados',['Metodología','Resultados']],['#/riesgos/uno/matriz',['Metodología','Alimentación','Resultados']],['#/riesgos/dos/matriz',['Metodología','Resultados']],['#/actores/uno/mapa',['Metodología','Alimentación','Resultados']]]){
+  const m=await montar({hash});
+  assert.deepEqual(m.nodos.contenido.todos().find(n=>n.className==='kit-pestanas').children.map(n=>n.textContent),esperadas);
  }
- const m=await montar({hash:'#/ddhh/uno/resultados'});
- assert.equal(m.nodos.contenido.todos().filter(n=>n.className==='kit-pestanas').length,1);
+ for (const vista of ['matriz', 'medidas']) assert.equal(resolver('#/riesgos/uno/' + vista).clave, 'riesgos/' + vista);
+ assert.equal(resolver('#/riesgos/dos/alimentacion').clave, 'portada');
 });
 
-test('E33: Riesgos sin barra, rutas secundarias vigentes y permisos conservados', async () => {
-  for (const id of ['uno', 'dos']) {
-    for (const vista of ['matriz', 'medidas']) {
-      const m = await montar({ hash: '#/riesgos/' + id + '/' + vista });
-      assert.equal(m.nodos.contenido.todos().filter(n => n.className === 'kit-pestanas').length, 0);
-      assert.equal(resolver('#/riesgos/' + id + '/' + vista).clave, 'riesgos/' + vista);
-    }
-  }
-  const m = await montar({ hash: '#/riesgos/uno/alimentacion' });
-  assert.equal(m.nodos.contenido.todos().filter(n => n.className === 'kit-pestanas').length, 0);
-  assert.equal(resolver('#/riesgos/uno/alimentacion').clave, 'riesgos/alimentacion');
-  assert.equal(resolver('#/riesgos/dos/alimentacion').clave, 'portada');
+
+test('E40: Metodología pinta secciones y avisa cuando aún no hay contenido', async () => {
+  const { default: M } = await import('../public/kit-vista-metodologia.js');
+  const cfg = JSON.parse(readFileSync(new URL('../public/config/kit-metodologia.json', import.meta.url), 'utf8'));
+  for (const m of ['actores', 'ddhh', 'materialidad', 'riesgos']) assert.ok(Array.isArray(cfg[m].secciones));
+  globalThis.App = { el: (tag, texto, clase) => { const n = new Nodo(tag); if (texto) n.textContent = texto; if (clase) n.className = clase; return n; } };
+  const vacio = new Nodo('div'); M.pintar(vacio, { secciones: [] }); assert.match(vacio.textContent, /en preparación/);
+  const lleno = new Nodo('div'); M.pintar(lleno, { resumen: 'Resumen', secciones: [{ titulo: 'Paso 1', parrafos: ['Texto'], puntos: ['Uno'] }], fuentes: ['AA1000SES'] });
+  assert.match(lleno.textContent, /Resumen/); assert.match(lleno.textContent, /Paso 1/); assert.match(lleno.textContent, /Referencias/);
+  delete globalThis.App;
 });

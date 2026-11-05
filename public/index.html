@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>GH Estudio × Meleia · Kit</title>
-  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <title>Meleia · Kit de sostenibilidad</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="estilos.css">
   <link rel="stylesheet" href="estilos-kit.css">
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
@@ -23,6 +23,7 @@
   <script defer src="kit-vista-carga-excel.js"></script>
   <script defer src="kit-vista-riesgos.js"></script>
   <script defer src="kit-vista-actores.js"></script>
+  <script defer src="kit-vista-metodologia.js"></script>
   <link rel="stylesheet" href="estilos-kit-ddhh.css">
   <link rel="stylesheet" href="estilos-kit-materialidad.css">
   <script defer src="kit-vista-ddhh-modelo.js"></script>
@@ -36,9 +37,8 @@
   <a class="saltar" href="#contenido">Saltar al contenido</a>
   <header id="cabecera">
     <div class="barra">
-      <a class="logos" href="#/" aria-label="GH Estudio × Meleia · Inicio del Kit">
-        <img class="logo-color" src="img/logo-gh-color.png" alt="GH Estudio" height="34"><img class="logo-blanco" src="img/logo-gh-blanco.png" alt="GH Estudio" height="34">
-        <i class="filete" aria-hidden="true"></i>
+      <button id="kit-menu" class="kit-menu" type="button" aria-expanded="false" aria-controls="kit-nav" aria-label="Abrir el menú" hidden><span aria-hidden="true"></span></button>
+      <a class="logos" href="#/" aria-label="Meleia · Inicio del Kit">
         <img class="logo-color" src="img/logo-meleia-color.png" alt="Meleia" height="34"><img class="logo-blanco" src="img/logo-meleia-blanco.png" alt="Meleia" height="34">
       </a>
       <div id="kit-cuenta"></div>
@@ -47,7 +47,7 @@
     <nav id="kit-nav" aria-label="Módulos del Kit"></nav>
   </header>
   <main id="contenido" tabindex="-1"><p role="status">Cargando el Kit…</p></main>
-  <footer><div class="pie"><span>GH Estudio × Meleia</span><span>Sostenibilidad · Riesgo preventivo · Debida diligencia</span></div></footer>
+  <footer><div class="pie"><span>Meleia</span><span>Sostenibilidad · Riesgo preventivo · Debida diligencia</span></div></footer>
   <noscript>Activa JavaScript para consultar la plataforma.</noscript>
 </body>
 </html>

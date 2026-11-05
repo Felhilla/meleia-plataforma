@@ -65,14 +65,14 @@
 /* Semáforo de materialidad: 5 rojo · 4 naranja · 3 ámbar · 2 amarillo · 1 verde · 0 gris */
 .mat-calor.mat-sem-rojo { background: #F1CDC3; } .mat-calor.mat-sem-naranja { background: #F5D6BA; } .mat-calor.mat-sem-ambar { background: #F4DBA6; }
 .mat-calor.mat-sem-amarillo { background: #F7F0C4; } .mat-calor.mat-sem-verde { background: #D7E8D2; } .mat-calor.mat-sem-gris { background: var(--sem-gris-fondo); }
-.mat-calor { color: #1F332B; font-weight: 700; text-align: center; }
+.mat-calor { color: #1F241B; font-weight: 700; text-align: center; }
 :root[data-tema="oscuro"] .mat-calor { color: var(--texto); }
 .mat-relleno.sem-relleno-rojo { background: var(--sem-rojo); } .mat-relleno.sem-relleno-naranja { background: var(--sem-naranja); } .mat-relleno.sem-relleno-ambar { background: var(--sem-ambar); }
 .mat-relleno.sem-relleno-amarillo { background: var(--sem-amarillo); } .mat-relleno.sem-relleno-verde { background: var(--sem-verde); } .mat-relleno.sem-relleno-gris { background: var(--sem-gris); }
 .mat-circulo { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; font-weight: 700; color: #fff; background: var(--sem-gris); }
 .mat-circulo.grande { width: 72px; height: 72px; font-size: 1.4rem; }
-.mat-circulo.sem-rojo { background: var(--sem-rojo); } .mat-circulo.sem-naranja { background: var(--sem-naranja); } .mat-circulo.sem-ambar { background: var(--sem-ambar); color: #1F332B; }
-.mat-circulo.sem-amarillo { background: var(--sem-amarillo); color: #1F332B; } .mat-circulo.sem-verde { background: var(--sem-verde); } .mat-circulo.sem-gris { color: #1F332B; }
+.mat-circulo.sem-rojo { background: var(--sem-rojo); } .mat-circulo.sem-naranja { background: var(--sem-naranja); } .mat-circulo.sem-ambar { background: var(--sem-ambar); color: #1F241B; }
+.mat-circulo.sem-amarillo { background: var(--sem-amarillo); color: #1F241B; } .mat-circulo.sem-verde { background: var(--sem-verde); } .mat-circulo.sem-gris { color: #1F241B; }
 
 /* Ficha del tema (boceto IMG_4420) */
 .mat-ficha { position: relative; width: min(1120px, 96vw); height: auto; max-height: 92vh; border-radius: var(--radio); padding: 0; overflow-y: auto; }
@@ -100,7 +100,7 @@
 .mat-rel-riesgos a { display: flex; align-items: flex-start; gap: 10px; text-decoration: none; color: var(--texto); line-height: 1.35; }
 .mat-rel-riesgos a:hover span:last-child { text-decoration: underline; }
 .mat-num { flex-shrink: 0; display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; font-size: .8rem; font-weight: 700; color: #fff; background: var(--sem-gris); }
-.mat-num.sem-rojo { background: var(--sem-rojo); } .mat-num.sem-ambar { background: var(--sem-ambar); color: #1F332B; } .mat-num.sem-amarillo { background: var(--sem-amarillo); color: #1F332B; }
+.mat-num.sem-rojo { background: var(--sem-rojo); } .mat-num.sem-ambar { background: var(--sem-ambar); color: #1F241B; } .mat-num.sem-amarillo { background: var(--sem-amarillo); color: #1F241B; }
 .mat-vacio { color: var(--texto-suave); font-style: italic; }
 .mat-vinetas { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .mat-vinetas li { position: relative; padding-left: 16px; font-weight: 700; }

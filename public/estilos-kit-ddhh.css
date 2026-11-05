@@ -147,7 +147,7 @@ button.enlace:focus-visible { outline: 2px solid var(--principal); outline-offse
 .dim-ficha-c { text-align: center; }
 .dim-circulo { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; font-weight: 700; color: #fff; background: var(--sem-gris); }
 .dim-circulo.sem-rojo { background: var(--sem-rojo); } .dim-circulo.sem-naranja { background: var(--sem-naranja); }
-.dim-circulo.sem-ambar { background: var(--sem-ambar); color: #1F332B; } .dim-circulo.sem-amarillo { background: var(--sem-amarillo); color: #1F332B; } .dim-circulo.sem-verde { background: var(--sem-verde); }
+.dim-circulo.sem-ambar { background: var(--sem-ambar); color: #1F241B; } .dim-circulo.sem-amarillo { background: var(--sem-amarillo); color: #1F241B; } .dim-circulo.sem-verde { background: var(--sem-verde); }
 .dim-ficha-brecha { line-height: 1.5; } .dim-ficha-brecha.vacia { color: var(--texto-suave); font-style: italic; }
 .dim-ficha-estandares { background: var(--fondo); border-left: 1px solid var(--borde); }
 .dim-ficha-estandares ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; position: sticky; top: 56px; }
@@ -258,7 +258,7 @@ button.enlace:focus-visible { outline: 2px solid var(--principal); outline-offse
 .res-datos ul.relato-brechas li { display: flex; align-items: center; gap: var(--e3); justify-content: flex-start; font-size: 1.02rem; line-height: 1.4; }
 .res-puntaje { flex-shrink: 0; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; font-size: 1.05rem; font-weight: 700; color: #fff; background: var(--sem-gris); box-shadow: 0 0 0 4px var(--fondo-alterno), 0 0 0 5px var(--borde); }
 .res-puntaje.sem-rojo { background: var(--sem-rojo); } .res-puntaje.sem-naranja { background: var(--sem-naranja); }
-.res-puntaje.sem-ambar { background: var(--sem-ambar); color: var(--texto); } .res-puntaje.sem-amarillo { background: var(--sem-amarillo); color: #1F332B; }
+.res-puntaje.sem-ambar { background: var(--sem-ambar); color: var(--texto); } .res-puntaje.sem-amarillo { background: var(--sem-amarillo); color: #1F241B; }
 .res-puntaje.sem-verde { background: var(--sem-verde); }
 
 .res-narrativa.res-tarjeta { grid-template-areas:"titulo descripcion"; }

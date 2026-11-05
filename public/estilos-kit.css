@@ -48,9 +48,9 @@ button:disabled { opacity: .65; cursor: wait; }
 #kit-nav a small { display: block; max-width: 20ch; font-size: var(--t-micro); color: var(--texto-suave); font-weight: 400; }
 
 /* E23 · Home según boceto de Felipe (27-oct). */
-:root { --kit-titulo-fondo: #DCE7DE; --kit-titulo-borde: #2F5548; --kit-desplegable-fondo: #F8E6D3; --kit-desplegable-borde: #D27F2F; --kit-tarjeta-gris: #E7E5E0; }
-:root[data-tema="oscuro"] { --kit-titulo-fondo: #24392F; --kit-titulo-borde: #B8D6C6; --kit-desplegable-fondo: #2E2419; --kit-desplegable-borde: #C98A4B; --kit-tarjeta-gris: #1E2F28; }
-@media (prefers-color-scheme: dark) { :root:not([data-tema="claro"]) { --kit-titulo-fondo: #24392F; --kit-titulo-borde: #B8D6C6; --kit-desplegable-fondo: #2E2419; --kit-desplegable-borde: #C98A4B; --kit-tarjeta-gris: #1E2F28; } }
+:root { --kit-titulo-fondo: #E8EDE0; --kit-titulo-borde: #3A4733; --kit-desplegable-fondo: #F5EDDA; --kit-desplegable-borde: #B78D36; --kit-tarjeta-gris: #E7E5E0; }
+:root[data-tema="oscuro"] { --kit-titulo-fondo: #2C3323; --kit-titulo-borde: #C9D6B4; --kit-desplegable-fondo: #2E2817; --kit-desplegable-borde: #C9A04E; --kit-tarjeta-gris: #1E2F28; }
+@media (prefers-color-scheme: dark) { :root:not([data-tema="claro"]) { --kit-titulo-fondo: #2C3323; --kit-titulo-borde: #C9D6B4; --kit-desplegable-fondo: #2E2817; --kit-desplegable-borde: #C9A04E; --kit-tarjeta-gris: #1E2F28; } }
 .kit-titulo { position: relative; overflow: hidden; padding: var(--e4) var(--e5); padding-right: 140px; background: var(--kit-titulo-fondo); border: 1px solid var(--kit-titulo-borde); border-radius: var(--radio-chico); }
 .kit-titulo h1 { margin: 0; color: var(--texto); }
 .kit-titulo-arco { position: absolute; right: 20px; bottom: -2px; width: 104px; height: 52px; border: 2px solid var(--oro); border-bottom: 0; border-radius: 104px 104px 0 0; pointer-events: none; }
@@ -117,3 +117,28 @@ button:disabled { opacity: .65; cursor: wait; }
 .kit-ficha .kit-mini-tabla th, .materialidad .kit-ficha .kit-mini-tabla th, .kit-ficha.materialidad .kit-mini-tabla th { width:55%; overflow-wrap:normal; word-break:normal; hyphens:auto; font-size:var(--t-chico); padding:var(--e3) var(--e2); }
 .kit-ficha .mat-circulo { min-width:2.4rem; width:2.4rem; height:2.4rem; font-size:var(--t-cuerpo); }
 @media(max-width:759px) { .kit-ficha-rejilla { grid-template-columns:minmax(0,1fr); } }
+
+/* E40 (5-nov): menú hamburguesa. El nav de módulos se despliega bajo la barra. */
+.kit-menu { display: inline-grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid var(--borde); border-radius: var(--radio-chico); background: var(--superficie); cursor: pointer; }
+.kit-menu[hidden] { display: none; }
+.kit-menu span, .kit-menu span::before, .kit-menu span::after { display: block; width: 20px; height: 2px; background: var(--texto); border-radius: 2px; position: relative; transition: transform .2s var(--ease-out); }
+.kit-menu span::before, .kit-menu span::after { content: ""; position: absolute; left: 0; }
+.kit-menu span::before { top: -6px; } .kit-menu span::after { top: 6px; }
+.kit-menu[aria-expanded="true"] span { background: transparent; }
+.kit-menu[aria-expanded="true"] span::before { transform: translateY(6px) rotate(45deg); }
+.kit-menu[aria-expanded="true"] span::after { transform: translateY(-6px) rotate(-45deg); }
+#cabecera { position: relative; }
+#kit-nav { display: none; }
+#kit-nav.abierto { display: flex; flex-direction: column; gap: 0; position: absolute; left: var(--e4); top: 100%; z-index: 40; min-width: 280px; padding: var(--e2); background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); box-shadow: var(--sombra-alta); }
+#kit-nav.abierto a { padding: var(--e2) var(--e3); border-radius: var(--radio-chico); border-bottom: 0; }
+#kit-nav.abierto a:hover { background: var(--suave); }
+#kit-nav.abierto a[aria-current] { background: var(--suave); border-bottom: 0; }
+/* Pestañas del módulo: Metodología, Alimentación y Resultados. */
+.kit-pestanas a { font-weight: 500; color: var(--texto-suave); }
+.kit-pestanas a[aria-current] { color: var(--principal); }
+.kit-metodologia { max-width: 76ch; }
+.kit-metodologia-resumen { font-size: 1.125rem; color: var(--texto); }
+.kit-metodologia-seccion, .kit-metodologia-fuentes { margin-top: var(--e5); }
+.kit-metodologia h2 { font-size: var(--t-h3); margin-bottom: var(--e2); }
+.kit-metodologia-fuentes { font-size: var(--t-chico); color: var(--texto-suave); }
+@media (max-width: 560px) { #kit-nav.abierto { left: var(--e2); right: var(--e2); min-width: 0; } }

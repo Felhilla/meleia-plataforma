@@ -1,9 +1,11 @@
 (function (root) {
   'use strict';
   const modulos = typeof module !== 'undefined' && module.exports ? require('./config/kit-modulos.json').modulos : [];
-  const tabsModulo = { actores: ['mapa', 'alimentacion'], ddhh: ['resultados', 'estandares', 'alimentacion'], materialidad: ['resultados', 'alimentacion'], riesgos: ['matriz', 'medidas', 'alimentacion'] };
-  const ocultas = { riesgos: ['medidas', 'alimentacion'], ddhh: ['alimentacion'], materialidad: ['alimentacion'] };
-  const roles = { admin: 'Soporte GH', responsable: 'Responsable', demostrador: 'Demostración' };
+  // Orden común (decisión del 5-nov): Metodología, Alimentación y Resultados. La primera es la que abre el módulo.
+  const tabsModulo = { actores: ['metodologia', 'alimentacion', 'mapa'], ddhh: ['metodologia', 'alimentacion', 'resultados', 'estandares'], materialidad: ['metodologia', 'alimentacion', 'resultados'], riesgos: ['metodologia', 'alimentacion', 'matriz', 'medidas'] };
+  const ocultas = { riesgos: ['medidas'] };
+  const nombresPestana = { metodologia: 'Metodología', alimentacion: 'Alimentación', mapa: 'Resultados', matriz: 'Resultados', resultados: 'Resultados', estandares: 'Cruce de estándares' };
+  const roles = { admin: 'Soporte Meleia', responsable: 'Responsable', demostrador: 'Demostración' };
   function pestanas(modulo, permiso) { return (tabsModulo[modulo] || []).filter(p => p !== 'alimentacion' || permiso === true || ['admin', 'responsable'].includes(permiso)); }
   function casos(modulo, empresas) { return empresas.filter(e => e.muestra_comercial === false || (e.muestra_comercial === true && modulo.casos.includes(e.id))); }
   function resolverRuta(hash, usuario, empresas, puedeEditar = id => ['admin', 'responsable'].includes(empresas.find(e => e.id === id)?.rol)) {
@@ -42,6 +44,11 @@
       const guardar = (k, v) => { try { root.localStorage.setItem(k, v); } catch (_) { /* Comodidad opcional. */ } };
       const media = root.matchMedia?.('(prefers-color-scheme: dark)');
       let tema = leer('gh-meleia-tema');
+      const botonMenu = document.getElementById('kit-menu') || { hidden: true, setAttribute() {}, addEventListener() {} };
+      function menu(abrir) { nav.classList?.toggle('abierto', abrir); botonMenu.setAttribute('aria-expanded', String(abrir)); botonMenu.setAttribute('aria-label', abrir ? 'Cerrar el menú' : 'Abrir el menú'); }
+      botonMenu.addEventListener('click', () => menu(botonMenu.getAttribute?.('aria-expanded') !== 'true'));
+      nav.addEventListener?.('click', e => { if (e.target.closest?.('a')) menu(false); });
+      root.document?.addEventListener?.('keydown', e => { if (e.key === 'Escape' && botonMenu.getAttribute?.('aria-expanded') === 'true') { menu(false); botonMenu.focus?.(); } });
       const botonTema = document.getElementById('tema');
       function aplicarTema() {
         const oscuro = tema === 'oscuro' || (tema !== 'claro' && media?.matches);
@@ -79,7 +86,8 @@
         };
       }
       function cabecera(ruta) {
-        cuenta.replaceChildren(); nav.replaceChildren();
+        cuenta.replaceChildren(); nav.replaceChildren(); menu(false);
+        botonMenu.hidden = !usuario;
         if (!usuario) return;
         const rol = ['admin', 'responsable', 'demostrador'].find(r => empresas.some(e => e.rol === r));
         if (rol) cuenta.append(el('span', roles[rol], 'chip'));
@@ -90,7 +98,7 @@
           catch (error) { mostrarError(error); salir.disabled = false; }
         };
         cuenta.append(salir);
-        nav.append(enlace('Home', '#/', ruta.clave === 'portada'));
+        nav.append(enlace('Credenciales', '#/', ruta.clave === 'portada'));
         modulos.forEach(m => { const a = enlace(`${m.numero} · ${m.corto || m.nombre}`, '#/' + m.id, ruta.modulo?.id === m.id); a.setAttribute('aria-label', `Módulo ${m.numero} · ${m.nombre}${casos(m, empresas).length ? '' : ' · Sin casos disponibles para tu cuenta'}`); a.title = `Módulo ${m.numero} · ${m.nombre}`; if (!casos(m, empresas).length) a.append(el('small', 'Sin casos disponibles para tu cuenta')); nav.append(a); });
       }
       // Formato de títulos del sitio: franja verde con el arco y el punto de la marca.
@@ -133,7 +141,7 @@
         if (root.location.hash !== ruta.hash) root.history.replaceState(null, '', ruta.hash);
         cabecera(ruta);
         if (!usuario) { ingresar(); contenido.focus(); return; }
-        contenido.append(tituloMarca(ruta.modulo ? `Módulo ${ruta.modulo.numero} · ${ruta.modulo.nombre}` : 'GH Estudio × Meleia'));
+        contenido.append(tituloMarca(ruta.modulo ? `Módulo ${ruta.modulo.numero} · ${ruta.modulo.nombre}` : 'Meleia'));
         const zona = el('section', null, 'kit-vista'); contenido.append(zona); contenido.focus();
         try {
           if (ruta.clave === 'portada') {
@@ -163,7 +171,7 @@
               selector.append(botonCaso,el('span',ruta.empresa.nombre,'kit-caso-actual'),listaCasos); zona.append(selector);
             }
             const tabs = el('nav', null, 'kit-pestanas'); tabs.setAttribute('aria-label', 'Pestañas del módulo');
-            pestanas(ruta.modulo.id, datos.puedeEditar(ruta.empresa.id)).filter(p => !(ocultas[ruta.modulo.id] || []).includes(p)).forEach(p => tabs.append(enlace(({mapa: 'Mapa de actores', alimentacion: 'Alimentación', resultados: 'Resultados', estandares: 'Cruce de estándares'})[p] || p[0].toUpperCase() + p.slice(1), '#/' + ruta.modulo.id + '/' + ruta.empresa.id + '/' + p, p === ruta.sub)));
+            pestanas(ruta.modulo.id, datos.puedeEditar(ruta.empresa.id)).filter(p => !(ocultas[ruta.modulo.id] || []).includes(p)).forEach(p => tabs.append(enlace(nombresPestana[p] || p[0].toUpperCase() + p.slice(1), '#/' + ruta.modulo.id + '/' + ruta.empresa.id + '/' + p, p === ruta.sub)));
             if (tabs.children.length > 1) zona.append(tabs);
             const cuerpo = el('div'); zona.append(cuerpo);
             const vista = vistas.get(ruta.clave);
