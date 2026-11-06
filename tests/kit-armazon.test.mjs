@@ -91,15 +91,14 @@ test('DOM: portada global no consulta colecciones ni muestra selector global', a
   // E46 (6-nov): hero con cuatro botones; el semicírculo arranca cerrado y Equipo y Aliados viven en él.
   const secciones = m.nodos.contenido.todos().filter(n => String(n.className).startsWith('kit-cred-seccion')).map(n => n.children[0].textContent);
   assert.deepEqual(secciones, ['Quiénes somos', '', 'Contacto']);
-  // Contacto cierra la portada, después de la banda de los módulos.
-  const zonaHijos = m.nodos.contenido.todos().find(n => n.className === 'kit-vista').children.map(n => String(n.className));
-  assert.ok(zonaHijos.indexOf('kit-banda kit-cred-modulos') < zonaHijos.findIndex(c => c.includes('kit-cred-contacto')));
+  // 6-nov: sin bloque de módulos en el Home; se llega a ellos por el menú.
+  assert.ok(!m.nodos.contenido.todos().some(n => n.className === 'kit-modulo'));
   assert.deepEqual(m.nodos.contenido.todos().filter(n => n.className === 'kit-tema-boton').map(n => n.textContent), ['Servicios', 'Experiencia', 'Equipo', 'Aliados']);
   assert.equal(m.nodos.contenido.todos().find(n => n.id === 'kit-explorar').hidden, true);
   // E45: el correo provisional (dominio GH) solo aparece en Contacto, como enlace; nunca en las fichas del equipo.
   const correo = m.nodos.contenido.todos().find(n => String(n.href || '').startsWith('mailto:'));
   assert.equal(correo.href, 'mailto:ghillon@ghestudio.com.co');
-  assert.deepEqual(m.nodos.contenido.todos().filter(n => n.className === 'kit-modulo').map(n => n.href), ['#/actores', '#/ddhh', '#/materialidad', '#/riesgos']);
+  assert.deepEqual(m.nodos['kit-nav'].todos().filter(n => n.tag === 'a').map(n => n.href), ['#/', '#/actores', '#/ddhh', '#/materialidad', '#/riesgos']);
   assert.equal(m.consultas.length, 0); assert.equal(m.nodos['kit-cuenta'].querySelector('select'), undefined);
   assert.match(m.nodos['kit-cuenta'].textContent, /Responsable/);
 });
@@ -118,7 +117,7 @@ test('DOM E46: temas en semicírculo, fichas flotantes y caso con entregables en
   assert.match(capa.textContent, /Entregables/);
   assert.deepEqual(capa.todos().filter(n => n.tag === 'a').map(n => n.href), ['#/ddhh', '#/riesgos']);
   capa.todos().find(n => n.className === 'kit-serv-volver').onclick(); assert.equal(capa.hidden, true);
-  await boton('equipo').onclick(); assert.equal(titulos().length, 3); titulos()[1].onclick(); assert.match(capa.textContent, /Felipe Hillón/);
+  await boton('equipo').onclick(); assert.equal(titulos().length, 4); titulos()[1].onclick(); assert.match(capa.textContent, /Felipe Hillón/);
   await boton('aliados').onclick(); assert.equal(titulos().length, 4); assert.equal(capa.hidden, true);
   // Sin logos confirmados, los casos siguen anonimizados (sin imágenes de clientes).
   await boton('experiencia').onclick(); assert.ok(!todos().some(n => n.tag === 'image' || (n.tag === 'img' && /logo/.test(n.className || '') && !/hero/.test(n.className))));
@@ -146,9 +145,10 @@ test('DOM E24: selector accesible con uno o varios casos y pestaña Mapa de acto
   assert.match(varias.nodos.contenido.textContent, /Alimentación/);
   const soporte = await montar({ empresas:[...empresas,{id:'tres',rol:'admin',muestra_comercial:false}] }); assert.match(soporte.nodos['kit-cuenta'].textContent,/Soporte Meleia/);
 });
-test('DOM: sin casos se informa en tarjeta, navegación y módulo', async () => {
+test('DOM: sin casos se informa en navegación y módulo', async () => {
   const m = await montar({empresas:[]});
-  assert.equal(m.nodos.contenido.todos().filter(n => n.textContent === 'Sin casos disponibles para tu cuenta').length,4);
+  // 6-nov: ya no hay tarjetas de módulos en el Home; el aviso va en el menú (uno por módulo).
+  assert.equal(m.nodos['kit-nav'].todos().filter(n => n.textContent === 'Sin casos disponibles para tu cuenta').length,4);
   assert.match(m.nodos['kit-nav'].todos().find(n => n.href === '#/actores').attrs['aria-label'],/Sin casos disponibles/);
   m.root.location.hash = '#/actores'; await m.root.App.actualizarVista(); assert.match(m.nodos.contenido.textContent,/Sin casos disponibles para tu cuenta/);
   assert.match(m.nodos['kit-cuenta'].textContent,/Salir/);

@@ -14,6 +14,12 @@
       "experiencia": "Comunicador social y periodista (Universidad Externado de Colombia), con experiencia en sostenibilidad, debida diligencia empresarial y derechos humanos: relacionamiento comunitario, estándares internacionales, materialidad e informes de sostenibilidad. Ha acompañado a organizaciones como Solgas, Sociedad Portuaria El Dique, Proeléctrica, Cementos Pacasmayo y la Universidad EAN."
     },
     {
+      "nombre": "Julio Raúl Ochoa",
+      "foto": "img/equipo/julio.jpg",
+      "cargo": "Coordinador de proyectos de sostenibilidad",
+      "experiencia": "Más de 15 años articulando gestión pública, cooperación internacional y sector privado. Ha estructurado proyectos de ciencia, tecnología e innovación por más de 50.000 millones de pesos y gestionado alianzas con actores nacionales e internacionales."
+    },
+    {
       "nombre": "Sebastián Hillón",
       "foto": "img/equipo/sebastian.jpg",
       "cargo": "Profesional en operaciones, automatización y comunicación",
@@ -59,9 +65,9 @@
   ],
   "experiencia": [
     {
-      "sector": "Energía, GLP",
+      "sector": "Sector mineroenergético y energía",
       "tema": "Empresa y derechos humanos",
-      "descripcion": "Empresa líder en gas licuado de petróleo en el Perú, parte de un grupo energético latinoamericano.",
+      "descripcion": "Empresa líder del sector energético en el Perú, parte de un grupo energético latinoamericano.",
       "alcance": "9 meses (junio 2025 a febrero 2026), 8 ciudades, 259 participantes de 5 grupos de interés",
       "logros": [
         "Brechas de gobernanza frente a la debida diligencia",
@@ -72,7 +78,7 @@
       "servicio": 0,
       "logo": null,
       "color": "#B78D36",
-      "que_se_hizo": "Empresa líder en gas licuado de petróleo en el Perú, parte de un grupo energético latinoamericano. Alcance: 9 meses (junio 2025 a febrero 2026), 8 ciudades, 259 participantes de 5 grupos de interés.",
+      "que_se_hizo": "Empresa líder del sector energético en el Perú, parte de un grupo energético latinoamericano. Alcance: 9 meses (junio 2025 a febrero 2026), 8 ciudades, 259 participantes de 5 grupos de interés.",
       "entregables": [
         {
           "texto": "Brechas de gobernanza frente a la debida diligencia",
@@ -87,7 +93,7 @@
           "modulo": null
         }
       ],
-      "sigla": "GLP"
+      "sigla": "ME"
     },
     {
       "sector": "Textil y confecciones",
@@ -235,7 +241,7 @@
     "nota": "Correo provisional mientras Meleia habilita su dominio (decisión de Felipe del 5-nov)."
   },
   "afirmacion": "Transformamos información en mejores decisiones.",
-  "pendientes_look": "6-nov: logos de clientes sin confirmar (casos anonimizados con sigla del sector). Servicio 2 sin caso. Significado del «#» bajo cada entregable por confirmar con Felipe. Aliados: nombres, logos y casos compartidos por confirmar (6-nov). Datos resaltados tomados de su descripción.",
+  "pendientes_look": "6-nov: logos de clientes sin confirmar (casos anonimizados con sigla del sector). Servicio 2 sin caso. Significado del «#» bajo cada entregable por confirmar con Felipe. Aliados: nombres, logos y casos compartidos por confirmar (6-nov). Datos resaltados tomados de su descripción. 6-nov tarde: GLP reemplazado por sector mineroenergético y energía (Germán). Julio vuelve al equipo (Felipe y Germán).",
   "temas": {
     "servicios": {
       "nombre": "Servicios",
