@@ -74,8 +74,13 @@
         const enviar = el('button', 'Ingresar', 'boton'); enviar.type = 'submit';
         const estado = mensaje(aviso || 'Ingresa con la cuenta asignada a tu empresa', !!aviso);
         const olvido = el('button', '¿Olvidaste tu contraseña?', 'kit-enlace'); olvido.type = 'button';
-        olvido.onclick = () => { estado.setAttribute('role', 'status'); estado.textContent = 'Escribe a soporte GH para restablecerla'; };
-        form.append(lc, correo, lp, clave, enviar, olvido, estado); tarjeta.append(el('p', 'Kit de sostenibilidad', 'antetitulo'), titulo, form); contenido.append(tarjeta);
+        olvido.onclick = () => { estado.setAttribute('role', 'status'); estado.textContent = 'Escribe a soporte de Meleia para restablecerla'; };
+        form.append(lc, correo, lp, clave, enviar, olvido, estado); tarjeta.append(el('p', 'Kit de sostenibilidad', 'antetitulo'), titulo, form);
+        // E46 (6-nov): el ingreso es lo primero que ve un cliente; lleva la banda y el logo de la portada.
+        const banda = el('section', null, 'kit-banda kit-banda-oscura kit-ingreso-banda'), marca = el('div', null, 'kit-ingreso-marca'), logo = el('img', null, 'kit-hero-logo');
+        logo.src = 'img/logo-meleia-grande-claro.png'; logo.alt = 'Meleia · Sostenibilidad, riesgo preventivo, debida diligencia'; logo.width = 1400; logo.height = 579;
+        marca.append(logo, el('p', 'Transformamos información en mejores decisiones.', 'kit-ingreso-frase'));
+        banda.append(marca, tarjeta); contenido.append(banda);
         form.onsubmit = async e => {
           e.preventDefault(); enviar.disabled = true; estado.textContent = 'Ingresando…';
           try {
@@ -121,22 +126,25 @@
         const ruta = resolverRuta(root.location.hash, usuario, empresas, id => datos.puedeEditar(id));
         if (root.location.hash !== ruta.hash) root.history.replaceState(null, '', ruta.hash);
         cabecera(ruta);
+        contenido.classList?.toggle('kit-portada', ruta.clave === 'portada' || !usuario);
         if (!usuario) { ingresar(); contenido.focus(); return; }
-        contenido.classList?.toggle('kit-portada', ruta.clave === 'portada');
         if (ruta.clave === 'portada') contenido.append(el('h1', 'Meleia · Credenciales', 'solo-lectores'));
         else contenido.append(tituloMarca(`Módulo ${ruta.modulo.numero} · ${ruta.modulo.nombre}`));
         const zona = el('section', null, 'kit-vista'); contenido.append(zona); contenido.focus();
         try {
           if (ruta.clave === 'portada') {
             const cred = el('div', null, 'kit-cred'); zona.append(cred); const pendiente = credenciales(cred);
-            zona.append(el('h2', 'Kit de sostenibilidad', 'kit-cred-titulo-modulos'));
+            const bandaModulos = el('section', null, 'kit-banda kit-cred-modulos');
+            bandaModulos.append(el('h2', 'Kit de sostenibilidad', 'kit-mono kit-antetitulo kit-cred-titulo-modulos'), el('p', 'Cuatro módulos para medir y gestionar la sostenibilidad.', 'kit-titular'));
             const tarjetas = el('div', null, 'kit-modulos kit-rejilla');
             modulos.forEach(m => {
               const disponibles = casos(m, empresas), tarjeta = el('a', null, 'kit-modulo');
               tarjeta.href = '#/' + m.id;
-              tarjeta.append(el('span', 'Módulo ' + m.numero, 'kit-modulo-numero'), el('h2', m.nombre), el('p', m.descripcion), el('p', disponibles.length ? 'Casos: ' + disponibles.map(e => e.nombre).join(' · ') : 'Sin casos disponibles para tu cuenta', 'nota'));
+              tarjeta.append(el('span', m.numero, 'kit-modulo-romano'), el('span', 'Módulo ' + m.numero, 'kit-modulo-numero'), el('h2', m.nombre), el('p', m.descripcion), el('p', disponibles.length ? 'Casos: ' + disponibles.map(e => e.nombre).join(' · ') : 'Sin casos disponibles para tu cuenta', 'nota'), el('span', 'Abrir el módulo', 'kit-modulo-abrir'));
               tarjetas.append(tarjeta);
-            }); zona.append(tarjetas); await pendiente;
+            }); bandaModulos.append(tarjetas); zona.append(bandaModulos); await pendiente;
+            // Contacto cierra la portada, después de los módulos.
+            const contacto = [...(cred.children || [])].find(n => String(n.className).includes('kit-cred-contacto')); if (contacto) zona.append(contacto);
           } else if (ruta.clave === 'sin-casos') {
             zona.append(mensaje('Sin casos disponibles para tu cuenta'));
           } else {

@@ -152,3 +152,25 @@ a.kit-caso-enlace:hover { text-decoration: underline; }
 .kit-serv-insignia circle { stroke: var(--fondo); stroke-width: 4; }
 .kit-serv-insignia text { font-family: var(--fuente-titulos); font-size: 24px; font-weight: 600; fill: #F9F6F2; }
 .kit-serv-svg { overflow: visible; }
+
+/* E46: ingreso con la banda de la portada. */
+.kit-ingreso-banda { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, 440px); gap: var(--e6); align-items: center; min-height: min(78vh, 720px); padding-block: var(--e7); }
+.kit-ingreso-marca .kit-hero-logo { margin: 0 0 var(--e4); }
+.kit-ingreso-frase { font-family: var(--fuente-titulos); font-size: clamp(1.4rem, 2.4vw, 2.1rem); line-height: 1.2; margin: 0; color: var(--texto); }
+.kit-ingreso-banda .kit-ingreso { margin: 0; max-width: none; --texto: #1F241B; --texto-suave: #5B5E52; --oro-texto: #7A5B1E; --borde: #DCD5C6; color: var(--texto); background: #FFFFFF; border-radius: var(--radio); box-shadow: 0 30px 80px rgba(0,0,0,.35); }
+.kit-ingreso-banda .kit-ingreso a, .kit-ingreso-banda .kit-ingreso .kit-enlace { color: #3A4733; }
+
+/* E46: módulos del Kit en banda propia, antes de Contacto. */
+.kit-cred-modulos { background: var(--fondo-alterno); }
+.kit-portada .kit-cred-titulo-modulos { margin-top: 0; }
+.kit-cred-modulos .kit-modulo { position: relative; gap: var(--e2); padding: var(--e5) var(--e4) var(--e4); background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); min-height: 280px; }
+.kit-cred-modulos .kit-modulo:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(27,34,22,.14); }
+.kit-modulo-romano { font-family: var(--fuente-titulos); font-size: 3.2rem; font-weight: 500; line-height: 1; color: var(--oro); }
+.kit-cred-modulos .kit-modulo-numero { font-family: var(--fuente-mono); font-weight: 500; }
+.kit-cred-modulos .kit-modulo h2 { font-family: var(--fuente-titulos); font-size: 1.35rem; font-weight: 500; line-height: 1.2; }
+.kit-modulo-abrir { margin-top: auto; padding-top: var(--e3); font-weight: 600; font-size: var(--t-chico); color: var(--principal); border-top: 1px solid var(--borde); }
+.kit-modulo-abrir::after { content: " →"; display: inline-block; transition: transform .2s var(--ease-out); }
+.kit-modulo:hover .kit-modulo-abrir::after { transform: translateX(4px); }
+@media (max-width: 960px) { .kit-modulos.kit-rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 860px) { .kit-ingreso-banda { grid-template-columns: minmax(0, 1fr); min-height: 0; } }
+@media (max-width: 560px) { .kit-modulos.kit-rejilla { grid-template-columns: minmax(0, 1fr); } .kit-cred-modulos .kit-modulo { min-height: 0; } }

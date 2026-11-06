@@ -54,9 +54,9 @@ class Nodo {
   constructor(tag) { this.tag = tag; this.children = []; this.attrs = {}; this.dataset = {}; this._texto = ''; }
   set textContent(v) { this._texto = String(v); this.children = []; }
   get textContent() { return this._texto + this.children.map(n => n.textContent).join(' '); }
-  append(...n) { n.forEach(x => { x.parent = this; this.children.push(x); }); }
+  append(...n) { n.forEach(x => { if (x.parent) x.parent.children = x.parent.children.filter(c => c !== x); x.parent = this; this.children.push(x); }); } // Como el DOM real: append mueve el nodo.
   after(n) { n.parent = this.parent; this.parent.children.splice(this.parent.children.indexOf(this)+1,0,n); }
-  replaceChildren(...n) { this._texto = ''; this.children = n; }
+  replaceChildren(...n) { this._texto = ''; this.children = []; this.append(...n); }
   setAttribute(k, v) { this.attrs[k] = v; }
   focus() { this.enfocado = true; }
   querySelector(s) { return this.todos().find(n => s.startsWith('[role=') ? n.attrs.role === s.match(/"([^"]+)"/)[1] : n.tag === s); }
@@ -78,7 +78,7 @@ test('DOM: ingreso accesible, soporte, autenticación y salida', async () => {
   assert.equal(m.root.location.hash, '#/ingresar'); assert.equal(m.consultas.length, 0);
   const form = m.nodos.contenido.querySelector('form');
   assert.equal(form.todos().filter(n => n.tag === 'label').length, 2);
-  form.todos().find(n => n.textContent === '¿Olvidaste tu contraseña?').onclick(); assert.match(form.textContent, /Escribe a soporte GH/);
+  form.todos().find(n => n.textContent === '¿Olvidaste tu contraseña?').onclick(); assert.match(form.textContent, /Escribe a soporte de Meleia/);
   form.todos().filter(n => n.tag === 'input').forEach(n => { n.value = 'ejemplo'; });
   await form.onsubmit({ preventDefault() {} });
   assert.equal(m.root.location.hash, '#/'); assert.deepEqual(m.consultas, []);
@@ -91,6 +91,9 @@ test('DOM: portada global no consulta colecciones ni muestra selector global', a
   // E46 (6-nov): hero con cuatro botones; el semicírculo arranca cerrado y Equipo y Aliados viven en él.
   const secciones = m.nodos.contenido.todos().filter(n => String(n.className).startsWith('kit-cred-seccion')).map(n => n.children[0].textContent);
   assert.deepEqual(secciones, ['Quiénes somos', '', 'Contacto']);
+  // Contacto cierra la portada, después de la banda de los módulos.
+  const zonaHijos = m.nodos.contenido.todos().find(n => n.className === 'kit-vista').children.map(n => String(n.className));
+  assert.ok(zonaHijos.indexOf('kit-banda kit-cred-modulos') < zonaHijos.findIndex(c => c.includes('kit-cred-contacto')));
   assert.deepEqual(m.nodos.contenido.todos().filter(n => n.className === 'kit-tema-boton').map(n => n.textContent), ['Servicios', 'Experiencia', 'Equipo', 'Aliados']);
   assert.equal(m.nodos.contenido.todos().find(n => n.id === 'kit-explorar').hidden, true);
   // E45: el correo provisional (dominio GH) solo aparece en Contacto, como enlace; nunca en las fichas del equipo.
