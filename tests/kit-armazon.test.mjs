@@ -45,7 +45,7 @@ test('entrada del Kit no carga el relato, conserva SDK fijo y orden defer', () =
   assert.match(html, /<title>Meleia · Kit de sostenibilidad<\/title>/); assert.doesNotMatch(html, /GH Estudio|logo-gh/);
   assert.doesNotMatch(html, /src="vista-|caso\.json|src="app.js"|api-supabase.js/);
   const scripts = [...html.matchAll(/<script defer src="([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'vendor/xlsx.full.min.js', 'kit-riesgos.js', 'kit-cuestionario.js', 'kit-actores.js', 'kit-carga-excel.js', 'kit-armazon.js', 'kit-vista-carga-excel.js', 'kit-vista-riesgos.js', 'kit-vista-actores.js', 'kit-vista-metodologia.js', 'kit-vista-ddhh-modelo.js', 'kit-vista-ddhh-motor.js', 'kit-vista-ddhh-comun.js', 'kit-vista-ddhh.js', 'kit-vista-materialidad-motor.js', 'kit-vista-materialidad.js']);
+  assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'vendor/xlsx.full.min.js', 'kit-riesgos.js', 'kit-cuestionario.js', 'kit-actores.js', 'kit-carga-excel.js', 'kit-armazon.js', 'kit-vista-credenciales.js', 'kit-vista-carga-excel.js', 'kit-vista-riesgos.js', 'kit-vista-actores.js', 'kit-vista-metodologia.js', 'kit-vista-ddhh-modelo.js', 'kit-vista-ddhh-motor.js', 'kit-vista-ddhh-comun.js', 'kit-vista-ddhh.js', 'kit-vista-materialidad-motor.js', 'kit-vista-materialidad.js']);
 });
 
 // DOM mínimo: prueba los flujos reales del armazón sin red ni dependencias de navegador.
@@ -65,9 +65,10 @@ class Nodo {
 async function montar({ usuario = { id: 'u' }, hash = '#/', listar = async () => [], empresas: lista = empresas } = {}) {
   const nodos = Object.fromEntries(['contenido', 'kit-cuenta', 'kit-nav', 'tema'].map(id => [id, new Nodo('div')]));
   const salto = new Nodo('a'), eventos = {}, consultas = [], guardado = [];
-  const document = { documentElement: new Nodo('html'), createElement: t => new Nodo(t), getElementById: id => nodos[id], querySelector: () => salto, addEventListener() {} };
+  const document = { documentElement: new Nodo('html'), createElement: t => new Nodo(t), createElementNS: (_, t) => new Nodo(t), getElementById: id => nodos[id], querySelector: () => salto, addEventListener() {} };
   const root = { document, Intl, fetch: async p => ({ok:true,json:async () => JSON.parse(readFileSync(new URL('../public/' + (typeof p === 'string' ? p : 'config/kit-modulos.json'), import.meta.url), 'utf8'))}), location: { hash }, history: { replaceState(_, __, hash) { root.location.hash = hash; } }, localStorage: { getItem() { throw Error('bloqueado'); }, setItem(...args) { guardado.push(args); } }, addEventListener: (k, fn) => { eventos[k] = fn; } }; root.window = root;
   vm.runInNewContext(readFileSync(new URL('../public/kit-armazon.js', import.meta.url), 'utf8'), root);
+  vm.runInNewContext(readFileSync(new URL('../public/kit-vista-credenciales.js', import.meta.url), 'utf8'), root);
   const datos = { usuarioActual: async () => usuario, empresas: async () => lista, puedeEditar: id => id === 'uno', listar: async (...args) => { consultas.push(args); return listar(...args); }, iniciarSesion: async () => ({ id: 'u' }), cerrarSesion: async () => {}, observarSesion(fn) { datos.salir = fn; } };
   await root.App.iniciar(datos);
   return { root, nodos, datos, consultas, eventos, guardado };
@@ -98,6 +99,25 @@ test('DOM: portada global no consulta colecciones ni muestra selector global', a
   assert.deepEqual(m.nodos.contenido.todos().filter(n => n.className === 'kit-modulo').map(n => n.href), ['#/actores', '#/ddhh', '#/materialidad', '#/riesgos']);
   assert.equal(m.consultas.length, 0); assert.equal(m.nodos['kit-cuenta'].querySelector('select'), undefined);
   assert.match(m.nodos['kit-cuenta'].textContent, /Responsable/);
+});
+test('DOM E46: servicios en semicírculo con ficha y experiencia con sub ficha «Caso ref»', async () => {
+  const m = await montar(), todos = () => m.nodos.contenido.todos();
+  const titulos = todos().filter(n => n.className === 'kit-serv-titulo');
+  assert.equal(titulos.length, 3);
+  await titulos[0].onclick();
+  const ficha = todos().find(n => n.className === 'kit-serv-ficha');
+  assert.equal(ficha.hidden, false); assert.match(ficha.textContent, /Servicio 01/); assert.match(ficha.textContent, /Casos/);
+  const volver = ficha.todos().find(n => n.className === 'kit-serv-volver'); await volver.onclick(); assert.equal(ficha.hidden, true);
+  assert.equal(todos().filter(n => n.className === 'kit-exp-fila').length, 3);
+  const celda = todos().find(n => n.tag === 'button' && n.className === 'kit-logo-celda');
+  celda.onclick();
+  const ref = todos().find(n => n.className === 'kit-caso-ref');
+  assert.equal(ref.hidden, false); assert.equal(celda.attrs['aria-expanded'], 'true');
+  assert.match(ref.textContent, /¿Qué se hizo\?/); assert.match(ref.textContent, /Entregables/);
+  assert.deepEqual(ref.todos().filter(n => n.tag === 'a').map(n => n.href), ['#/ddhh', '#/riesgos']);
+  celda.onclick(); assert.equal(ref.hidden, true); assert.equal(celda.attrs['aria-expanded'], 'false');
+  // Sin logos confirmados, los casos siguen anonimizados (sin imágenes de clientes).
+  assert.ok(todos().filter(n => String(n.className).includes('kit-logo-celda')).every(c => !c.todos().some(n => n.tag === 'img')));
 });
 test('DOM E24: selector accesible con uno o varios casos y pestaña Mapa de actores', async () => {
   const una = await montar({ empresas: muestras, hash:'#/ddhh' });

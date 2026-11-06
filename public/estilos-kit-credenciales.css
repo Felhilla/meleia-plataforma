@@ -1,0 +1,150 @@
+/* E46 (6-nov): Look and Feel de la portada de Credenciales. Propuesta en revisión con Felipe.
+   Paleta y fuentes de DISENO-BASE.md; se agrega IBM Plex Mono para antetítulos (requiere aprobación). */
+:root { --fuente-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace; --oliva-noche: #1B2216; --oliva-noche-2: #232C1D; }
+body:has(.kit-portada) { overflow-x: clip; }
+.kit-portada .kit-titulo { display: none; }
+#contenido.kit-portada { margin-top: 0; padding-top: 0; }
+.kit-portada > .kit-vista { margin-top: 0; }
+.kit-mono { font-family: var(--fuente-mono); font-size: var(--t-micro); font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--oro-texto); margin: 0; }
+
+/* Bandas a sangre: rompen el ancho del contenido y alternan oscuro, marfil y arena. */
+.kit-cred { display: block; margin: 0; }
+.kit-banda { position: relative; margin-inline: calc(50% - 50vw); padding: var(--e8) calc(50vw - 50%); }
+.kit-banda + .kit-banda { border-top: 1px solid var(--borde); }
+.kit-banda > h2.kit-antetitulo { display: inline-block; font-size: var(--t-micro); line-height: 1.4; padding-bottom: 6px; border-bottom: 1px solid currentColor; margin-bottom: var(--e4); }
+.kit-titular { font-family: var(--fuente-titulos); font-weight: 500; font-size: clamp(2rem, 4.2vw, 3.4rem); line-height: 1.08; letter-spacing: -.02em; max-width: 22ch; margin: 0 0 var(--e6); text-wrap: balance; }
+.kit-banda-oscura { --texto: #F1EEE6; --texto-suave: #C4C6B5; --borde: #364130; --oro-texto: #D8B66A; color: var(--texto); background:
+  radial-gradient(60% 70% at 85% 20%, rgba(94,122,69,.45), transparent 70%),
+  radial-gradient(45% 55% at 95% 95%, rgba(183,141,54,.22), transparent 70%),
+  radial-gradient(50% 60% at 0% 100%, rgba(58,71,51,.6), transparent 70%), var(--oliva-noche); border-top: 0 !important; }
+.kit-banda-oscura a { color: #E6C77F; }
+.kit-banda-arena { background: var(--fondo-alterno); }
+
+/* 1. Hero: afirmación grande y arco de la marca escalado. */
+.kit-cred-quienes { padding-top: var(--e8); min-height: min(84vh, 760px); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
+.kit-cred-quienes .kit-hero { align-self: stretch; }
+.kit-hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: var(--e6); align-items: end; }
+.kit-hero-afirmacion { font-family: var(--fuente-titulos); font-weight: 500; font-size: clamp(2.6rem, 6.4vw, 5.6rem); line-height: 1.02; letter-spacing: -.03em; margin: 0 0 var(--e5); text-wrap: balance; }
+.kit-hero-quienes { max-width: 58ch; font-size: 1.125rem; line-height: 1.7; color: var(--texto-suave); margin: 0 0 var(--e5); }
+.kit-hero-ejes { list-style: none; display: flex; flex-wrap: wrap; gap: var(--e2) var(--e5); padding: var(--e4) 0 0; margin: 0; border-top: 1px solid var(--borde); }
+.kit-hero-ejes li { display: flex; gap: var(--e2); align-items: baseline; font-weight: 500; }
+.kit-hero-arco { width: 100%; height: auto; overflow: visible; }
+.kit-hero-trazo { fill: none; stroke: #B78D36; stroke-width: 2; stroke-dasharray: 1; stroke-dashoffset: 0; animation: kit-trazo 1.6s var(--ease-out) both; }
+.kit-hero-trazo.t1 { stroke: #8FA872; animation-delay: .15s; } .kit-hero-trazo.t2 { stroke: #5E7A45; animation-delay: .3s; }
+.kit-hero-punto { fill: #B78D36; }
+@keyframes kit-trazo { from { stroke-dashoffset: 1; } }
+
+/* 2. Servicios: semicírculo y ficha con zoom. */
+.kit-serv-escena { position: relative; }
+.kit-serv-diagrama { position: relative; aspect-ratio: 1000 / 660; transition: transform .42s var(--ease-out), opacity .32s ease; }
+.kit-serv-diagrama.acercando { transform: scale(2.1); opacity: 0; pointer-events: none; }
+.kit-serv-svg { width: 100%; height: 100%; display: block; }
+.kit-serv-marco { fill: none; stroke: #B78D36; stroke-width: 2; }
+.kit-serv-seg { cursor: pointer; }
+.kit-serv-seg path { transition: filter .2s ease; }
+.kit-serv-seg:hover path, .kit-serv-seg.activo path { filter: brightness(1.12) saturate(1.1); }
+.kit-serv-num { font-family: var(--fuente-titulos); font-size: 52px; font-weight: 600; fill: #F9F6F2; pointer-events: none; }
+.kit-serv-nodo { transition: transform .25s var(--ease-out); }
+.kit-serv-nodo-fondo { fill: var(--superficie); filter: drop-shadow(0 6px 14px rgba(27,34,22,.18)); }
+.kit-serv-nodo-aro { fill: none; stroke-width: 3; }
+.kit-serv-nodo-icono, .kit-icono { fill: none; stroke: var(--principal); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.kit-icono .relleno, .kit-serv-nodo-icono .relleno { fill: currentColor; stroke: none; } .kit-serv-nodo-icono { color: var(--principal); } .kit-icono .nodo, .kit-serv-nodo-icono .nodo { fill: var(--superficie); }
+.kit-serv-guia { stroke: var(--linea); stroke-width: 1.5; stroke-dasharray: 2 6; stroke-linecap: round; }
+.kit-serv-anillo { fill: var(--fondo); stroke: #B78D36; stroke-width: 3; }
+.kit-serv-centro circle:first-child { fill: var(--superficie); stroke: var(--borde); stroke-width: 1.5; filter: drop-shadow(0 18px 40px rgba(27,34,22,.14)); }
+.kit-serv-centro-ante { font-family: var(--fuente-mono); font-size: 16px; letter-spacing: .3em; fill: var(--oro-texto); }
+.kit-serv-centro-frase { font-family: var(--fuente-titulos); font-size: 32px; font-weight: 500; fill: var(--texto); }
+.kit-serv-titulos { position: absolute; inset: 0; pointer-events: none; }
+.kit-serv-titulo { pointer-events: auto; position: absolute; left: 73.5%; right: 0; transform: translateY(-50%); display: grid; gap: 4px; text-align: left; padding: var(--e2) 0; background: none; border: 0; color: var(--texto); font: inherit; cursor: pointer; }
+.kit-serv-titulo-texto { font-family: var(--fuente-titulos); font-size: clamp(1.1rem, 2.1vw, 1.75rem); font-weight: 500; line-height: 1.15; transition: color .2s ease; }
+.kit-serv-ver { font-size: var(--t-chico); color: var(--texto-suave); }
+.kit-serv-ver::after { content: " →"; display: inline-block; transition: transform .2s var(--ease-out); }
+.kit-serv-titulo:hover .kit-serv-titulo-texto, .kit-serv-titulo:focus-visible .kit-serv-titulo-texto { color: var(--oro-texto); }
+.kit-serv-titulo:hover .kit-serv-ver::after { transform: translateX(4px); }
+.kit-serv-ficha { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: var(--e6); align-items: start; padding: var(--e6) 0 var(--e4); position: relative; transition: opacity .35s ease, transform .45s var(--ease-out); }
+.kit-serv-ficha.entrando { opacity: 0; transform: scale(.96); }
+.kit-serv-ficha-icono { width: 180px; height: 180px; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 18px 40px rgba(27,34,22,.2); }
+.kit-serv-ficha-icono .kit-icono { width: 84px; height: 84px; stroke: #F9F6F2; color: #F9F6F2; } .kit-serv-ficha-icono .kit-icono .nodo { fill: transparent; }
+.kit-serv-ficha h3 { font-size: var(--t-h1); margin: var(--e2) 0 var(--e4); }
+.kit-serv-descripcion { padding: var(--e5); background: var(--superficie); border: 1px solid var(--borde); border-left: 4px solid var(--oro); border-radius: var(--radio-chico); max-width: 72ch; }
+.kit-serv-descripcion p { margin: 0 0 var(--e3); font-size: 1.125rem; line-height: 1.65; }
+.kit-serv-descripcion ul { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; color: var(--texto-suave); font-size: var(--t-chico); }
+.kit-serv-casos-titulo { margin-top: var(--e5) !important; }
+.kit-serv-casos { list-style: none; padding: 0; margin: var(--e2) 0 0; display: grid; gap: var(--e1); }
+.kit-enlace-flecha { background: none; border: 0; padding: 4px 0; font: inherit; font-weight: 600; color: var(--principal); cursor: pointer; text-decoration: none; }
+.kit-enlace-flecha::after { content: " →"; display: inline-block; transition: transform .2s var(--ease-out); }
+.kit-enlace-flecha:hover::after { transform: translateX(4px); }
+.kit-serv-volver { position: absolute; top: var(--e4); right: 0; padding: var(--e2) var(--e4); background: var(--superficie); border: 1px solid var(--borde-fuerte); border-radius: 999px; font: inherit; font-weight: 600; color: var(--texto); cursor: pointer; }
+.kit-serv-volver::before { content: "← "; }
+
+/* 3. Experiencia: filas por servicio, logos en celdas con filetes, sub ficha «Caso ref». */
+.kit-exp-fila { border-top: 1px solid var(--borde); padding: var(--e5) 0; }
+.kit-exp-fila:last-child { border-bottom: 1px solid var(--borde); }
+.kit-exp-cabeza { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 300px); gap: var(--e5); align-items: center; }
+.kit-exp-servicio { display: flex; gap: var(--e4); align-items: center; }
+.kit-exp-servicio h3 { font-size: clamp(1.4rem, 2.6vw, 2.2rem); font-weight: 500; margin: 4px 0 0; }
+.kit-exp-icono { flex: none; width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; }
+.kit-exp-icono .kit-icono { width: 36px; height: 36px; stroke: #F9F6F2; color: #F9F6F2; } .kit-exp-icono .kit-icono .nodo { fill: transparent; }
+.kit-exp-exito { display: grid; gap: var(--e2); }
+.kit-exp-otros { margin-top: var(--e4); display: grid; gap: var(--e2); }
+.kit-logo-rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); border-left: 1px solid var(--borde); }
+.kit-exp-exito .kit-logo-celda { border-left: 1px solid var(--borde); }
+.kit-logo-celda { min-height: 96px; display: grid; place-content: center; gap: 4px; padding: var(--e3); text-align: center; background: transparent; border: 1px solid var(--borde); border-left: 0; color: var(--texto); font: inherit; transition: background .2s ease, transform .2s var(--ease-out); }
+button.kit-logo-celda { cursor: pointer; }
+button.kit-logo-celda:hover, .kit-logo-celda[aria-expanded="true"] { background: rgba(249,246,242,.06); }
+.kit-logo-celda[aria-expanded="true"] { box-shadow: inset 0 -3px 0 #B78D36; }
+.kit-logo-celda img { max-width: 140px; max-height: 56px; object-fit: contain; filter: grayscale(1) brightness(1.6); transition: filter .25s ease; }
+.kit-logo-celda:hover img, .kit-logo-celda[aria-expanded="true"] img { filter: none; }
+.kit-logo-sector { font-family: var(--fuente-titulos); font-size: 1.15rem; font-weight: 500; }
+.kit-logo-pendiente { border-style: dashed; color: var(--texto-suave); }
+.kit-caso-ref { --caso-color: #B78D36; position: relative; margin-top: var(--e4); display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: var(--e5); padding: var(--e5); background: #F9F6F2; color: #1F241B; border-top: 6px solid var(--caso-color); border-radius: var(--radio-chico); animation: kit-aparece .4s var(--ease-out); --oro-texto: #7A5B1E; --texto-suave: #5B5E52; --texto: #1F241B; --borde: #DCD5C6; }
+.kit-caso-ref[hidden] { display: none; }
+.kit-caso-logo { width: 200px; height: 200px; border-radius: 50%; display: grid; place-items: center; padding: var(--e4); text-align: center; background: color-mix(in srgb, var(--caso-color) 14%, #FFFFFF); border: 2px solid var(--caso-color); }
+.kit-caso-logo img { max-width: 80%; max-height: 80%; object-fit: contain; }
+.kit-caso-cuerpo h4 { font-family: var(--fuente-titulos); font-size: 1.35rem; margin: var(--e4) 0 var(--e2); }
+.kit-caso-texto { margin: 0; padding: var(--e4) var(--e6) var(--e4) var(--e4); background: #FFFFFF; border: 1px solid #DCD5C6; clip-path: polygon(0 0, 100% 0, calc(100% - 28px) 100%, 0 100%); max-width: 68ch; line-height: 1.65; }
+.kit-caso-entregables { list-style: none; padding: 0; margin: var(--e3) 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); position: relative; }
+.kit-caso-entregables::before { content: ""; position: absolute; left: 0; right: 0; top: 7px; height: 2px; background: var(--caso-color); }
+.kit-caso-entregables li { position: relative; display: grid; gap: 6px; align-content: start; padding: 0 var(--e4) 0 0; }
+.kit-caso-hito { width: 16px; height: 16px; border-radius: 50%; background: #F9F6F2; border: 3px solid var(--caso-color); position: relative; }
+.kit-caso-hito-texto { font-size: var(--t-chico); line-height: 1.45; }
+.kit-caso-entregables .kit-enlace-flecha { font-size: var(--t-chico); color: #3A4733; }
+.kit-cerrar { position: absolute; top: var(--e2); right: var(--e2); width: 40px; height: 40px; border-radius: 50%; border: 1px solid #C4BDAF; background: #FFFFFF; font-size: 1.4rem; line-height: 1; cursor: pointer; color: #1F241B; }
+@keyframes kit-aparece { from { opacity: 0; transform: translateY(12px) scale(.98); } }
+
+/* 4. Equipo, aliados y contacto. */
+.kit-cred-equipo .kit-equipo { margin-top: 0; }
+.kit-lista-numerada { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--borde-fuerte); }
+.kit-lista-numerada li { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: var(--e4); padding: var(--e4) 0; border-bottom: 1px solid var(--borde-fuerte); font-size: 1.125rem; }
+.kit-cred-contacto .kit-titular { font-size: clamp(3rem, 9vw, 7rem); margin-bottom: var(--e4); }
+.kit-contacto-linea { font-size: 1.25rem; margin: 0; }
+.kit-cred-contacto { padding-bottom: var(--e8); }
+.kit-portada .kit-cred-titulo-modulos { margin-top: var(--e7); }
+
+/* Foco visible en fondo oscuro. */
+.kit-banda-oscura :focus-visible { outline: 2px solid #E6C77F; outline-offset: 3px; }
+
+@media (max-width: 860px) {
+  .kit-hero { grid-template-columns: minmax(0, 1fr); }
+  .kit-hero-arco { max-width: 320px; justify-self: end; }
+  .kit-serv-diagrama { aspect-ratio: auto; }
+  .kit-serv-svg { aspect-ratio: 530 / 660; height: auto; max-width: 440px; margin-inline: auto; }
+  .kit-serv-guia, .kit-serv-anillo { display: none; }
+  .kit-serv-titulos { position: static; display: grid; gap: 0; margin-top: var(--e4); border-top: 1px solid var(--borde); }
+  .kit-serv-titulo { position: static; transform: none; padding: var(--e3) 0; border-bottom: 1px solid var(--borde); grid-template-columns: 40px 1fr; }
+  .kit-serv-titulo .kit-serv-ver { grid-column: 2; }
+  .kit-serv-ficha, .kit-caso-ref { grid-template-columns: minmax(0, 1fr); }
+  .kit-serv-ficha-icono { width: 112px; height: 112px; } .kit-serv-ficha-icono .kit-icono { width: 56px; height: 56px; }
+  .kit-serv-volver { position: static; justify-self: start; }
+  .kit-exp-cabeza { grid-template-columns: minmax(0, 1fr); }
+  .kit-caso-logo { width: 140px; height: 140px; }
+  .kit-caso-entregables { grid-template-columns: minmax(0, 1fr); gap: var(--e3); }
+  .kit-caso-entregables::before { left: 7px; right: auto; top: 0; bottom: 0; width: 2px; height: auto; }
+  .kit-caso-entregables li { grid-template-columns: 16px 1fr; padding: 0; } .kit-caso-entregables li > :not(.kit-caso-hito) { grid-column: 2; }
+  .kit-lista-numerada li { grid-template-columns: 48px minmax(0, 1fr); }
+  .kit-banda { padding-block: var(--e7); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kit-hero-trazo, .kit-caso-ref { animation: none; }
+  .kit-serv-diagrama, .kit-serv-ficha, .kit-serv-nodo, .kit-logo-celda { transition: none; }
+}

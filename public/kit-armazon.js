@@ -108,27 +108,10 @@
         destino.replaceChildren(el('p', 'Cargando credenciales…', 'nota'));
         try {
           const r = await root.fetch('config/kit-credenciales.json'); if (!r.ok) throw Error('No se pudieron cargar las credenciales.');
-          const cfg = await r.json(), seccion = (titulo, clase) => { const s = el('section', null, 'kit-cred-seccion ' + clase); s.append(el('h2', titulo)); return s; };
-          const lista = puntos => { const ul = el('ul'); puntos.forEach(t => ul.append(el('li', t))); return ul; };
-          const partes = [];
-          if (cfg.quienes) { const s = seccion('Quiénes somos', 'kit-cred-quienes'); s.append(el('p', cfg.quienes)); partes.push(s); }
-          if ((cfg.servicios || []).length) { const s = seccion('Servicios', 'kit-cred-servicios'), rej = el('div', null, 'kit-cred-rejilla'); cfg.servicios.forEach((v, i) => { const a = el('article', null, 'kit-cred-tarjeta'); a.append(el('span', String(i + 1).padStart(2, '0'), 'kit-cred-numero'), el('h3', v.titulo), lista(v.puntos)); rej.append(a); }); s.append(rej); partes.push(s); }
-          if ((cfg.experiencia || []).length) { const s = seccion('Experiencia', 'kit-cred-experiencia'), rej = el('div', null, 'kit-cred-rejilla kit-cred-casos'); cfg.experiencia.forEach(v => { const a = el('article', null, 'kit-cred-tarjeta'); a.append(el('p', v.sector, 'antetitulo'), el('h3', v.tema), el('p', v.descripcion), el('p', v.alcance, 'kit-cred-alcance'), lista(v.logros)); rej.append(a); }); s.append(rej); partes.push(s); }
-          if ((cfg.personas || []).length) {
-            const s = seccion('Equipo', 'kit-cred-equipo'), rej = el('div', null, 'kit-equipo');
-            cfg.personas.forEach(p => {
-              const ficha = el('article', null, 'kit-persona'), cabeza = el('div', null, 'kit-persona-cabeza'), texto = el('div');
-              if (p.foto) { const img = el('img'); img.src = p.foto; img.alt = 'Foto de ' + p.nombre; img.loading = 'lazy'; cabeza.append(img); }
-              else { const vacio = el('div', null, 'kit-persona-foto-vacia'); vacio.setAttribute('aria-hidden', 'true'); cabeza.append(vacio); }
-              texto.append(el('h3', p.nombre)); if (p.cargo) texto.append(el('p', p.cargo, 'kit-persona-cargo')); cabeza.append(texto); ficha.append(cabeza);
-              if (p.experiencia) ficha.append(el('p', p.experiencia, 'kit-persona-experiencia'));
-              rej.append(ficha);
-            }); s.append(rej); partes.push(s);
-          }
-          if ((cfg.aliados || []).length) { const s = seccion('Aliados', 'kit-cred-aliados'); s.append(lista(cfg.aliados)); partes.push(s); }
-          // E45: contacto comercial. El correo es provisional (dominio GH) hasta que Meleia tenga el suyo.
-          if (cfg.contacto?.correo) { const s = seccion('Contacto', 'kit-cred-contacto'), p = el('p'), a = el('a', cfg.contacto.correo); a.href = 'mailto:' + cfg.contacto.correo; p.append(el('span', 'Escríbenos a '), a); s.append(p); if (cfg.contacto.telefono) s.append(el('p', 'Teléfono: ' + cfg.contacto.telefono)); partes.push(s); }
-          destino.replaceChildren(...partes);
+          const cfg = await r.json();
+          // E46 (6-nov): la portada vive en kit-vista-credenciales.js (Look and Feel de Meleia).
+          if (!root.KitCredenciales) throw Error('No se pudo cargar la vista de credenciales.');
+          root.KitCredenciales.render(destino, cfg, App);
         } catch (e) { destino.replaceChildren(mensaje(e.message || 'No se pudieron cargar las credenciales.', true)); }
       }
       async function render() {
@@ -139,7 +122,9 @@
         if (root.location.hash !== ruta.hash) root.history.replaceState(null, '', ruta.hash);
         cabecera(ruta);
         if (!usuario) { ingresar(); contenido.focus(); return; }
-        contenido.append(tituloMarca(ruta.modulo ? `Módulo ${ruta.modulo.numero} · ${ruta.modulo.nombre}` : 'Meleia'));
+        contenido.classList?.toggle('kit-portada', ruta.clave === 'portada');
+        if (ruta.clave === 'portada') contenido.append(el('h1', 'Meleia · Credenciales', 'solo-lectores'));
+        else contenido.append(tituloMarca(`Módulo ${ruta.modulo.numero} · ${ruta.modulo.nombre}`));
         const zona = el('section', null, 'kit-vista'); contenido.append(zona); contenido.focus();
         try {
           if (ruta.clave === 'portada') {
