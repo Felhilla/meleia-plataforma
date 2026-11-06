@@ -88,36 +88,37 @@ test('DOM: portada global no consulta colecciones ni muestra selector global', a
   const m = await montar();
   assert.match(m.nodos.contenido.textContent, /Meleia/); assert.doesNotMatch(m.nodos.contenido.textContent, /GH Estudio/);
   assert.match(m.nodos.contenido.textContent, /laboratorio de ideas y soluciones para la sostenibilidad/i);
-  // E42 (5-nov): la portada es la ventana de Credenciales; después vienen los cuatro módulos.
+  // E46 (6-nov): hero con cuatro botones; el semicírculo arranca cerrado y Equipo y Aliados viven en él.
   const secciones = m.nodos.contenido.todos().filter(n => String(n.className).startsWith('kit-cred-seccion')).map(n => n.children[0].textContent);
-  assert.deepEqual(secciones, ['Quiénes somos', 'Servicios', 'Experiencia', 'Equipo', 'Aliados', 'Contacto']);
-  assert.equal(m.nodos.contenido.todos().filter(n => n.className === 'kit-persona').length, 3);
+  assert.deepEqual(secciones, ['Quiénes somos', '', 'Contacto']);
+  assert.deepEqual(m.nodos.contenido.todos().filter(n => n.className === 'kit-tema-boton').map(n => n.textContent), ['Servicios', 'Experiencia', 'Equipo', 'Aliados']);
+  assert.equal(m.nodos.contenido.todos().find(n => n.id === 'kit-explorar').hidden, true);
   // E45: el correo provisional (dominio GH) solo aparece en Contacto, como enlace; nunca en las fichas del equipo.
-  assert.ok(m.nodos.contenido.todos().filter(n => n.className === 'kit-persona').every(n => !/ghestudio/.test(n.textContent)));
   const correo = m.nodos.contenido.todos().find(n => String(n.href || '').startsWith('mailto:'));
   assert.equal(correo.href, 'mailto:ghillon@ghestudio.com.co');
   assert.deepEqual(m.nodos.contenido.todos().filter(n => n.className === 'kit-modulo').map(n => n.href), ['#/actores', '#/ddhh', '#/materialidad', '#/riesgos']);
   assert.equal(m.consultas.length, 0); assert.equal(m.nodos['kit-cuenta'].querySelector('select'), undefined);
   assert.match(m.nodos['kit-cuenta'].textContent, /Responsable/);
 });
-test('DOM E46: servicios en semicírculo con ficha y experiencia con sub ficha «Caso ref»', async () => {
+test('DOM E46: temas en semicírculo, fichas flotantes y caso con entregables enlazados', async () => {
   const m = await montar(), todos = () => m.nodos.contenido.todos();
-  const titulos = todos().filter(n => n.className === 'kit-serv-titulo');
-  assert.equal(titulos.length, 3);
-  await titulos[0].onclick();
-  const ficha = todos().find(n => n.className === 'kit-serv-ficha');
-  assert.equal(ficha.hidden, false); assert.match(ficha.textContent, /Servicio 01/); assert.match(ficha.textContent, /Casos/);
-  const volver = ficha.todos().find(n => n.className === 'kit-serv-volver'); await volver.onclick(); assert.equal(ficha.hidden, true);
-  assert.equal(todos().filter(n => n.className === 'kit-exp-fila').length, 3);
-  const celda = todos().find(n => n.tag === 'button' && n.className === 'kit-logo-celda');
-  celda.onclick();
-  const ref = todos().find(n => n.className === 'kit-caso-ref');
-  assert.equal(ref.hidden, false); assert.equal(celda.attrs['aria-expanded'], 'true');
-  assert.match(ref.textContent, /¿Qué se hizo\?/); assert.match(ref.textContent, /Entregables/);
-  assert.deepEqual(ref.todos().filter(n => n.tag === 'a').map(n => n.href), ['#/ddhh', '#/riesgos']);
-  celda.onclick(); assert.equal(ref.hidden, true); assert.equal(celda.attrs['aria-expanded'], 'false');
+  const boton = id => todos().find(n => n.className === 'kit-tema-boton' && n.dataset.tema === id);
+  const explorar = todos().find(n => n.id === 'kit-explorar'), capa = todos().find(n => n.className === 'kit-ficha-capa');
+  const titulos = () => todos().filter(n => n.className === 'kit-serv-titulo');
+  await boton('servicios').onclick();
+  assert.equal(explorar.hidden, false); assert.equal(boton('servicios').attrs['aria-pressed'], 'true'); assert.equal(titulos().length, 3);
+  titulos()[0].onclick();
+  assert.equal(capa.hidden, false); assert.match(capa.textContent, /Servicio 01/); assert.match(capa.textContent, /Casos/);
+  // Desde la ficha del servicio, el caso abre su ficha en Experiencia.
+  await capa.todos().find(n => n.className === 'kit-logo-celda').onclick();
+  assert.equal(boton('experiencia').attrs['aria-pressed'], 'true'); assert.equal(titulos().length, 4);
+  assert.match(capa.textContent, /Entregables/);
+  assert.deepEqual(capa.todos().filter(n => n.tag === 'a').map(n => n.href), ['#/ddhh', '#/riesgos']);
+  capa.todos().find(n => n.className === 'kit-serv-volver').onclick(); assert.equal(capa.hidden, true);
+  await boton('equipo').onclick(); assert.equal(titulos().length, 3); titulos()[1].onclick(); assert.match(capa.textContent, /Felipe Hillón/);
+  await boton('aliados').onclick(); assert.equal(titulos().length, 4); assert.equal(capa.hidden, true);
   // Sin logos confirmados, los casos siguen anonimizados (sin imágenes de clientes).
-  assert.ok(todos().filter(n => String(n.className).includes('kit-logo-celda')).every(c => !c.todos().some(n => n.tag === 'img')));
+  await boton('experiencia').onclick(); assert.ok(!todos().some(n => n.tag === 'image' || (n.tag === 'img' && /logo/.test(n.className || '') && !/hero/.test(n.className))));
 });
 test('DOM E24: selector accesible con uno o varios casos y pestaña Mapa de actores', async () => {
   const una = await montar({ empresas: muestras, hash:'#/ddhh' });

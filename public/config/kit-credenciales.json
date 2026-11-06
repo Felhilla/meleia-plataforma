@@ -86,7 +86,8 @@
           "texto": "Estrategia de debida diligencia y gestión de riesgos",
           "modulo": null
         }
-      ]
+      ],
+      "sigla": "GLP"
     },
     {
       "sector": "Textil y confecciones",
@@ -111,7 +112,8 @@
           "texto": "Estrategia de gestión alineada con estándares internacionales y sectoriales",
           "modulo": null
         }
-      ]
+      ],
+      "sigla": "TX"
     },
     {
       "sector": "Cemento y construcción",
@@ -136,7 +138,8 @@
           "texto": "Diseño de un tablero ESG de reporte y seguimiento",
           "modulo": null
         }
-      ]
+      ],
+      "sigla": "CM"
     },
     {
       "sector": "Agroexportación",
@@ -166,40 +169,59 @@
           "texto": "Plan de acción ESG",
           "modulo": null
         }
-      ]
+      ],
+      "sigla": "AG"
     }
   ],
   "aliados": [
-    "Consultora de transformación organizacional con más de 15 años y presencia en Argentina, Brasil, Chile, Colombia, el Caribe, España y México",
-    "Consultora en reputación, comunicaciones, asuntos públicos y manejo de crisis",
-    "Firma peruana con más de 10 años en gestión de sostenibilidad y cambio climático",
-    "Organización con más de 15 años en fortalecimiento organizacional, liderazgo y medición de impacto social"
+    {
+      "titulo": "Transformación organizacional",
+      "icono": "transformacion",
+      "descripcion": "Consultora de transformación organizacional con más de 15 años y presencia en Argentina, Brasil, Chile, Colombia, el Caribe, España y México"
+    },
+    {
+      "titulo": "Reputación y comunicaciones",
+      "icono": "reputacion",
+      "descripcion": "Consultora en reputación, comunicaciones, asuntos públicos y manejo de crisis"
+    },
+    {
+      "titulo": "Sostenibilidad y cambio climático",
+      "icono": "clima",
+      "descripcion": "Firma peruana con más de 10 años en gestión de sostenibilidad y cambio climático"
+    },
+    {
+      "titulo": "Fortalecimiento e impacto social",
+      "icono": "impacto-social",
+      "descripcion": "Organización con más de 15 años en fortalecimiento organizacional, liderazgo y medición de impacto social"
+    }
   ],
   "contacto": {
     "correo": "ghillon@ghestudio.com.co",
     "nota": "Correo provisional mientras Meleia habilita su dominio (decisión de Felipe del 5-nov)."
   },
-  "frase": {
-    "antetitulo": "Meleia",
-    "texto": "De la información a la decisión",
-    "nota": "Propuesta de Claude (6-nov) tomada de Quiénes somos. Por aprobar."
-  },
   "afirmacion": "Transformamos información en mejores decisiones.",
-  "casos_exito": {
-    "0": "caso-1",
-    "2": "caso-3"
-  },
-  "otros_clientes": {
-    "0": [],
-    "1": [],
-    "2": []
-  },
-  "pendientes_look": "6-nov: logos de clientes y lista de otros clientes por servicio sin confirmar. Mientras tanto se muestran fichas tipográficas anonimizadas. Servicio 2 sin caso de éxito asignado.",
-  "titulares": {
-    "servicios": "Tres servicios que se conectan en el territorio.",
-    "experiencia": "Lo hemos hecho con empresas líderes de la región.",
-    "equipo": "Las personas detrás de Meleia.",
-    "aliados": "Trabajamos en red.",
-    "nota": "Propuestas de Claude (6-nov). Por aprobar."
+  "pendientes_look": "6-nov: logos de clientes sin confirmar (casos anonimizados con sigla del sector). Servicio 2 sin caso. Significado del «#» bajo cada entregable por confirmar con Felipe.",
+  "temas": {
+    "servicios": {
+      "nombre": "Servicios",
+      "frase": "De la información a la decisión",
+      "titular": "Tres servicios que se conectan en el territorio."
+    },
+    "experiencia": {
+      "nombre": "Experiencia",
+      "frase": "Lo hemos hecho en el territorio",
+      "titular": "Lo hemos hecho con empresas líderes de la región."
+    },
+    "equipo": {
+      "nombre": "Equipo",
+      "frase": "Las personas detrás de Meleia",
+      "titular": "Territorio, estrategia y tecnología en un mismo equipo."
+    },
+    "aliados": {
+      "nombre": "Aliados",
+      "frase": "Trabajamos en red",
+      "titular": "Trabajamos en red con firmas especializadas."
+    },
+    "nota": "Frases y titulares: propuestas de Claude (6-nov). Por aprobar."
   }
 }

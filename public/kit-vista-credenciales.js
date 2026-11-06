@@ -1,196 +1,201 @@
-// E46 (6-nov): portada de Credenciales con el Look and Feel de Meleia (boceto Home I de Felipe).
-// Bandas a sangre, servicios en semicírculo con zoom a la ficha, experiencia por servicio con sub ficha «Caso ref».
+// E46 (6-nov): portada de Credenciales con el Look and Feel de Meleia (bocetos Home I y Correcciones Parte I de Felipe).
+// Hero con el logo grande y cuatro botones (Servicios, Experiencia, Equipo, Aliados). Un solo semicírculo que arranca
+// cerrado, cambia de tema con una recarga de arriba hacia abajo y abre fichas que flotan sobre el gráfico difuminado.
 (function (root) {
   'use strict';
   const SVG = 'http://www.w3.org/2000/svg';
-  const COLORES = ['#5E7A45', '#B78D36', '#3A4733'];
-  const ICONOS = {
-    sostenibilidad: [['path', { d: 'M24 5 39 11v12c0 10-7 17-15 20C16 40 9 33 9 23V11Z' }], ['path', { d: 'M17 30c0-9 7-14 15-14 0 9-5 14-14 14Z' }], ['path', { d: 'm17 32 9-9' }]],
-    dialogo: [['path', { d: 'M9 10h19a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H17l-6 5v-5H9a4 4 0 0 1-4-4V14a4 4 0 0 1 4-4Z' }], ['path', { d: 'M36 18h3a4 4 0 0 1 4 4v9a4 4 0 0 1-4 4h-2v5l-6-5h-8a4 4 0 0 1-4-4v-1' }], ['circle', { cx: 13, cy: 19, r: 1.6, class: 'relleno' }], ['circle', { cx: 18.5, cy: 19, r: 1.6, class: 'relleno' }], ['circle', { cx: 24, cy: 19, r: 1.6, class: 'relleno' }]],
-    ia: [['path', { d: 'M24 24 24 10M24 24 11 19M24 24l13-5M24 24l-8 13M24 24l8 13M11 19l13-9 13 9-5 18H16Z' }], ['circle', { cx: 24, cy: 10, r: 3, class: 'nodo' }], ['circle', { cx: 11, cy: 19, r: 3, class: 'nodo' }], ['circle', { cx: 37, cy: 19, r: 3, class: 'nodo' }], ['circle', { cx: 16, cy: 37, r: 3, class: 'nodo' }], ['circle', { cx: 32, cy: 37, r: 3, class: 'nodo' }], ['circle', { cx: 24, cy: 24, r: 4.5, class: 'relleno' }]]
-  };
+  const COLORES = ['#5E7A45', '#B78D36', '#3A4733', '#A8503A'];
+  // Respaldo mínimo mientras cargan los íconos de img/iconos/ (o si no cargan).
+  const RESPALDO = [['circle', { cx: 32, cy: 32, r: 20, fill: 'none', stroke: 'currentColor', 'stroke-width': 2.5 }], ['circle', { cx: 32, cy: 32, r: 6, fill: '#B78D36' }]];
   const nombreModulo = { actores: 'Módulo I', ddhh: 'Módulo II', materialidad: 'Módulo III', riesgos: 'Módulo IV' };
   const dos = i => String(i + 1).padStart(2, '0');
   const pausa = ms => new Promise(r => root.setTimeout ? root.setTimeout(r, ms) : r());
+  const cacheIconos = new Map();
 
   function render(destino, cfg, App) {
     const el = App.el, doc = root.document;
     const svg = (tag, attrs = {}) => { const n = doc.createElementNS(SVG, tag); Object.entries(attrs).forEach(([k, v]) => n.setAttribute(k, String(v))); return n; };
     const sinMovimiento = () => !!root.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const icono = (clave, clase = 'kit-icono') => {
-      const s = svg('svg', { viewBox: '0 0 48 48', class: clase, 'aria-hidden': 'true', focusable: 'false' });
-      (ICONOS[clave] || ICONOS.sostenibilidad).forEach(([t, a]) => s.append(svg(t, a))); return s;
-    };
     const mono = (texto, clase = '') => el('p', texto, ('kit-mono ' + clase).trim());
-    const banda = (titulo, clase, titular) => {
-      const s = el('section', null, 'kit-cred-seccion kit-banda ' + clase), h = el('h2', titulo, 'kit-mono kit-antetitulo');
-      s.append(h); if (titular) s.append(el('p', titular, 'kit-titular')); return s;
-    };
     const lista = puntos => { const ul = el('ul'); (puntos || []).forEach(t => ul.append(el('li', t))); return ul; };
-    const titulares = cfg.titulares || {};
-    const servicios = cfg.servicios || [], experiencia = cfg.experiencia || [];
-    const partes = [];
-    const abridores = new Map(); // id del caso → función que abre su sub ficha
 
-    // 1. Quiénes somos: hero oscuro con el arco de la marca escalado.
-    if (cfg.quienes) {
-      const s = banda('Quiénes somos', 'kit-cred-quienes kit-banda-oscura');
-      const texto = el('div', null, 'kit-hero-texto');
-      if (cfg.afirmacion) texto.append(el('p', cfg.afirmacion, 'kit-hero-afirmacion'));
-      texto.append(el('p', cfg.quienes, 'kit-hero-quienes'));
-      const ejes = el('ul', null, 'kit-hero-ejes'); servicios.forEach((v, i) => { const li = el('li'); li.append(el('span', dos(i), 'kit-mono'), el('span', v.corto || v.titulo)); ejes.append(li); }); texto.append(ejes);
-      const arte = svg('svg', { viewBox: '0 0 400 260', class: 'kit-hero-arco', 'aria-hidden': 'true', focusable: 'false' });
-      [190, 150, 110].forEach((r, i) => arte.append(svg('path', { d: `M${200 - r} 240a${r} ${r} 0 0 1 ${2 * r} 0`, class: 'kit-hero-trazo t' + i, pathLength: 1 })));
-      arte.append(svg('circle', { cx: 200, cy: 240, r: 9, class: 'kit-hero-punto' }));
-      const cuerpo = el('div', null, 'kit-hero'); cuerpo.append(texto, arte); s.append(cuerpo); partes.push(s);
+    // Ícono: lienzo SVG que se llena con img/iconos/<nombre>.svg (archivo propio del sitio, sin scripts).
+    function icono(nombre, clase = 'kit-icono') {
+      const s = svg('svg', { viewBox: '0 0 64 64', class: clase, 'aria-hidden': 'true', focusable: 'false' });
+      RESPALDO.forEach(([t, a]) => s.append(svg(t, a)));
+      if (nombre && root.fetch && root.DOMParser) {
+        if (!cacheIconos.has(nombre)) cacheIconos.set(nombre, root.fetch('img/iconos/' + nombre + '.svg').then(r => r.ok ? r.text() : null).catch(() => null));
+        cacheIconos.get(nombre).then(texto => {
+          if (!texto) return;
+          const fuente = new root.DOMParser().parseFromString(texto, 'image/svg+xml').documentElement;
+          if (!fuente || fuente.nodeName !== 'svg' || fuente.querySelector('script,foreignObject')) return;
+          s.setAttribute('viewBox', fuente.getAttribute('viewBox') || '0 0 64 64');
+          s.replaceChildren(...[...fuente.childNodes].map(n => doc.importNode(n, true)));
+        });
+      }
+      return s;
     }
 
-    // 2. Servicios: semicírculo de tres segmentos; clic en segmento, ícono o título hace zoom y abre la ficha.
-    if (servicios.length) {
-      const s = banda('Servicios', 'kit-cred-servicios', titulares.servicios);
-      const escena = el('div', null, 'kit-serv-escena'), diagrama = el('div', null, 'kit-serv-diagrama'), ficha = el('div', null, 'kit-serv-ficha');
-      ficha.hidden = true; ficha.setAttribute('aria-live', 'polite');
-      const C = [260, 330], R0 = 175, R1 = 285, RN = 290, n = servicios.length, paso = 180 / n;
+    const servicios = cfg.servicios || [], experiencia = cfg.experiencia || [], personas = cfg.personas || [], aliados = cfg.aliados || [];
+    const temasCfg = cfg.temas || {};
+    const temas = [
+      { id: 'servicios', items: servicios.map(v => ({ titulo: v.titulo, sub: 'Ver servicio', nodo: { icono: v.icono }, dato: v })), ficha: fichaServicio },
+      { id: 'experiencia', items: experiencia.map(e => ({ titulo: e.sector, sub: servicios[e.servicio]?.titulo || e.tema, nodo: { logo: e.logo, sigla: e.sigla || e.sector }, dato: e })), ficha: fichaCaso },
+      { id: 'equipo', items: personas.map(p => ({ titulo: p.nombre, sub: p.cargo, nodo: { foto: p.foto, sigla: p.nombre }, dato: p })), ficha: fichaPersona },
+      { id: 'aliados', items: aliados.map(a => ({ titulo: a.titulo, sub: 'Ver aliado', nodo: { icono: a.icono }, dato: a })), ficha: fichaAliado }
+    ].filter(t => t.items.length).map(t => ({ ...t, nombre: temasCfg[t.id]?.nombre || t.id, frase: temasCfg[t.id]?.frase || '', titular: temasCfg[t.id]?.titular || '' }));
+    const partes = [];
+
+    // 1. Hero: logo grande, título extendido, quiénes somos y los botones de los temas.
+    const hero = el('section', null, 'kit-cred-seccion kit-banda kit-banda-oscura kit-cred-quienes');
+    hero.append(el('h2', 'Quiénes somos', 'kit-mono kit-antetitulo'));
+    const logo = el('img', null, 'kit-hero-logo'); logo.src = 'img/logo-meleia-grande-claro.png'; logo.alt = 'Meleia · Sostenibilidad, riesgo preventivo, debida diligencia'; logo.width = 1400; logo.height = 579; hero.append(logo);
+    if (cfg.afirmacion) hero.append(el('p', cfg.afirmacion, 'kit-hero-afirmacion'));
+    if (cfg.quienes) hero.append(el('p', cfg.quienes, 'kit-hero-quienes'));
+    const botonera = el('nav', null, 'kit-temas'); botonera.setAttribute('aria-label', 'Explorar Meleia');
+    hero.append(botonera); partes.push(hero);
+
+    // 2. Escena común: arranca cerrada y solo se abre con los botones.
+    const explorar = el('section', null, 'kit-cred-seccion kit-banda kit-cred-explorar'); explorar.id = 'kit-explorar'; explorar.hidden = true;
+    const ante = el('h2', '', 'kit-mono kit-antetitulo'), titular = el('p', '', 'kit-titular');
+    const escena = el('div', null, 'kit-serv-escena'), diagrama = el('div', null, 'kit-serv-diagrama'), capa = el('div', null, 'kit-ficha-capa');
+    capa.hidden = true; capa.setAttribute('role', 'dialog'); capa.setAttribute('aria-modal', 'false');
+    escena.append(diagrama, capa); explorar.append(ante, titular, escena); partes.push(explorar);
+    const botones = temas.map(t => {
+      const b = el('button', t.nombre, 'kit-tema-boton'); b.type = 'button'; b.dataset.tema = t.id;
+      b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-controls', 'kit-explorar');
+      b.onclick = () => mostrarTema(t.id, true); botonera.append(b); return b;
+    });
+
+    const angosta = root.matchMedia?.('(max-width: 860px)');
+    let actual = null, titulosActuales = [], nodosActuales = [], dibujo = null;
+    const encuadre = () => dibujo?.setAttribute('viewBox', angosta?.matches ? '92 0 530 660' : '0 0 1000 660');
+    angosta?.addEventListener?.('change', encuadre);
+
+    async function mostrarTema(id, desplazar) {
+      const tema = temas.find(t => t.id === id); if (!tema) return;
+      cerrarFicha(false);
+      botones.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tema === id)));
+      const abriendo = explorar.hidden; explorar.hidden = false;
+      if (actual === id) { if (desplazar) explorar.scrollIntoView?.({ behavior: sinMovimiento() ? 'auto' : 'smooth', block: 'start' }); return; }
+      actual = id;
+      if (!abriendo && !sinMovimiento()) { diagrama.classList?.add('saliendo'); await pausa(220); }
+      ante.textContent = tema.nombre; titular.textContent = tema.titular;
+      dibujarTema(tema);
+      diagrama.classList?.remove('saliendo');
+      if (desplazar) explorar.scrollIntoView?.({ behavior: sinMovimiento() ? 'auto' : 'smooth', block: 'start' });
+    }
+
+    // Semicírculo de n segmentos (3 o 4). Cada segmento, nodo y título abre la ficha del elemento.
+    function dibujarTema(tema) {
+      const C = [260, 330], R0 = 175, R1 = 285, RN = 290, n = tema.items.length, paso = 180 / n;
       const punto = (r, g) => [C[0] + r * Math.cos(g * Math.PI / 180), C[1] + r * Math.sin(g * Math.PI / 180)];
-      const dibujo = svg('svg', { viewBox: '0 0 1000 660', class: 'kit-serv-svg', 'aria-hidden': 'true', focusable: 'false' });
+      dibujo = svg('svg', { class: 'kit-serv-svg', 'aria-hidden': 'true', focusable: 'false' }); encuadre();
       dibujo.append(svg('path', { d: `M${C[0]} ${C[1] - 318}a318 318 0 0 1 0 636`, class: 'kit-serv-marco' }));
-      const botones = [], nodos = [];
-      servicios.forEach((v, i) => {
+      titulosActuales = []; nodosActuales = [];
+      const titulos = el('div', null, 'kit-serv-titulos');
+      tema.items.forEach((item, i) => {
         const a0 = -90 + i * paso + 1.2, a1 = -90 + (i + 1) * paso - 1.2, medio = -90 + (i + .5) * paso;
         const [x0, y0] = punto(R1, a0), [x1, y1] = punto(R1, a1), [x2, y2] = punto(R0, a1), [x3, y3] = punto(R0, a0);
-        const g = svg('g', { class: 'kit-serv-seg', 'data-i': i });
-        g.append(svg('path', { d: `M${x0} ${y0}A${R1} ${R1} 0 0 1 ${x1} ${y1}L${x2} ${y2}A${R0} ${R0} 0 0 0 ${x3} ${y3}Z`, fill: COLORES[i % 3] }));
-        const [nx, ny] = punto(222, medio - 15), num = svg('text', { x: nx, y: ny, class: 'kit-serv-num', 'text-anchor': 'middle', 'dominant-baseline': 'central' }); num.textContent = String(i + 1); g.append(num);
-        const [cx, cy] = punto(RN, medio); nodos.push([cx, cy]);
+        const g = svg('g', { class: 'kit-serv-seg', style: `--i:${i}` });
+        g.append(svg('path', { d: `M${x0} ${y0}A${R1} ${R1} 0 0 1 ${x1} ${y1}L${x2} ${y2}A${R0} ${R0} 0 0 0 ${x3} ${y3}Z`, fill: COLORES[i % COLORES.length] }));
+        const [nx, ny] = punto(222, medio - (n > 3 ? 11 : 15)), num = svg('text', { x: nx, y: ny, class: 'kit-serv-num', 'text-anchor': 'middle', 'dominant-baseline': 'central' }); num.textContent = String(i + 1); g.append(num);
+        const [cx, cy] = punto(RN, medio); nodosActuales.push([cx, cy]);
         g.append(svg('line', { x1: cx + 50, y1: cy, x2: 702, y2: cy, class: 'kit-serv-guia' }), svg('circle', { cx: 714, cy, r: 8, class: 'kit-serv-anillo' }));
         const nodo = svg('g', { class: 'kit-serv-nodo', transform: `translate(${cx} ${cy})` });
-        nodo.append(svg('circle', { r: 50, class: 'kit-serv-nodo-fondo' }), svg('circle', { r: 42, class: 'kit-serv-nodo-aro', stroke: COLORES[i % 3] }));
-        const ic = icono(v.icono, 'kit-serv-nodo-icono'); ic.setAttribute('x', -28); ic.setAttribute('y', -28); ic.setAttribute('width', 56); ic.setAttribute('height', 56); nodo.append(ic); g.append(nodo);
-        g.addEventListener?.('click', () => abrir(i)); dibujo.append(g);
-        const b = el('button', null, 'kit-serv-titulo'); b.type = 'button'; b.style && (b.style.top = (cy / 660 * 100) + '%');
-        b.append(el('span', dos(i), 'kit-mono'), el('span', v.titulo, 'kit-serv-titulo-texto'), el('span', 'Ver servicio', 'kit-serv-ver'));
-        b.setAttribute('aria-label', `Servicio ${i + 1}: ${v.titulo}. Abrir la ficha`); b.onclick = () => abrir(i); botones.push(b);
+        nodo.append(svg('circle', { r: 50, class: 'kit-serv-nodo-fondo' }), svg('circle', { r: 44, class: 'kit-serv-nodo-aro', stroke: COLORES[i % COLORES.length] }));
+        if (item.nodo.icono) { const ic = icono(item.nodo.icono, 'kit-serv-nodo-icono'); Object.entries({ x: -30, y: -30, width: 60, height: 60 }).forEach(([k, v]) => ic.setAttribute(k, v)); nodo.append(ic); }
+        else if (item.nodo.foto || item.nodo.logo) {
+          const clip = 'kit-clip-' + tema.id + '-' + i, def = svg('clipPath', { id: clip }); def.append(svg('circle', { r: 41 })); nodo.append(def);
+          nodo.append(svg('image', { href: item.nodo.foto || item.nodo.logo, x: -41, y: -41, width: 82, height: 82, 'clip-path': `url(#${clip})`, preserveAspectRatio: item.nodo.foto ? 'xMidYMid slice' : 'xMidYMid meet' }));
+        } else { const t = svg('text', { class: 'kit-serv-sigla', 'text-anchor': 'middle', 'dominant-baseline': 'central' }); t.textContent = item.nodo.sigla; nodo.append(t); }
+        g.append(nodo); g.addEventListener?.('click', () => abrirFicha(tema, i)); dibujo.append(g);
+        const b = el('button', null, 'kit-serv-titulo'); b.type = 'button'; if (b.style) { b.style.top = (cy / 660 * 100) + '%'; b.style.setProperty?.('--i', i); }
+        b.append(el('span', dos(i), 'kit-mono'), el('span', item.titulo, 'kit-serv-titulo-texto'));
+        if (item.sub) b.append(el('span', item.sub, 'kit-serv-ver'));
+        b.setAttribute('aria-label', `${tema.nombre} ${i + 1}: ${item.titulo}. Abrir la ficha`); b.onclick = () => abrirFicha(tema, i);
+        titulosActuales.push(b); titulos.append(b);
       });
       const centro = svg('g', { class: 'kit-serv-centro' });
       centro.append(svg('circle', { cx: C[0], cy: C[1], r: 158 }));
-      const ante = svg('text', { x: C[0], y: C[1] - 52, 'text-anchor': 'middle', class: 'kit-serv-centro-ante' }); ante.textContent = (cfg.frase?.antetitulo || 'Meleia').toUpperCase(); centro.append(ante);
-      const palabras = String(cfg.frase?.texto || '').split(' '), corte = Math.ceil(palabras.length / 2);
-      [palabras.slice(0, corte).join(' '), palabras.slice(corte).join(' ')].forEach((linea, k) => { const t = svg('text', { x: C[0], y: C[1] + 4 + k * 40, 'text-anchor': 'middle', class: 'kit-serv-centro-frase' }); t.textContent = linea; centro.append(t); });
-      centro.append(svg('circle', { cx: C[0], cy: C[1] + 92, r: 6, class: 'kit-hero-punto' }));
+      const t0 = svg('text', { x: C[0], y: C[1] - 52, 'text-anchor': 'middle', class: 'kit-serv-centro-ante' }); t0.textContent = 'MELEIA'; centro.append(t0);
+      const palabras = tema.frase.split(' '), corte = Math.ceil(palabras.length / 2);
+      [palabras.slice(0, corte).join(' '), palabras.slice(corte).join(' ')].forEach((linea, k) => { const t = svg('text', { x: C[0], y: C[1] + 4 + k * 38, 'text-anchor': 'middle', class: 'kit-serv-centro-frase' }); t.textContent = linea; centro.append(t); });
+      centro.append(svg('circle', { cx: C[0], cy: C[1] + 90, r: 6, class: 'kit-hero-punto' }));
       dibujo.append(centro);
-      // En pantallas angostas los títulos van debajo: se recorta el lienzo al semicírculo para que crezca.
-      const angosta = root.matchMedia?.('(max-width: 860px)');
-      const encuadre = () => dibujo.setAttribute('viewBox', angosta?.matches ? '92 0 530 660' : '0 0 1000 660');
-      encuadre(); angosta?.addEventListener?.('change', encuadre);
-      const frase = el('p', cfg.frase?.texto || '', 'solo-lectores');
-      const titulos = el('div', null, 'kit-serv-titulos'); titulos.append(...botones);
-      diagrama.append(dibujo, frase, titulos); escena.append(diagrama, ficha); s.append(escena); partes.push(s);
-
-      async function abrir(i) {
-        const v = servicios[i], [cx, cy] = nodos[i];
-        const [vx, vw] = angosta?.matches ? [92, 530] : [0, 1000];
-        if (diagrama.style) diagrama.style.transformOrigin = `${(cx - vx) / vw * 100}% ${cy / 6.6}%`;
-        if (escena.style && diagrama.offsetHeight) escena.style.minHeight = diagrama.offsetHeight + 'px';
-        if (!sinMovimiento()) { diagrama.classList?.add('acercando'); await pausa(420); }
-        diagrama.hidden = true;
-        const volver = el('button', 'Volver al gráfico', 'kit-serv-volver'); volver.type = 'button';
-        volver.onclick = async () => {
-          ficha.hidden = true; diagrama.hidden = false; if (escena.style) escena.style.minHeight = '';
-          if (!sinMovimiento()) { await pausa(20); diagrama.classList?.remove('acercando'); } else diagrama.classList?.remove('acercando');
-          botones[i].focus?.();
-        };
-        const sello = el('div', null, 'kit-serv-ficha-icono'); if (sello.style) sello.style.background = COLORES[i % 3]; sello.append(icono(v.icono));
-        const cuerpo = el('div', null, 'kit-serv-ficha-cuerpo');
-        cuerpo.append(mono('Servicio ' + dos(i)), el('h3', v.titulo));
-        const caja = el('div', null, 'kit-serv-descripcion'); caja.append(el('p', v.descripcion || ''), lista(v.puntos)); cuerpo.append(caja);
-        const casos = experiencia.filter(e => e.servicio === i);
-        cuerpo.append(mono('Casos', 'kit-serv-casos-titulo'));
-        if (casos.length) { const ul = el('ul', null, 'kit-serv-casos'); casos.forEach(e => { const li = el('li'), b = el('button', `${e.sector} · ${e.tema}`, 'kit-enlace-flecha'); b.type = 'button'; b.onclick = () => abridores.get(e.id)?.(true); li.append(b); ul.append(li); }); cuerpo.append(ul); }
-        else cuerpo.append(el('p', 'Casos por confirmar.', 'nota'));
-        ficha.replaceChildren(volver, sello, cuerpo); ficha.hidden = false;
-        ficha.classList?.add('entrando'); await pausa(20); ficha.classList?.remove('entrando');
-        volver.focus?.();
-      }
+      diagrama.replaceChildren(dibujo, el('p', tema.frase, 'solo-lectores'), titulos);
+      diagrama.classList?.remove('recarga'); void diagrama.offsetWidth; diagrama.classList?.add('recarga');
     }
 
-    // 3. Experiencia por servicio: caso de éxito, otros clientes y sub ficha «Caso ref».
-    if (experiencia.length) {
-      const s = banda('Experiencia', 'kit-cred-experiencia kit-banda-oscura', titulares.experiencia);
-      const exitos = cfg.casos_exito || {}, otros = cfg.otros_clientes || {};
-      const celda = (caso, controla) => {
-        const b = el('button', null, 'kit-logo-celda'); b.type = 'button';
-        if (caso.logo) { const img = el('img'); img.src = caso.logo; img.alt = caso.cliente || caso.sector; b.append(img); }
-        else b.append(el('span', caso.sector, 'kit-logo-sector'), el('span', caso.tema, 'kit-mono'));
-        b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-controls', controla);
-        b.setAttribute('aria-label', `Caso ${caso.sector}, ${caso.tema}. Abrir la ficha del caso`); return b;
-      };
-      const pendiente = texto => { const d = el('div', null, 'kit-logo-celda kit-logo-pendiente'); d.append(el('span', texto, 'kit-mono')); return d; };
-      servicios.forEach((v, i) => {
-        const fila = el('article', null, 'kit-exp-fila'), cabeza = el('div', null, 'kit-exp-cabeza'), id = 'kit-caso-ref-' + i;
-        const marca = el('div', null, 'kit-exp-servicio'), sello = el('span', null, 'kit-exp-icono'); if (sello.style) sello.style.background = COLORES[i % 3]; sello.append(icono(v.icono));
-        const nombre = el('div'); nombre.append(mono('Servicio ' + dos(i)), el('h3', v.titulo)); marca.append(sello, nombre);
-        const ref = el('div', null, 'kit-caso-ref'); ref.id = id; ref.hidden = true;
-        const exito = experiencia.find(e => e.id === exitos[i]);
-        const lado = el('div', null, 'kit-exp-exito'); lado.append(mono('Caso de éxito'));
-        const celdas = [];
-        if (exito) { const c = celda(exito, id); celdas.push([c, exito]); lado.append(c); } else lado.append(pendiente('Por confirmar'));
-        cabeza.append(marca, lado);
-        const resto = el('div', null, 'kit-exp-otros'); resto.append(mono('Otros clientes'));
-        const rej = el('div', null, 'kit-logo-rejilla');
-        experiencia.filter(e => e.servicio === i && e !== exito).forEach(e => { const c = celda(e, id); celdas.push([c, e]); rej.append(c); });
-        (otros[i] || []).forEach(o => { const d = el('div', null, 'kit-logo-celda kit-logo-fijo'); if (o.logo) { const img = el('img'); img.src = o.logo; img.alt = o.nombre; d.append(img); } else d.append(el('span', o.nombre, 'kit-logo-sector')); rej.append(d); });
-        if (!rej.children.length) rej.append(pendiente('Logos por confirmar'));
-        resto.append(rej);
-        const mostrar = (caso, boton, desplazar) => {
-          const abierto = !ref.hidden && ref.dataset.caso === caso.id;
-          celdas.forEach(([c]) => c.setAttribute('aria-expanded', 'false'));
-          if (abierto) { ref.hidden = true; ref.dataset.caso = ''; boton.focus?.(); return; }
-          boton.setAttribute('aria-expanded', 'true'); ref.dataset.caso = caso.id;
-          if (ref.style) ref.style.setProperty?.('--caso-color', caso.color || COLORES[i % 3]);
-          const logo = el('div', null, 'kit-caso-logo');
-          if (caso.logo) { const img = el('img'); img.src = caso.logo; img.alt = caso.cliente || caso.sector; logo.append(img); } else logo.append(el('span', caso.sector, 'kit-logo-sector'));
-          const cuerpo = el('div', null, 'kit-caso-cuerpo');
-          cuerpo.append(mono(caso.sector + ' · ' + caso.tema), el('h4', '¿Qué se hizo?'), el('p', caso.que_se_hizo || caso.descripcion, 'kit-caso-texto'), el('h4', 'Entregables'));
-          const linea = el('ol', null, 'kit-caso-entregables');
-          (caso.entregables || []).forEach(t => {
-            const li = el('li'); li.append(el('span', null, 'kit-caso-hito'), el('span', t.texto, 'kit-caso-hito-texto'));
-            if (t.modulo) { const a = el('a', 'Ver en el ' + (nombreModulo[t.modulo] || 'Kit'), 'kit-enlace-flecha'); a.href = '#/' + t.modulo; li.append(a); }
-            linea.append(li);
-          });
-          cuerpo.append(linea);
-          const cerrar = el('button', '×', 'kit-cerrar'); cerrar.type = 'button'; cerrar.setAttribute('aria-label', 'Cerrar la ficha del caso');
-          cerrar.onclick = () => { ref.hidden = true; ref.dataset.caso = ''; boton.setAttribute('aria-expanded', 'false'); boton.focus?.(); };
-          ref.replaceChildren(cerrar, logo, cuerpo); ref.hidden = false;
-          if (desplazar) { ref.scrollIntoView?.({ behavior: sinMovimiento() ? 'auto' : 'smooth', block: 'center' }); cerrar.focus?.({ preventScroll: true }); }
-        };
-        celdas.forEach(([c, caso]) => { c.onclick = () => mostrar(caso, c, false); abridores.set(caso.id, () => { if (ref.hidden || ref.dataset.caso !== caso.id) mostrar(caso, c, true); else ref.scrollIntoView?.({ block: 'center' }); }); });
-        fila.append(cabeza, resto, ref); s.append(fila);
+    // Fichas: flotan sobre el gráfico, que queda difuminado. Cierre con «Volver al gráfico» o Escape.
+    let abierta = null;
+    function cerrarFicha(enfocar = true) {
+      if (capa.hidden) return;
+      capa.hidden = true; capa.replaceChildren(); diagrama.classList?.remove('difuminado'); if (escena.style) escena.style.minHeight = '';
+      if (enfocar && abierta != null) titulosActuales[abierta]?.focus?.(); abierta = null;
+    }
+    capa.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); cerrarFicha(); } };
+    function abrirFicha(tema, i) {
+      abierta = i;
+      const tarjeta = el('article', null, 'kit-ficha-flotante kit-ficha-' + tema.id);
+      const volver = el('button', 'Volver al gráfico', 'kit-serv-volver'); volver.type = 'button'; volver.onclick = () => cerrarFicha();
+      tarjeta.append(volver, ...tema.ficha(tema.items[i].dato, i));
+      capa.replaceChildren(tarjeta); capa.setAttribute('aria-label', tema.nombre + ': ' + tema.items[i].titulo);
+      const [cx, cy] = nodosActuales[i] || [500, 330], [vx, vw] = angosta?.matches ? [92, 530] : [0, 1000];
+      if (tarjeta.style) tarjeta.style.transformOrigin = `${(cx - vx) / vw * 100}% ${cy / 6.6}%`;
+      diagrama.classList?.add('difuminado'); capa.hidden = false;
+      if (escena.style && tarjeta.offsetHeight) escena.style.minHeight = Math.max(diagrama.offsetHeight || 0, tarjeta.offsetHeight + 48) + 'px';
+      volver.focus?.({ preventScroll: true });
+    }
+
+    // Cabecera común de las fichas: círculo con ícono, foto o logo montado sobre la barra del título.
+    function cabeza(item, i, antetitulo, titulo) {
+      const c = el('header', null, 'kit-ficha-cabeza'), sello = el('div', null, 'kit-ficha-sello');
+      if (sello.style) sello.style.setProperty?.('--sello', COLORES[i % COLORES.length]);
+      if (item.icono) sello.append(icono(item.icono));
+      else if (item.foto || item.logo) { const img = el('img'); img.src = item.foto || item.logo; img.alt = ''; sello.append(img); sello.classList?.add(item.foto ? 'con-foto' : 'con-logo'); }
+      else sello.append(el('span', item.sigla || '', 'kit-logo-sigla'));
+      const barra = el('div', null, 'kit-ficha-barra'); barra.append(mono(antetitulo), el('h3', titulo));
+      c.append(sello, barra); return c;
+    }
+    const caja = (...hijos) => { const d = el('div', null, 'kit-ficha-descripcion'); d.append(...hijos); return d; };
+    function celdaCaso(e) {
+      const b = el('button', null, 'kit-logo-celda'); b.type = 'button';
+      if (e.logo) { const img = el('img'); img.src = e.logo; img.alt = e.sector; b.append(img); } else b.append(el('span', e.sigla || e.sector, 'kit-logo-sigla'), el('span', e.sector, 'kit-mono'));
+      b.setAttribute('aria-label', `Caso ${e.sector}. Abrir en Experiencia`);
+      b.onclick = async () => { await mostrarTema('experiencia', false); abrirFicha(temas.find(x => x.id === 'experiencia'), experiencia.indexOf(e)); };
+      return b;
+    }
+    function fichaServicio(v, i) {
+      const casos = experiencia.filter(e => e.servicio === i), fila = el('div', null, 'kit-casos-logos');
+      casos.forEach((e, k) => { if (k) fila.append(el('span', '/', 'kit-casos-barra')); fila.append(celdaCaso(e)); });
+      return [cabeza({ icono: v.icono }, i, 'Servicio ' + dos(i), v.titulo), caja(el('p', v.descripcion || ''), lista(v.puntos)), mono('Casos', 'kit-ficha-sub'), casos.length ? fila : el('p', 'Casos por confirmar.', 'nota')];
+    }
+    function fichaCaso(e, i) {
+      const servicio = servicios[e.servicio], cuerpo = el('div', null, 'kit-caso-cuerpo'), logoCaso = el('div', null, 'kit-caso-logo');
+      if (e.logo) { const img = el('img'); img.src = e.logo; img.alt = e.sector; logoCaso.append(img); } else logoCaso.append(el('span', e.sigla || e.sector, 'kit-logo-sigla'), el('span', e.sector, 'kit-mono'));
+      const entregables = el('ol', null, 'kit-caso-entregables');
+      (e.entregables || []).forEach((t, k) => {
+        const li = el('li'); li.append(el('span', t.texto, 'kit-caso-hito-texto'));
+        if (t.modulo) { const a = el('a', '# ' + (nombreModulo[t.modulo] || 'Kit'), 'kit-caso-enlace'); a.href = '#/' + t.modulo; a.setAttribute('aria-label', `${t.texto}: ver en el ${nombreModulo[t.modulo]}`); li.append(a); }
+        else li.append(el('span', '# ' + dos(k), 'kit-caso-enlace sin-enlace'));
+        entregables.append(li);
       });
-      partes.push(s);
+      cuerpo.append(mono(e.sector + ' · ' + e.tema), el('h3', servicio?.titulo || e.tema), caja(el('p', e.que_se_hizo || e.descripcion)), mono('Entregables', 'kit-ficha-sub'), entregables);
+      const g = el('div', null, 'kit-caso-rejilla'); if (g.style) g.style.setProperty?.('--caso-color', e.color || COLORES[i % COLORES.length]);
+      g.append(logoCaso, cuerpo); return [g];
     }
+    function fichaPersona(p, i) { return [cabeza({ foto: p.foto, sigla: p.nombre }, i, p.cargo || 'Equipo', p.nombre), caja(el('p', p.experiencia || ''))]; }
+    function fichaAliado(a, i) { return [cabeza({ icono: a.icono }, i, 'Aliado ' + dos(i), a.titulo), caja(el('p', a.descripcion || ''))]; }
 
-    // 4. Equipo, aliados y contacto (segunda parte del boceto, pendiente): misma gramática de bandas.
-    if ((cfg.personas || []).length) {
-      const s = banda('Equipo', 'kit-cred-equipo', titulares.equipo), rej = el('div', null, 'kit-equipo');
-      cfg.personas.forEach(p => {
-        const fichaP = el('article', null, 'kit-persona'), cabeza = el('div', null, 'kit-persona-cabeza'), texto = el('div');
-        if (p.foto) { const img = el('img'); img.src = p.foto; img.alt = 'Foto de ' + p.nombre; img.loading = 'lazy'; cabeza.append(img); }
-        else { const vacio = el('div', null, 'kit-persona-foto-vacia'); vacio.setAttribute('aria-hidden', 'true'); cabeza.append(vacio); }
-        texto.append(el('h3', p.nombre)); if (p.cargo) texto.append(el('p', p.cargo, 'kit-persona-cargo')); cabeza.append(texto); fichaP.append(cabeza);
-        if (p.experiencia) fichaP.append(el('p', p.experiencia, 'kit-persona-experiencia'));
-        rej.append(fichaP);
-      }); s.append(rej); partes.push(s);
-    }
-    if ((cfg.aliados || []).length) {
-      const s = banda('Aliados', 'kit-cred-aliados kit-banda-arena', titulares.aliados), ol = el('ol', null, 'kit-lista-numerada');
-      cfg.aliados.forEach((t, i) => { const li = el('li'); li.append(el('span', dos(i), 'kit-mono'), el('span', t)); ol.append(li); }); s.append(ol); partes.push(s);
-    }
+    // 3. Contacto.
     if (cfg.contacto?.correo) {
-      const s = banda('Contacto', 'kit-cred-contacto kit-banda-oscura'), p = el('p', null, 'kit-contacto-linea'), a = el('a', cfg.contacto.correo);
-      a.href = 'mailto:' + cfg.contacto.correo; s.append(el('p', 'Hablemos.', 'kit-titular')); p.append(el('span', 'Escríbenos a '), a); s.append(p);
+      const s = el('section', null, 'kit-cred-seccion kit-banda kit-banda-oscura kit-cred-contacto'), p = el('p', null, 'kit-contacto-linea'), a = el('a', cfg.contacto.correo);
+      a.href = 'mailto:' + cfg.contacto.correo; s.append(el('h2', 'Contacto', 'kit-mono kit-antetitulo'), el('p', 'Hablemos.', 'kit-titular')); p.append(el('span', 'Escríbenos a '), a); s.append(p);
       if (cfg.contacto.telefono) s.append(el('p', 'Teléfono: ' + cfg.contacto.telefono)); partes.push(s);
     }
     destino.replaceChildren(...partes);
+    return { mostrarTema, abrirFicha: (id, i) => abrirFicha(temas.find(t => t.id === id), i), cerrarFicha };
   }
   const KitCredenciales = { render };
   if (typeof module !== 'undefined' && module.exports) module.exports = KitCredenciales;
