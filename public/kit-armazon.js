@@ -134,17 +134,8 @@
         try {
           if (ruta.clave === 'portada') {
             const cred = el('div', null, 'kit-cred'); zona.append(cred); const pendiente = credenciales(cred);
-            const bandaModulos = el('section', null, 'kit-banda kit-cred-modulos');
-            bandaModulos.append(el('h2', 'Kit de sostenibilidad', 'kit-mono kit-antetitulo kit-cred-titulo-modulos'), el('p', 'Cuatro módulos para medir y gestionar la sostenibilidad.', 'kit-titular'));
-            const tarjetas = el('div', null, 'kit-modulos kit-rejilla');
-            modulos.forEach(m => {
-              const disponibles = casos(m, empresas), tarjeta = el('a', null, 'kit-modulo');
-              tarjeta.href = '#/' + m.id;
-              tarjeta.append(el('span', m.numero, 'kit-modulo-romano'), el('span', 'Módulo ' + m.numero, 'kit-modulo-numero'), el('h2', m.nombre), el('p', m.descripcion), el('p', disponibles.length ? 'Casos: ' + disponibles.map(e => e.nombre).join(' · ') : 'Sin casos disponibles para tu cuenta', 'nota'), el('span', 'Abrir el módulo', 'kit-modulo-abrir'));
-              tarjetas.append(tarjeta);
-            }); bandaModulos.append(tarjetas); zona.append(bandaModulos); await pendiente;
-            // Contacto cierra la portada, después de los módulos.
-            const contacto = [...(cred.children || [])].find(n => String(n.className).includes('kit-cred-contacto')); if (contacto) zona.append(contacto);
+            // 6-nov (reunión con Germán): el Home es la vitrina de Meleia; los módulos se abren desde el menú ☰, sin bloque propio.
+            await pendiente;
           } else if (ruta.clave === 'sin-casos') {
             zona.append(mensaje('Sin casos disponibles para tu cuenta'));
           } else {

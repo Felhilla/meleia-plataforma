@@ -103,7 +103,7 @@
         if (!item.nodo.tarjeta) { const [nx, ny] = punto(222, medio - (n > 3 ? 11 : 15)), num = svg('text', { x: nx, y: ny, class: 'kit-serv-num', 'text-anchor': 'middle', 'dominant-baseline': 'central' }); num.textContent = String(i + 1); g.append(num); }
         const [cx, cy] = punto(RN, medio); nodosActuales.push([cx, cy]);
         // E46 (boceto Aliados, 6-nov): en Equipo la foto y en Aliados el logo crecen y se integran al gráfico.
-        const [ancho, alto] = item.nodo.tarjeta === 'foto' ? [150, 150] : item.nodo.tarjeta === 'logo' ? [184, 104] : [100, 100];
+        const [ancho, alto] = item.nodo.tarjeta === 'foto' ? (n > 3 ? [132, 132] : [150, 150]) : item.nodo.tarjeta === 'logo' ? [184, 104] : [100, 100];
         g.append(svg('line', { x1: cx + ancho / 2, y1: cy, x2: 702, y2: cy, class: 'kit-serv-guia' }), svg('circle', { cx: 714, cy, r: 8, class: 'kit-serv-anillo' }));
         const nodo = svg('g', { class: 'kit-serv-nodo' + (item.nodo.tarjeta ? ' kit-serv-tarjeta' : ''), transform: `translate(${cx} ${cy})` });
         if (item.nodo.tarjeta) {
