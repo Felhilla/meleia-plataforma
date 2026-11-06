@@ -99,7 +99,8 @@
         const [x0, y0] = punto(R1, a0), [x1, y1] = punto(R1, a1), [x2, y2] = punto(R0, a1), [x3, y3] = punto(R0, a0);
         const g = svg('g', { class: 'kit-serv-seg', style: `--i:${i}` });
         g.append(svg('path', { d: `M${x0} ${y0}A${R1} ${R1} 0 0 1 ${x1} ${y1}L${x2} ${y2}A${R0} ${R0} 0 0 0 ${x3} ${y3}Z`, fill: COLORES[i % COLORES.length] }));
-        const [nx, ny] = item.nodo.tarjeta ? (n > 3 ? punto(190, medio + (i < n / 2 ? 14 : -16)) : punto(205, medio - 22)) : punto(222, medio - (n > 3 ? 11 : 15)), num = svg('text', { x: nx, y: ny, class: 'kit-serv-num', 'text-anchor': 'middle', 'dominant-baseline': 'central' }); num.textContent = String(i + 1); g.append(num);
+        // Sin tarjetas el número va dentro del segmento. Con tarjetas (fotos o logos) va como insignia en su esquina.
+        if (!item.nodo.tarjeta) { const [nx, ny] = punto(222, medio - (n > 3 ? 11 : 15)), num = svg('text', { x: nx, y: ny, class: 'kit-serv-num', 'text-anchor': 'middle', 'dominant-baseline': 'central' }); num.textContent = String(i + 1); g.append(num); }
         const [cx, cy] = punto(RN, medio); nodosActuales.push([cx, cy]);
         // E46 (boceto Aliados, 6-nov): en Equipo la foto y en Aliados el logo crecen y se integran al gráfico.
         const [ancho, alto] = item.nodo.tarjeta === 'foto' ? [150, 150] : item.nodo.tarjeta === 'logo' ? [184, 104] : [100, 100];
@@ -116,6 +117,8 @@
             if (item.nodo.icono) { const ic = icono(item.nodo.icono, 'kit-serv-nodo-icono'); Object.entries({ x: -32, y: -32, width: 64, height: 64 }).forEach(([k, v]) => ic.setAttribute(k, v)); nodo.append(ic); }
           }
           nodo.append(svg('rect', { ...forma, class: 'kit-serv-tarjeta-borde', stroke: COLORES[i % COLORES.length] }));
+          const insignia = svg('g', { class: 'kit-serv-insignia', transform: `translate(${-ancho / 2} ${-alto / 2})` }), cifra = svg('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', y: 1 });
+          cifra.textContent = String(i + 1); insignia.append(svg('circle', { r: 21, fill: COLORES[i % COLORES.length] }), cifra); nodo.append(insignia);
         } else {
           nodo.append(svg('circle', { r: 50, class: 'kit-serv-nodo-fondo' }), svg('circle', { r: 44, class: 'kit-serv-nodo-aro', stroke: COLORES[i % COLORES.length] }));
           if (item.nodo.icono) { const ic = icono(item.nodo.icono, 'kit-serv-nodo-icono'); Object.entries({ x: -30, y: -30, width: 60, height: 60 }).forEach(([k, v]) => ic.setAttribute(k, v)); nodo.append(ic); }

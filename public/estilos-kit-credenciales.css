@@ -149,3 +149,6 @@ a.kit-caso-enlace:hover { text-decoration: underline; }
 .kit-datos li { display: grid; gap: 4px; padding-top: var(--e2); border-top: 2px solid var(--caso-color); }
 .kit-dato-cifra { font-family: var(--fuente-titulos); font-size: clamp(2rem, 3.6vw, 2.8rem); font-weight: 600; line-height: 1; color: var(--oro-texto); }
 .kit-dato-texto { font-size: var(--t-chico); color: var(--texto-suave); line-height: 1.4; }
+.kit-serv-insignia circle { stroke: var(--fondo); stroke-width: 4; }
+.kit-serv-insignia text { font-family: var(--fuente-titulos); font-size: 24px; font-weight: 600; fill: #F9F6F2; }
+.kit-serv-svg { overflow: visible; }
