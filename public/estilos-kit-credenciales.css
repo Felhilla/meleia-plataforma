@@ -117,7 +117,7 @@ a.kit-caso-enlace:hover { text-decoration: underline; }
 @media (max-width: 860px) {
   .kit-temas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .kit-serv-diagrama { aspect-ratio: auto; }
-  .kit-serv-svg { aspect-ratio: 530 / 660; height: auto; max-width: 440px; margin-inline: auto; }
+  .kit-serv-svg { aspect-ratio: 545 / 660; height: auto; max-width: 440px; margin-inline: auto; }
   .kit-serv-guia, .kit-serv-anillo { display: none; }
   .kit-serv-titulos { position: static; display: grid; margin-top: var(--e4); border-top: 1px solid var(--borde); }
   .kit-serv-titulo { position: static; transform: none; padding: var(--e3) 0; border-bottom: 1px solid var(--borde); grid-template-columns: 40px 1fr; }
@@ -135,3 +135,17 @@ a.kit-caso-enlace:hover { text-decoration: underline; }
   .kit-hero-logo, .kit-hero-afirmacion, .kit-ficha-flotante, .recarga .kit-serv-seg, .recarga .kit-serv-titulo, .recarga .kit-serv-centro { animation: none; }
   .kit-serv-diagrama, .kit-logo-celda, .kit-tema-boton, .kit-tema-boton::after { transition: none; }
 }
+
+/* E46 (boceto Aliados, 6-nov): fotos y logos grandes integrados al gráfico; ficha del aliado con datos resaltados. */
+.kit-serv-tarjeta-fondo { fill: var(--superficie); filter: drop-shadow(0 12px 26px rgba(27,34,22,.22)); }
+.kit-serv-tarjeta-borde { fill: none; stroke-width: 4; }
+.kit-serv-tarjeta-texto { font-family: var(--fuente-titulos); font-size: 17px; font-weight: 600; fill: var(--texto); }
+.kit-serv-tarjeta { transition: transform .25s var(--ease-out); }
+.kit-serv-seg:hover .kit-serv-tarjeta-fondo { filter: drop-shadow(0 16px 32px rgba(27,34,22,.3)); }
+.kit-aliado-barra { margin: 0 0 var(--e4); padding: var(--e3) var(--e7) var(--e3) var(--e4); border-radius: var(--radio-chico); }
+.kit-aliado-sello { width: 120px; height: 120px; border-radius: 50%; display: grid; place-items: center; background: var(--fondo-alterno); border: 3px solid var(--caso-color); color: var(--principal); margin: 0 auto; }
+.kit-aliado-sello .kit-icono { width: 72px; height: 72px; }
+.kit-datos { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--e4); }
+.kit-datos li { display: grid; gap: 4px; padding-top: var(--e2); border-top: 2px solid var(--caso-color); }
+.kit-dato-cifra { font-family: var(--fuente-titulos); font-size: clamp(2rem, 3.6vw, 2.8rem); font-weight: 600; line-height: 1; color: var(--oro-texto); }
+.kit-dato-texto { font-size: var(--t-chico); color: var(--texto-suave); line-height: 1.4; }

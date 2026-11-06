@@ -177,22 +177,57 @@
     {
       "titulo": "Transformación organizacional",
       "icono": "transformacion",
-      "descripcion": "Consultora de transformación organizacional con más de 15 años y presencia en Argentina, Brasil, Chile, Colombia, el Caribe, España y México"
+      "descripcion": "Consultora de transformación organizacional con más de 15 años y presencia en Argentina, Brasil, Chile, Colombia, el Caribe, España y México",
+      "nombre": null,
+      "logo": null,
+      "datos": [
+        {
+          "cifra": "+15",
+          "texto": "años de trayectoria"
+        },
+        {
+          "cifra": "7",
+          "texto": "países y regiones de presencia"
+        }
+      ],
+      "casos": []
     },
     {
       "titulo": "Reputación y comunicaciones",
       "icono": "reputacion",
-      "descripcion": "Consultora en reputación, comunicaciones, asuntos públicos y manejo de crisis"
+      "descripcion": "Consultora en reputación, comunicaciones, asuntos públicos y manejo de crisis",
+      "nombre": null,
+      "logo": null,
+      "datos": [],
+      "casos": []
     },
     {
       "titulo": "Sostenibilidad y cambio climático",
       "icono": "clima",
-      "descripcion": "Firma peruana con más de 10 años en gestión de sostenibilidad y cambio climático"
+      "descripcion": "Firma peruana con más de 10 años en gestión de sostenibilidad y cambio climático",
+      "nombre": null,
+      "logo": null,
+      "datos": [
+        {
+          "cifra": "+10",
+          "texto": "años en sostenibilidad y cambio climático"
+        }
+      ],
+      "casos": []
     },
     {
       "titulo": "Fortalecimiento e impacto social",
       "icono": "impacto-social",
-      "descripcion": "Organización con más de 15 años en fortalecimiento organizacional, liderazgo y medición de impacto social"
+      "descripcion": "Organización con más de 15 años en fortalecimiento organizacional, liderazgo y medición de impacto social",
+      "nombre": null,
+      "logo": null,
+      "datos": [
+        {
+          "cifra": "+15",
+          "texto": "años en fortalecimiento organizacional"
+        }
+      ],
+      "casos": []
     }
   ],
   "contacto": {
@@ -200,7 +235,7 @@
     "nota": "Correo provisional mientras Meleia habilita su dominio (decisión de Felipe del 5-nov)."
   },
   "afirmacion": "Transformamos información en mejores decisiones.",
-  "pendientes_look": "6-nov: logos de clientes sin confirmar (casos anonimizados con sigla del sector). Servicio 2 sin caso. Significado del «#» bajo cada entregable por confirmar con Felipe.",
+  "pendientes_look": "6-nov: logos de clientes sin confirmar (casos anonimizados con sigla del sector). Servicio 2 sin caso. Significado del «#» bajo cada entregable por confirmar con Felipe. Aliados: nombres, logos y casos compartidos por confirmar (6-nov). Datos resaltados tomados de su descripción.",
   "temas": {
     "servicios": {
       "nombre": "Servicios",

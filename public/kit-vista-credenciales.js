@@ -41,8 +41,8 @@
     const temas = [
       { id: 'servicios', items: servicios.map(v => ({ titulo: v.titulo, sub: 'Ver servicio', nodo: { icono: v.icono }, dato: v })), ficha: fichaServicio },
       { id: 'experiencia', items: experiencia.map(e => ({ titulo: e.sector, sub: servicios[e.servicio]?.titulo || e.tema, nodo: { logo: e.logo, sigla: e.sigla || e.sector }, dato: e })), ficha: fichaCaso },
-      { id: 'equipo', items: personas.map(p => ({ titulo: p.nombre, sub: p.cargo, nodo: { foto: p.foto, sigla: p.nombre }, dato: p })), ficha: fichaPersona },
-      { id: 'aliados', items: aliados.map(a => ({ titulo: a.titulo, sub: 'Ver aliado', nodo: { icono: a.icono }, dato: a })), ficha: fichaAliado }
+      { id: 'equipo', items: personas.map(p => ({ titulo: p.nombre, sub: p.cargo, nodo: { tarjeta: 'foto', foto: p.foto, sigla: p.nombre }, dato: p })), ficha: fichaPersona },
+      { id: 'aliados', items: aliados.map(a => ({ titulo: a.nombre || a.titulo, sub: a.nombre ? a.titulo : 'Ver aliado', nodo: { tarjeta: 'logo', logo: a.logo, icono: a.icono, texto: a.nombre || a.titulo }, dato: a })), ficha: fichaAliado }
     ].filter(t => t.items.length).map(t => ({ ...t, nombre: temasCfg[t.id]?.nombre || t.id, frase: temasCfg[t.id]?.frase || '', titular: temasCfg[t.id]?.titular || '' }));
     const partes = [];
 
@@ -69,7 +69,7 @@
 
     const angosta = root.matchMedia?.('(max-width: 860px)');
     let actual = null, titulosActuales = [], nodosActuales = [], dibujo = null;
-    const encuadre = () => dibujo?.setAttribute('viewBox', angosta?.matches ? '92 0 530 660' : '0 0 1000 660');
+    const encuadre = () => dibujo?.setAttribute('viewBox', angosta?.matches ? '92 0 545 660' : '0 0 1000 660');
     angosta?.addEventListener?.('change', encuadre);
 
     async function mostrarTema(id, desplazar) {
@@ -99,16 +99,31 @@
         const [x0, y0] = punto(R1, a0), [x1, y1] = punto(R1, a1), [x2, y2] = punto(R0, a1), [x3, y3] = punto(R0, a0);
         const g = svg('g', { class: 'kit-serv-seg', style: `--i:${i}` });
         g.append(svg('path', { d: `M${x0} ${y0}A${R1} ${R1} 0 0 1 ${x1} ${y1}L${x2} ${y2}A${R0} ${R0} 0 0 0 ${x3} ${y3}Z`, fill: COLORES[i % COLORES.length] }));
-        const [nx, ny] = punto(222, medio - (n > 3 ? 11 : 15)), num = svg('text', { x: nx, y: ny, class: 'kit-serv-num', 'text-anchor': 'middle', 'dominant-baseline': 'central' }); num.textContent = String(i + 1); g.append(num);
+        const [nx, ny] = item.nodo.tarjeta ? (n > 3 ? punto(190, medio + (i < n / 2 ? 14 : -16)) : punto(205, medio - 22)) : punto(222, medio - (n > 3 ? 11 : 15)), num = svg('text', { x: nx, y: ny, class: 'kit-serv-num', 'text-anchor': 'middle', 'dominant-baseline': 'central' }); num.textContent = String(i + 1); g.append(num);
         const [cx, cy] = punto(RN, medio); nodosActuales.push([cx, cy]);
-        g.append(svg('line', { x1: cx + 50, y1: cy, x2: 702, y2: cy, class: 'kit-serv-guia' }), svg('circle', { cx: 714, cy, r: 8, class: 'kit-serv-anillo' }));
-        const nodo = svg('g', { class: 'kit-serv-nodo', transform: `translate(${cx} ${cy})` });
-        nodo.append(svg('circle', { r: 50, class: 'kit-serv-nodo-fondo' }), svg('circle', { r: 44, class: 'kit-serv-nodo-aro', stroke: COLORES[i % COLORES.length] }));
-        if (item.nodo.icono) { const ic = icono(item.nodo.icono, 'kit-serv-nodo-icono'); Object.entries({ x: -30, y: -30, width: 60, height: 60 }).forEach(([k, v]) => ic.setAttribute(k, v)); nodo.append(ic); }
-        else if (item.nodo.foto || item.nodo.logo) {
-          const clip = 'kit-clip-' + tema.id + '-' + i, def = svg('clipPath', { id: clip }); def.append(svg('circle', { r: 41 })); nodo.append(def);
-          nodo.append(svg('image', { href: item.nodo.foto || item.nodo.logo, x: -41, y: -41, width: 82, height: 82, 'clip-path': `url(#${clip})`, preserveAspectRatio: item.nodo.foto ? 'xMidYMid slice' : 'xMidYMid meet' }));
-        } else { const t = svg('text', { class: 'kit-serv-sigla', 'text-anchor': 'middle', 'dominant-baseline': 'central' }); t.textContent = item.nodo.sigla; nodo.append(t); }
+        // E46 (boceto Aliados, 6-nov): en Equipo la foto y en Aliados el logo crecen y se integran al gráfico.
+        const [ancho, alto] = item.nodo.tarjeta === 'foto' ? [150, 150] : item.nodo.tarjeta === 'logo' ? [184, 104] : [100, 100];
+        g.append(svg('line', { x1: cx + ancho / 2, y1: cy, x2: 702, y2: cy, class: 'kit-serv-guia' }), svg('circle', { cx: 714, cy, r: 8, class: 'kit-serv-anillo' }));
+        const nodo = svg('g', { class: 'kit-serv-nodo' + (item.nodo.tarjeta ? ' kit-serv-tarjeta' : ''), transform: `translate(${cx} ${cy})` });
+        if (item.nodo.tarjeta) {
+          const clip = 'kit-clip-' + tema.id + '-' + i, def = svg('clipPath', { id: clip }), forma = { x: -ancho / 2, y: -alto / 2, width: ancho, height: alto, rx: 14 };
+          def.append(svg('rect', forma)); nodo.append(def, svg('rect', { ...forma, class: 'kit-serv-tarjeta-fondo' }));
+          if (item.nodo.foto || item.nodo.logo) {
+            const m = item.nodo.foto ? 0 : 16;
+            nodo.append(svg('image', { href: item.nodo.foto || item.nodo.logo, x: -ancho / 2 + m, y: -alto / 2 + m, width: ancho - 2 * m, height: alto - 2 * m, 'clip-path': `url(#${clip})`, preserveAspectRatio: item.nodo.foto ? 'xMidYMid slice' : 'xMidYMid meet' }));
+          } else {
+            // Sin logo confirmado: el ícono del aliado ocupa el lugar del logo (el nombre ya está a la derecha).
+            if (item.nodo.icono) { const ic = icono(item.nodo.icono, 'kit-serv-nodo-icono'); Object.entries({ x: -32, y: -32, width: 64, height: 64 }).forEach(([k, v]) => ic.setAttribute(k, v)); nodo.append(ic); }
+          }
+          nodo.append(svg('rect', { ...forma, class: 'kit-serv-tarjeta-borde', stroke: COLORES[i % COLORES.length] }));
+        } else {
+          nodo.append(svg('circle', { r: 50, class: 'kit-serv-nodo-fondo' }), svg('circle', { r: 44, class: 'kit-serv-nodo-aro', stroke: COLORES[i % COLORES.length] }));
+          if (item.nodo.icono) { const ic = icono(item.nodo.icono, 'kit-serv-nodo-icono'); Object.entries({ x: -30, y: -30, width: 60, height: 60 }).forEach(([k, v]) => ic.setAttribute(k, v)); nodo.append(ic); }
+          else if (item.nodo.logo) {
+            const clip = 'kit-clip-' + tema.id + '-' + i, def = svg('clipPath', { id: clip }); def.append(svg('circle', { r: 41 })); nodo.append(def);
+            nodo.append(svg('image', { href: item.nodo.logo, x: -41, y: -41, width: 82, height: 82, 'clip-path': `url(#${clip})`, preserveAspectRatio: 'xMidYMid meet' }));
+          } else { const t = svg('text', { class: 'kit-serv-sigla', 'text-anchor': 'middle', 'dominant-baseline': 'central' }); t.textContent = item.nodo.sigla; nodo.append(t); }
+        }
         g.append(nodo); g.addEventListener?.('click', () => abrirFicha(tema, i)); dibujo.append(g);
         const b = el('button', null, 'kit-serv-titulo'); b.type = 'button'; if (b.style) { b.style.top = (cy / 660 * 100) + '%'; b.style.setProperty?.('--i', i); }
         b.append(el('span', dos(i), 'kit-mono'), el('span', item.titulo, 'kit-serv-titulo-texto'));
@@ -141,7 +156,7 @@
       const volver = el('button', 'Volver al gráfico', 'kit-serv-volver'); volver.type = 'button'; volver.onclick = () => cerrarFicha();
       tarjeta.append(volver, ...tema.ficha(tema.items[i].dato, i));
       capa.replaceChildren(tarjeta); capa.setAttribute('aria-label', tema.nombre + ': ' + tema.items[i].titulo);
-      const [cx, cy] = nodosActuales[i] || [500, 330], [vx, vw] = angosta?.matches ? [92, 530] : [0, 1000];
+      const [cx, cy] = nodosActuales[i] || [500, 330], [vx, vw] = angosta?.matches ? [92, 545] : [0, 1000];
       if (tarjeta.style) tarjeta.style.transformOrigin = `${(cx - vx) / vw * 100}% ${cy / 6.6}%`;
       diagrama.classList?.add('difuminado'); capa.hidden = false;
       if (escena.style && tarjeta.offsetHeight) escena.style.minHeight = Math.max(diagrama.offsetHeight || 0, tarjeta.offsetHeight + 48) + 'px';
@@ -186,7 +201,26 @@
       g.append(logoCaso, cuerpo); return [g];
     }
     function fichaPersona(p, i) { return [cabeza({ foto: p.foto, sigla: p.nombre }, i, p.cargo || 'Equipo', p.nombre), caja(el('p', p.experiencia || ''))]; }
-    function fichaAliado(a, i) { return [cabeza({ icono: a.icono }, i, 'Aliado ' + dos(i), a.titulo), caja(el('p', a.descripcion || ''))]; }
+    // Ficha del aliado (boceto, 6-nov): Logo | nombre, descripción y datos resaltados con #; cada dato lleva a Experiencia.
+    function fichaAliado(a, i) {
+      const logoA = el('div', null, 'kit-caso-logo');
+      if (a.logo) { const img = el('img'); img.src = a.logo; img.alt = a.nombre || a.titulo; logoA.append(img); }
+      else { const sello = el('div', null, 'kit-aliado-sello'); sello.append(icono(a.icono)); logoA.append(sello, el('span', 'Logo por confirmar', 'kit-mono')); }
+      const cuerpo = el('div', null, 'kit-caso-cuerpo'), barra = el('div', null, 'kit-ficha-barra kit-aliado-barra');
+      barra.append(mono('Aliado ' + dos(i)), el('h3', a.nombre || a.titulo));
+      cuerpo.append(barra, caja(el('p', a.descripcion || '')));
+      const casos = (a.casos || []).map(id => experiencia.find(e => e.id === id)).filter(Boolean);
+      if ((a.datos || []).length) {
+        const fila = el('ul', null, 'kit-datos');
+        a.datos.forEach(d => { const li = el('li'); li.append(el('span', '# ' + d.cifra, 'kit-dato-cifra'), el('span', d.texto, 'kit-dato-texto')); fila.append(li); });
+        cuerpo.append(mono('Datos', 'kit-ficha-sub'), fila);
+      }
+      cuerpo.append(mono('En nuestra experiencia', 'kit-ficha-sub'));
+      if (casos.length) { const fila = el('div', null, 'kit-casos-logos'); casos.forEach(e => fila.append(celdaCaso(e))); cuerpo.append(fila); }
+      else cuerpo.append(el('p', 'Casos compartidos por confirmar.', 'nota'));
+      const g = el('div', null, 'kit-caso-rejilla'); if (g.style) g.style.setProperty?.('--caso-color', COLORES[i % COLORES.length]);
+      g.append(logoA, cuerpo); return [g];
+    }
 
     // 3. Contacto.
     if (cfg.contacto?.correo) {
