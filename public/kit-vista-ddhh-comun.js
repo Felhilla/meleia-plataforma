@@ -27,12 +27,27 @@
     const nombreEmpresa=fuente?await nombre(p):'';
     if(!vigente())return;
     const tabs=el('nav',null,'ke-tabs'), cuerpo=el('section'), estado=el('div');tabs.setAttribute('aria-label','Colecciones');
+    // E47: cuestionario guiado del Módulo II. Guarda en el mismo orden que la carga por Excel (la evaluación primero).
+    const guardarDdhh=async registros=>{for(const n of ['ddhh-evaluaciones','ddhh-indicadores','ddhh-componentes','ddhh-dimensiones'])if(registros[n]?.length)await App.datos.guardarVarios(p.empresa,n,registros[n]);};
+    if(modulo==='ddhh'&&window.KitCuestionarioDdhh&&window.KitCuestionario){
+      const acciones=el('div',null,'kr-acciones'),aviso=el('p');aviso.setAttribute('role','status');
+      acciones.append(boton('Responder el cuestionario',async()=>{
+        const v=++revision;estado.replaceChildren();aviso.textContent='';cuerpo.replaceChildren(el('p','Preparando el cuestionario…'));
+        try{const existentes=await cargar(p,['ddhh-evaluaciones','ddhh-indicadores','ddhh-dimensiones']);if(!vigente()||v!==revision)return;
+          const zona=el('section');cuerpo.replaceChildren(zona);
+          window.KitCuestionarioDdhh.montar(zona,{cat,esquemas:Object.fromEntries(nombres.map((n,i)=>[n,esquemas[i]])),existentes,empresa:p.empresa,
+            guardar:async registros=>{if(!vigente())throw Error('Tu sesión ya no permite guardar.');await guardarDdhh(registros);},
+            alVolver:async mensaje=>{if(!vigente())return;await abrir(nombres[0]);aviso.textContent=mensaje;}});
+        }catch(e){if(vigente())error(cuerpo,e);}
+      }));
+      c.append(acciones,aviso);
+    }
     c.append(tabs,estado,cuerpo);
     if(modulo==='ddhh'&&window.KitVistaCargaExcel)window.KitVistaCargaExcel.seccion(c,{
       modulo:'ddhh',rutaPlantilla:'plantillas/plantilla-modulo-ii.xlsx',nombrePlantilla:'plantilla-modulo-ii.xlsx',
       contexto:async()=>({cat,esquemas:Object.fromEntries(nombres.map((n,i)=>[n,esquemas[i]])),existentes:await cargar(p,nombres)}),
       // Primero la evaluación: los demás registros la referencian.
-      guardar:async registros=>{for(const n of ['ddhh-evaluaciones','ddhh-indicadores','ddhh-componentes','ddhh-dimensiones'])if(registros[n]?.length)await App.datos.guardarVarios(p.empresa,n,registros[n]);if(vigente())await abrir(nombres[0]);},
+      guardar:async registros=>{await guardarDdhh(registros);if(vigente())await abrir(nombres[0]);},
       error
     });
     else c.append(el('p','Carga por Excel (próximamente)','nota'));

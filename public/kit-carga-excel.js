@@ -365,72 +365,19 @@
       if (libro.SheetNames.some(nombre => normalizar(nombre) === normalizar(evaluacion.nombreHoja)) && !errores.some(error => error.hoja === evaluacion.nombreHoja)) errores.push({ hoja: evaluacion.nombreHoja, mensaje: `Se esperaba una sola fila con el nombre y la fecha de la evaluación; hay ${evaluacion.filas.length}.` });
       return vacio;
     }
-    const datosEvaluacion = evaluacion.filas[0].registro, filaEvaluacion = evaluacion.filas[0].fila;
-    const fecha = texto(datosEvaluacion.fecha);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
-      errores.push({ hoja: evaluacion.nombreHoja, fila: filaEvaluacion, campo: 'fecha', mensaje: `Fecha = ${JSON.stringify(fecha)}, se esperaba una fecha (AAAA-MM-DD).` });
-      return vacio;
-    }
-    const idEvaluacion = 'eval-' + fecha.slice(0, 7);
-    const referencias = { 'ddhh-evaluaciones': new Set([idEvaluacion]) };
-
-    // Indicadores: deben venir todos los de la plantilla, una sola vez.
-    const indicadores = filasDdhh(libro, hojaDe('ddhh-indicadores'), errores), vistos = new Map(), registrosIndicadores = [];
-    const catalogo = new Set(cat.indicadores.map(indicador => indicador.id));
-    let enBlanco = 0;
-    for (const { fila, registro } of indicadores.filas) {
-      const codigo = texto(registro.indicador);
-      if (!catalogo.has(codigo)) { errores.push({ hoja: indicadores.nombreHoja, fila, campo: 'indicador', mensaje: `Código = ${JSON.stringify(codigo)}, no corresponde a ningún indicador. No cambies la columna «Código».` }); continue; }
-      if (vistos.has(codigo)) { errores.push({ hoja: indicadores.nombreHoja, fila, campo: 'indicador', mensaje: `Indicador repetido: ya está en la fila ${vistos.get(codigo)}. Deja una sola fila.` }); continue; }
-      vistos.set(codigo, fila);
-      if (!presente(registro.calificacion)) { registro.calificacion = 0; enBlanco++; }
-      if (presente(registro.incorporado)) {
-        const valores = contexto.esquemas['ddhh-indicadores'].campos.incorporado.valores;
-        registro.incorporado = valores.find(valor => normalizar(valor) === normalizar(registro.incorporado)) ?? registro.incorporado;
-      }
-      const entrada = { id: idEvaluacion + '--' + codigo, evaluacion: idEvaluacion, indicador: codigo, incorporado: texto(registro.incorporado), documentos: texto(registro.documentos), descripcion: texto(registro.descripcion), calificacion: registro.calificacion, brecha: texto(registro.brecha), nota: '', origen: 'cargada', fila_fuente: fila };
-      const resultado = K.validar(entrada, esquema('ddhh-indicadores', entrada), referencias);
-      if (!resultado.ok) { resultado.errores.forEach(error => errores.push({ hoja: indicadores.nombreHoja, fila, campo: error.campo, mensaje: error.mensaje })); continue; }
-      registrosIndicadores.push(resultado.registro);
-    }
-    const faltantes = cat.indicadores.filter(indicador => !vistos.has(indicador.id));
-    if (indicadores.filas.length && faltantes.length) errores.push({ hoja: indicadores.nombreHoja, mensaje: `Faltan ${faltantes.length} indicadores de la plantilla (${faltantes.slice(0, 3).map(i => i.id).join(', ')}${faltantes.length > 3 ? '…' : ''}). No borres filas: deja la calificación en blanco si no aplica.` });
-    if (enBlanco) avisos.push({ hoja: indicadores.nombreHoja, mensaje: `${enBlanco} ${enBlanco === 1 ? 'indicador sin calificación cuenta' : 'indicadores sin calificación cuentan'} como 0 en los promedios.` });
-
-    // Hallazgos por dimensión.
-    const hallazgos = filasDdhh(libro, hojaDe('ddhh-dimensiones'), errores), dimensiones = new Map(), registrosDimensiones = [];
-    for (const { fila, registro } of hallazgos.filas) {
-      const codigo = texto(registro.dimension);
-      if (dimensiones.has(codigo)) { errores.push({ hoja: hallazgos.nombreHoja, fila, campo: 'dimension', mensaje: `Dimensión repetida: ya está en la fila ${dimensiones.get(codigo)}. Deja una sola fila.` }); continue; }
-      dimensiones.set(codigo, fila);
-      const entrada = { id: idEvaluacion + '--' + codigo, evaluacion: idEvaluacion, dimension: codigo, hallazgos: texto(registro.hallazgos), brechas: texto(registro.brechas) };
-      const resultado = K.validar(entrada, esquema('ddhh-dimensiones', entrada), referencias);
-      if (!resultado.ok) { resultado.errores.forEach(error => errores.push({ hoja: hallazgos.nombreHoja, fila, campo: error.campo, mensaje: error.mensaje })); continue; }
-      registrosDimensiones.push(resultado.registro);
-    }
-
-    // Promedios calculados por la plataforma.
-    const { componentes, puntajes } = K.calcular(cat, registrosIndicadores);
-    const entradaEvaluacion = { id: idEvaluacion, nombre: texto(datosEvaluacion.nombre), fecha, origen: 'cargada', ...puntajes };
-    const validada = K.validar(entradaEvaluacion, esquema('ddhh-evaluaciones', entradaEvaluacion), referencias);
-    validada.errores.filter(error => ['nombre', 'fecha', 'id'].includes(error.campo)).forEach(error => errores.push({ hoja: evaluacion.nombreHoja, fila: filaEvaluacion, campo: error.campo, mensaje: error.mensaje }));
+    const indicadores = filasDdhh(libro, hojaDe('ddhh-indicadores'), errores), hallazgos = filasDdhh(libro, hojaDe('ddhh-dimensiones'), errores);
     if (errores.length) return vacio;
-    if (!validada.ok) throw Error('Los puntajes calculados no pasaron la validación: ' + validada.errores.map(error => error.mensaje).join('; '));
-    const registrosComponentes = Object.entries(componentes).map(([componente, calificacion]) => {
-      const entrada = { id: idEvaluacion + '--' + componente, evaluacion: idEvaluacion, componente, calificacion };
-      const resultado = K.validar(entrada, esquema('ddhh-componentes', entrada), referencias);
-      if (!resultado.ok) throw Error('Un criterio calculado no pasó la validación: ' + componente);
-      return resultado.registro;
-    });
-
-    const registros = { 'ddhh-evaluaciones': [validada.registro], 'ddhh-indicadores': registrosIndicadores, 'ddhh-componentes': registrosComponentes, 'ddhh-dimensiones': registrosDimensiones };
-    const conteos = { nuevos: 0, actualizados: 0 };
-    for (const coleccion of COLECCIONES_DDHH) {
-      const existentes = new Set((contexto.existentes?.[coleccion] || []).map(registro => registro.id));
-      registros[coleccion].forEach(registro => { if (existentes.has(registro.id)) conteos.actualizados++; else conteos.nuevos++; });
-    }
-    if (conteos.actualizados) avisos.push({ hoja: evaluacion.nombreHoja, mensaje: `Ya existe una evaluación de ${fecha.slice(0, 7)} (${idEvaluacion}); se reemplazan sus datos con los de este archivo.` });
-    return { registros, ...conteos, errores, avisos };
+    // E47: el lector solo traduce el Excel a datos planos; validar y calcular es común con el cuestionario (KitEstudios.prepararDdhh).
+    const datosEvaluacion = evaluacion.filas[0].registro;
+    const entrada = {
+      evaluacion: { nombre: datosEvaluacion.nombre, fecha: texto(datosEvaluacion.fecha), fila: evaluacion.filas[0].fila },
+      indicadores: indicadores.filas.map(({ fila, registro }) => ({ fila, ...registro })),
+      dimensiones: hallazgos.filas.map(({ fila, registro }) => ({ fila, ...registro }))
+    };
+    const hojas = { evaluacion: evaluacion.nombreHoja, indicadores: indicadores.nombreHoja, dimensiones: hallazgos.nombreHoja };
+    const resultado = K.prepararDdhh(cat, contexto.esquemas, contexto.existentes, entrada, { pistas: { codigo: ' No cambies la columna «Código».', faltantes: ' No borres filas: deja la calificación en blanco si no aplica.' } });
+    const conHoja = ({ seccion, indicador, ...resto }) => ({ hoja: hojas[seccion], ...resto });
+    return { registros: resultado.registros, nuevos: resultado.nuevos, actualizados: resultado.actualizados, errores: resultado.errores.map(conHoja), avisos: [...avisos, ...resultado.avisos.map(conHoja)] };
   }
 
   function leer(arrayBuffer, modulo, contexto) {
