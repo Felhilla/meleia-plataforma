@@ -89,9 +89,12 @@ test('DOM: portada global no consulta colecciones ni muestra selector global', a
   assert.match(m.nodos.contenido.textContent, /laboratorio de ideas y soluciones para la sostenibilidad/i);
   // E42 (5-nov): la portada es la ventana de Credenciales; después vienen los cuatro módulos.
   const secciones = m.nodos.contenido.todos().filter(n => String(n.className).startsWith('kit-cred-seccion')).map(n => n.children[0].textContent);
-  assert.deepEqual(secciones, ['Quiénes somos', 'Servicios', 'Experiencia', 'Equipo', 'Aliados']);
+  assert.deepEqual(secciones, ['Quiénes somos', 'Servicios', 'Experiencia', 'Equipo', 'Aliados', 'Contacto']);
   assert.equal(m.nodos.contenido.todos().filter(n => n.className === 'kit-persona').length, 3);
-  assert.doesNotMatch(m.nodos.contenido.textContent, /ghestudio/);
+  // E45: el correo provisional (dominio GH) solo aparece en Contacto, como enlace; nunca en las fichas del equipo.
+  assert.ok(m.nodos.contenido.todos().filter(n => n.className === 'kit-persona').every(n => !/ghestudio/.test(n.textContent)));
+  const correo = m.nodos.contenido.todos().find(n => String(n.href || '').startsWith('mailto:'));
+  assert.equal(correo.href, 'mailto:ghillon@ghestudio.com.co');
   assert.deepEqual(m.nodos.contenido.todos().filter(n => n.className === 'kit-modulo').map(n => n.href), ['#/actores', '#/ddhh', '#/materialidad', '#/riesgos']);
   assert.equal(m.consultas.length, 0); assert.equal(m.nodos['kit-cuenta'].querySelector('select'), undefined);
   assert.match(m.nodos['kit-cuenta'].textContent, /Responsable/);

@@ -126,6 +126,8 @@
             }); s.append(rej); partes.push(s);
           }
           if ((cfg.aliados || []).length) { const s = seccion('Aliados', 'kit-cred-aliados'); s.append(lista(cfg.aliados)); partes.push(s); }
+          // E45: contacto comercial. El correo es provisional (dominio GH) hasta que Meleia tenga el suyo.
+          if (cfg.contacto?.correo) { const s = seccion('Contacto', 'kit-cred-contacto'), p = el('p'), a = el('a', cfg.contacto.correo); a.href = 'mailto:' + cfg.contacto.correo; p.append(el('span', 'Escríbenos a '), a); s.append(p); if (cfg.contacto.telefono) s.append(el('p', 'Teléfono: ' + cfg.contacto.telefono)); partes.push(s); }
           destino.replaceChildren(...partes);
         } catch (e) { destino.replaceChildren(mensaje(e.message || 'No se pudieron cargar las credenciales.', true)); }
       }
