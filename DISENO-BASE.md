@@ -156,3 +156,24 @@ La tabla de puntajes de los aspectos usa `--t-micro`, espaciado .04em y sin may�
 - Barra superior solo con el logo de Meleia y un **menú hamburguesa** (`#kit-menu`) que despliega Credenciales y los cuatro módulos.
 - Cada módulo tiene las pestañas **Metodología, Alimentación y Resultados**, en ese orden. Abre en Metodología. Alimentación solo aparece para quien puede editar. El contenido de Metodología vive en `config/kit-metodologia.json`.
 - Posición de los actores en gráficos: favorable verde hoja `#5E7A45`, neutral dorado `#B78D36`, desfavorable terracota `#A8503A`. Como el verde y la terracota se confunden con daltonismo, cada posición lleva además su forma (círculo, cuadrado, triángulo) y su nombre.
+
+## Portada de Credenciales e ingreso (E46, 6-nov-2026)
+
+Look and Feel de Meleia (documento oficial: `Docs. GH/Look & Feel Meleia/20261106_Look and Feel Meleia.md`). Archivos: `public/kit-vista-credenciales.js`, `public/estilos-kit-credenciales.css`, `public/config/kit-credenciales.json`, `public/img/logo-meleia-grande-claro.png`, `public/img/iconos/`.
+
+- **Bandas a todo el ancho** (`.kit-banda`): oscura (`.kit-banda-oscura`, `#1B2216` con resplandores hoja y dorado), marfil y arena. En la portada y el ingreso no se usa la banda de título `.kit-titulo` (pendiente de aprobación de Felipe).
+- **Etiquetas** en IBM Plex Mono 500, mayúscula espaciada (`.kit-mono`, `--fuente-mono`). Es una tercera fuente, pendiente de aprobación de Felipe.
+- **Hero:** logo grande en versión clara, afirmación en Fraunces extendida en una línea, quiénes somos y 4 botones de tema (Servicios, Experiencia, Equipo, Aliados).
+- **Semicírculo de temas:**
+  - arco de 3 o 4 segmentos con colores hoja `#5E7A45`, dorado `#B78D36`, oliva `#3A4733` y terracota `#A8503A`, en ese orden;
+  - marco dorado, frase central (se parte en dos renglones con salto de línea en la configuración) y títulos numerados a la derecha;
+  - arranca cerrado y la recarga entra en cascada de arriba hacia abajo (110 ms entre segmentos);
+  - Equipo y Aliados usan tarjetas grandes (foto 150 × 150, logo 184 × 104) con el número como insignia en la esquina.
+- **Fichas flotantes** sobre el gráfico difuminado (desenfoque de 7 px, opacidad 0,45), con «Volver al gráfico» y cierre con Escape:
+  - servicio, persona y aliado llevan el círculo montado sobre la barra del título;
+  - caso y aliado siguen el esquema logo | línea vertical | contenido;
+  - los datos resaltados van con # en Fraunces dorado.
+- **Íconos:** `public/img/iconos/*.svg` se insertan en la página. Siguen la guía `Docs. GH/Look & Feel Meleia/20261106_Linea grafica de iconos_Meleia.md`.
+- **Módulos del Kit:** banda arena antes de Contacto, tarjetas con número romano en Fraunces dorado.
+- **Ingreso:** banda oscura con el logo grande y la tarjeta blanca del formulario.
+- **Movimiento:** se respeta `prefers-reduced-motion` en todo lo anterior.

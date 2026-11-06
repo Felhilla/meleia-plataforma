@@ -45,7 +45,7 @@ test('entrada del Kit no carga el relato, conserva SDK fijo y orden defer', () =
   assert.match(html, /<title>Meleia · Kit de sostenibilidad<\/title>/); assert.doesNotMatch(html, /GH Estudio|logo-gh/);
   assert.doesNotMatch(html, /src="vista-|caso\.json|src="app.js"|api-supabase.js/);
   const scripts = [...html.matchAll(/<script defer src="([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'vendor/xlsx.full.min.js', 'kit-riesgos.js', 'kit-cuestionario.js', 'kit-actores.js', 'kit-carga-excel.js', 'kit-armazon.js', 'kit-vista-carga-excel.js', 'kit-vista-riesgos.js', 'kit-vista-actores.js', 'kit-vista-metodologia.js', 'kit-vista-ddhh-modelo.js', 'kit-vista-ddhh-motor.js', 'kit-vista-ddhh-comun.js', 'kit-vista-ddhh.js', 'kit-vista-materialidad-motor.js', 'kit-vista-materialidad.js']);
+  assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'vendor/xlsx.full.min.js', 'kit-riesgos.js', 'kit-cuestionario.js', 'kit-actores.js', 'kit-carga-excel.js', 'kit-armazon.js', 'kit-vista-credenciales.js', 'kit-vista-carga-excel.js', 'kit-vista-riesgos.js', 'kit-vista-actores.js', 'kit-vista-metodologia.js', 'kit-vista-ddhh-modelo.js', 'kit-vista-ddhh-motor.js', 'kit-vista-ddhh-comun.js', 'kit-vista-ddhh.js', 'kit-vista-materialidad-motor.js', 'kit-vista-materialidad.js']);
 });
 
 // DOM mínimo: prueba los flujos reales del armazón sin red ni dependencias de navegador.
@@ -54,9 +54,9 @@ class Nodo {
   constructor(tag) { this.tag = tag; this.children = []; this.attrs = {}; this.dataset = {}; this._texto = ''; }
   set textContent(v) { this._texto = String(v); this.children = []; }
   get textContent() { return this._texto + this.children.map(n => n.textContent).join(' '); }
-  append(...n) { n.forEach(x => { x.parent = this; this.children.push(x); }); }
+  append(...n) { n.forEach(x => { if (x.parent) x.parent.children = x.parent.children.filter(c => c !== x); x.parent = this; this.children.push(x); }); } // Como el DOM real: append mueve el nodo.
   after(n) { n.parent = this.parent; this.parent.children.splice(this.parent.children.indexOf(this)+1,0,n); }
-  replaceChildren(...n) { this._texto = ''; this.children = n; }
+  replaceChildren(...n) { this._texto = ''; this.children = []; this.append(...n); }
   setAttribute(k, v) { this.attrs[k] = v; }
   focus() { this.enfocado = true; }
   querySelector(s) { return this.todos().find(n => s.startsWith('[role=') ? n.attrs.role === s.match(/"([^"]+)"/)[1] : n.tag === s); }
@@ -65,9 +65,10 @@ class Nodo {
 async function montar({ usuario = { id: 'u' }, hash = '#/', listar = async () => [], empresas: lista = empresas } = {}) {
   const nodos = Object.fromEntries(['contenido', 'kit-cuenta', 'kit-nav', 'tema'].map(id => [id, new Nodo('div')]));
   const salto = new Nodo('a'), eventos = {}, consultas = [], guardado = [];
-  const document = { documentElement: new Nodo('html'), createElement: t => new Nodo(t), getElementById: id => nodos[id], querySelector: () => salto, addEventListener() {} };
+  const document = { documentElement: new Nodo('html'), createElement: t => new Nodo(t), createElementNS: (_, t) => new Nodo(t), getElementById: id => nodos[id], querySelector: () => salto, addEventListener() {} };
   const root = { document, Intl, fetch: async p => ({ok:true,json:async () => JSON.parse(readFileSync(new URL('../public/' + (typeof p === 'string' ? p : 'config/kit-modulos.json'), import.meta.url), 'utf8'))}), location: { hash }, history: { replaceState(_, __, hash) { root.location.hash = hash; } }, localStorage: { getItem() { throw Error('bloqueado'); }, setItem(...args) { guardado.push(args); } }, addEventListener: (k, fn) => { eventos[k] = fn; } }; root.window = root;
   vm.runInNewContext(readFileSync(new URL('../public/kit-armazon.js', import.meta.url), 'utf8'), root);
+  vm.runInNewContext(readFileSync(new URL('../public/kit-vista-credenciales.js', import.meta.url), 'utf8'), root);
   const datos = { usuarioActual: async () => usuario, empresas: async () => lista, puedeEditar: id => id === 'uno', listar: async (...args) => { consultas.push(args); return listar(...args); }, iniciarSesion: async () => ({ id: 'u' }), cerrarSesion: async () => {}, observarSesion(fn) { datos.salir = fn; } };
   await root.App.iniciar(datos);
   return { root, nodos, datos, consultas, eventos, guardado };
@@ -77,7 +78,7 @@ test('DOM: ingreso accesible, soporte, autenticación y salida', async () => {
   assert.equal(m.root.location.hash, '#/ingresar'); assert.equal(m.consultas.length, 0);
   const form = m.nodos.contenido.querySelector('form');
   assert.equal(form.todos().filter(n => n.tag === 'label').length, 2);
-  form.todos().find(n => n.textContent === '¿Olvidaste tu contraseña?').onclick(); assert.match(form.textContent, /Escribe a soporte GH/);
+  form.todos().find(n => n.textContent === '¿Olvidaste tu contraseña?').onclick(); assert.match(form.textContent, /Escribe a soporte de Meleia/);
   form.todos().filter(n => n.tag === 'input').forEach(n => { n.value = 'ejemplo'; });
   await form.onsubmit({ preventDefault() {} });
   assert.equal(m.root.location.hash, '#/'); assert.deepEqual(m.consultas, []);
@@ -87,17 +88,40 @@ test('DOM: portada global no consulta colecciones ni muestra selector global', a
   const m = await montar();
   assert.match(m.nodos.contenido.textContent, /Meleia/); assert.doesNotMatch(m.nodos.contenido.textContent, /GH Estudio/);
   assert.match(m.nodos.contenido.textContent, /laboratorio de ideas y soluciones para la sostenibilidad/i);
-  // E42 (5-nov): la portada es la ventana de Credenciales; después vienen los cuatro módulos.
+  // E46 (6-nov): hero con cuatro botones; el semicírculo arranca cerrado y Equipo y Aliados viven en él.
   const secciones = m.nodos.contenido.todos().filter(n => String(n.className).startsWith('kit-cred-seccion')).map(n => n.children[0].textContent);
-  assert.deepEqual(secciones, ['Quiénes somos', 'Servicios', 'Experiencia', 'Equipo', 'Aliados', 'Contacto']);
-  assert.equal(m.nodos.contenido.todos().filter(n => n.className === 'kit-persona').length, 3);
+  assert.deepEqual(secciones, ['Quiénes somos', '', 'Contacto']);
+  // Contacto cierra la portada, después de la banda de los módulos.
+  const zonaHijos = m.nodos.contenido.todos().find(n => n.className === 'kit-vista').children.map(n => String(n.className));
+  assert.ok(zonaHijos.indexOf('kit-banda kit-cred-modulos') < zonaHijos.findIndex(c => c.includes('kit-cred-contacto')));
+  assert.deepEqual(m.nodos.contenido.todos().filter(n => n.className === 'kit-tema-boton').map(n => n.textContent), ['Servicios', 'Experiencia', 'Equipo', 'Aliados']);
+  assert.equal(m.nodos.contenido.todos().find(n => n.id === 'kit-explorar').hidden, true);
   // E45: el correo provisional (dominio GH) solo aparece en Contacto, como enlace; nunca en las fichas del equipo.
-  assert.ok(m.nodos.contenido.todos().filter(n => n.className === 'kit-persona').every(n => !/ghestudio/.test(n.textContent)));
   const correo = m.nodos.contenido.todos().find(n => String(n.href || '').startsWith('mailto:'));
   assert.equal(correo.href, 'mailto:ghillon@ghestudio.com.co');
   assert.deepEqual(m.nodos.contenido.todos().filter(n => n.className === 'kit-modulo').map(n => n.href), ['#/actores', '#/ddhh', '#/materialidad', '#/riesgos']);
   assert.equal(m.consultas.length, 0); assert.equal(m.nodos['kit-cuenta'].querySelector('select'), undefined);
   assert.match(m.nodos['kit-cuenta'].textContent, /Responsable/);
+});
+test('DOM E46: temas en semicírculo, fichas flotantes y caso con entregables enlazados', async () => {
+  const m = await montar(), todos = () => m.nodos.contenido.todos();
+  const boton = id => todos().find(n => n.className === 'kit-tema-boton' && n.dataset.tema === id);
+  const explorar = todos().find(n => n.id === 'kit-explorar'), capa = todos().find(n => n.className === 'kit-ficha-capa');
+  const titulos = () => todos().filter(n => n.className === 'kit-serv-titulo');
+  await boton('servicios').onclick();
+  assert.equal(explorar.hidden, false); assert.equal(boton('servicios').attrs['aria-pressed'], 'true'); assert.equal(titulos().length, 3);
+  titulos()[0].onclick();
+  assert.equal(capa.hidden, false); assert.match(capa.textContent, /Servicio 01/); assert.match(capa.textContent, /Casos/);
+  // Desde la ficha del servicio, el caso abre su ficha en Experiencia.
+  await capa.todos().find(n => n.className === 'kit-logo-celda').onclick();
+  assert.equal(boton('experiencia').attrs['aria-pressed'], 'true'); assert.equal(titulos().length, 4);
+  assert.match(capa.textContent, /Entregables/);
+  assert.deepEqual(capa.todos().filter(n => n.tag === 'a').map(n => n.href), ['#/ddhh', '#/riesgos']);
+  capa.todos().find(n => n.className === 'kit-serv-volver').onclick(); assert.equal(capa.hidden, true);
+  await boton('equipo').onclick(); assert.equal(titulos().length, 3); titulos()[1].onclick(); assert.match(capa.textContent, /Felipe Hillón/);
+  await boton('aliados').onclick(); assert.equal(titulos().length, 4); assert.equal(capa.hidden, true);
+  // Sin logos confirmados, los casos siguen anonimizados (sin imágenes de clientes).
+  await boton('experiencia').onclick(); assert.ok(!todos().some(n => n.tag === 'image' || (n.tag === 'img' && /logo/.test(n.className || '') && !/hero/.test(n.className))));
 });
 test('DOM E24: selector accesible con uno o varios casos y pestaña Mapa de actores', async () => {
   const una = await montar({ empresas: muestras, hash:'#/ddhh' });

@@ -29,7 +29,10 @@
         "Estrategia ESG: materialidad, diseño estratégico y alineación con iniciativas de buenas prácticas",
         "Gestión y reporte: informes de sostenibilidad, rendición de cuentas y tableros ESG",
         "Debida diligencia en derechos humanos y ESG, y gestión preventiva de riesgos"
-      ]
+      ],
+      "icono": "sostenibilidad",
+      "descripcion": "Acompañamos a la empresa a entender sus impactos, priorizar lo material y prevenir riesgos en derechos humanos, con estrategia, gestión y reporte alineados con los estándares.",
+      "corto": "Sostenibilidad"
     },
     {
       "titulo": "Diálogo y gestión territorial",
@@ -37,7 +40,10 @@
         "Inteligencia territorial: mapeo de actores, caracterización socioeconómica e identificación de riesgos territoriales y de derechos humanos",
         "Relacionamiento: diálogo con grupos de interés y consulta previa",
         "Articulación: proyectos multiactor y desarrollo de capacidades comunitarias"
-      ]
+      ],
+      "icono": "dialogo",
+      "descripcion": "Construimos relaciones de confianza en el territorio: sabemos quién es quién, qué piensa y cómo dialogar, desde el mapeo de actores hasta la consulta previa y los proyectos multiactor.",
+      "corto": "Diálogo"
     },
     {
       "titulo": "IA e inteligencia territorial",
@@ -45,7 +51,10 @@
         "Automatización de la debida diligencia y del cumplimiento ESG",
         "Tableros con información territorial y de gestión empresarial para decidir",
         "Identificación y seguimiento de alertas tempranas y riesgos territoriales"
-      ]
+      ],
+      "icono": "ia",
+      "descripcion": "Llevamos la debida diligencia y el cumplimiento ESG a herramientas vivas: tableros para decidir y alertas tempranas sobre riesgos territoriales.",
+      "corto": "IA"
     }
   ],
   "experiencia": [
@@ -58,7 +67,27 @@
         "Brechas de gobernanza frente a la debida diligencia",
         "Identificación y evaluación de riesgos en derechos humanos",
         "Estrategia de debida diligencia y gestión de riesgos"
-      ]
+      ],
+      "id": "caso-1",
+      "servicio": 0,
+      "logo": null,
+      "color": "#B78D36",
+      "que_se_hizo": "Empresa líder en gas licuado de petróleo en el Perú, parte de un grupo energético latinoamericano. Alcance: 9 meses (junio 2025 a febrero 2026), 8 ciudades, 259 participantes de 5 grupos de interés.",
+      "entregables": [
+        {
+          "texto": "Brechas de gobernanza frente a la debida diligencia",
+          "modulo": "ddhh"
+        },
+        {
+          "texto": "Identificación y evaluación de riesgos en derechos humanos",
+          "modulo": "riesgos"
+        },
+        {
+          "texto": "Estrategia de debida diligencia y gestión de riesgos",
+          "modulo": null
+        }
+      ],
+      "sigla": "GLP"
     },
     {
       "sector": "Textil y confecciones",
@@ -68,7 +97,23 @@
       "logros": [
         "Diagnóstico en empresa y derechos humanos",
         "Estrategia de gestión alineada con estándares internacionales y sectoriales"
-      ]
+      ],
+      "id": "caso-2",
+      "servicio": 0,
+      "logo": null,
+      "color": "#5E7A45",
+      "que_se_hizo": "Empresa líder del sector en el Perú, fabricante por contrato para marcas internacionales. Alcance: 4 meses (diciembre 2024 a marzo 2025), 3 grupos de interés.",
+      "entregables": [
+        {
+          "texto": "Diagnóstico en empresa y derechos humanos",
+          "modulo": "ddhh"
+        },
+        {
+          "texto": "Estrategia de gestión alineada con estándares internacionales y sectoriales",
+          "modulo": null
+        }
+      ],
+      "sigla": "TX"
     },
     {
       "sector": "Cemento y construcción",
@@ -78,7 +123,23 @@
       "logros": [
         "Indicadores ESG clave para sus reportes de sostenibilidad y a la bolsa",
         "Diseño de un tablero ESG de reporte y seguimiento"
-      ]
+      ],
+      "id": "caso-3",
+      "servicio": 2,
+      "logo": null,
+      "color": "#3A4733",
+      "que_se_hizo": "Compañía líder de cemento y materiales de construcción en el norte y nororiente del Perú. Alcance: 5 meses (agosto a diciembre 2024), 3 localidades.",
+      "entregables": [
+        {
+          "texto": "Indicadores ESG clave para sus reportes de sostenibilidad y a la bolsa",
+          "modulo": null
+        },
+        {
+          "texto": "Diseño de un tablero ESG de reporte y seguimiento",
+          "modulo": null
+        }
+      ],
+      "sigla": "CM"
     },
     {
       "sector": "Agroexportación",
@@ -89,17 +150,113 @@
         "Diagnóstico ESG frente a estándares ESG y financieros",
         "Doble materialidad para el informe de sostenibilidad",
         "Plan de acción ESG"
-      ]
+      ],
+      "id": "caso-4",
+      "servicio": 0,
+      "logo": null,
+      "color": "#A8503A",
+      "que_se_hizo": "Empresa agroexportadora en el Perú, subsidiaria de una corporación estadounidense. Alcance: 6 meses (enero a junio 2024), 4 grupos de interés.",
+      "entregables": [
+        {
+          "texto": "Diagnóstico ESG frente a estándares ESG y financieros",
+          "modulo": null
+        },
+        {
+          "texto": "Doble materialidad para el informe de sostenibilidad",
+          "modulo": "materialidad"
+        },
+        {
+          "texto": "Plan de acción ESG",
+          "modulo": null
+        }
+      ],
+      "sigla": "AG"
     }
   ],
   "aliados": [
-    "Consultora de transformación organizacional con más de 15 años y presencia en Argentina, Brasil, Chile, Colombia, el Caribe, España y México",
-    "Consultora en reputación, comunicaciones, asuntos públicos y manejo de crisis",
-    "Firma peruana con más de 10 años en gestión de sostenibilidad y cambio climático",
-    "Organización con más de 15 años en fortalecimiento organizacional, liderazgo y medición de impacto social"
+    {
+      "titulo": "Transformación organizacional",
+      "icono": "transformacion",
+      "descripcion": "Consultora de transformación organizacional con más de 15 años y presencia en Argentina, Brasil, Chile, Colombia, el Caribe, España y México",
+      "nombre": null,
+      "logo": null,
+      "datos": [
+        {
+          "cifra": "+15",
+          "texto": "años de trayectoria"
+        },
+        {
+          "cifra": "7",
+          "texto": "países y regiones de presencia"
+        }
+      ],
+      "casos": []
+    },
+    {
+      "titulo": "Reputación y comunicaciones",
+      "icono": "reputacion",
+      "descripcion": "Consultora en reputación, comunicaciones, asuntos públicos y manejo de crisis",
+      "nombre": null,
+      "logo": null,
+      "datos": [],
+      "casos": []
+    },
+    {
+      "titulo": "Sostenibilidad y cambio climático",
+      "icono": "clima",
+      "descripcion": "Firma peruana con más de 10 años en gestión de sostenibilidad y cambio climático",
+      "nombre": null,
+      "logo": null,
+      "datos": [
+        {
+          "cifra": "+10",
+          "texto": "años en sostenibilidad y cambio climático"
+        }
+      ],
+      "casos": []
+    },
+    {
+      "titulo": "Fortalecimiento e impacto social",
+      "icono": "impacto-social",
+      "descripcion": "Organización con más de 15 años en fortalecimiento organizacional, liderazgo y medición de impacto social",
+      "nombre": null,
+      "logo": null,
+      "datos": [
+        {
+          "cifra": "+15",
+          "texto": "años en fortalecimiento organizacional"
+        }
+      ],
+      "casos": []
+    }
   ],
   "contacto": {
     "correo": "ghillon@ghestudio.com.co",
     "nota": "Correo provisional mientras Meleia habilita su dominio (decisión de Felipe del 5-nov)."
+  },
+  "afirmacion": "Transformamos información en mejores decisiones.",
+  "pendientes_look": "6-nov: logos de clientes sin confirmar (casos anonimizados con sigla del sector). Servicio 2 sin caso. Significado del «#» bajo cada entregable por confirmar con Felipe. Aliados: nombres, logos y casos compartidos por confirmar (6-nov). Datos resaltados tomados de su descripción.",
+  "temas": {
+    "servicios": {
+      "nombre": "Servicios",
+      "frase": "De la información a la decisión",
+      "titular": "Tres servicios que se conectan en el territorio."
+    },
+    "experiencia": {
+      "nombre": "Experiencia",
+      "frase": "Lo hemos hecho en el territorio",
+      "titular": "Lo hemos hecho con empresas líderes de la región."
+    },
+    "equipo": {
+      "nombre": "Equipo",
+      "frase": "Las personas detrás de Meleia",
+      "titular": "Territorio, estrategia y tecnología en un mismo equipo."
+    },
+    "aliados": {
+      "nombre": "Aliados",
+      "frase": "Trabajamos\nen red",
+      "titular": "Trabajamos en red con firmas especializadas."
+    },
+    "nota": "Frases y titulares: propuestas de Claude (6-nov). Por aprobar."
   }
 }
