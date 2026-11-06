@@ -66,7 +66,7 @@ body:has(.kit-portada) { overflow-x: clip; }
 .kit-serv-ficha-icono { width: 180px; height: 180px; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 18px 40px rgba(27,34,22,.2); }
 .kit-serv-ficha-icono .kit-icono { width: 84px; height: 84px; stroke: #F9F6F2; color: #F9F6F2; } .kit-serv-ficha-icono .kit-icono .nodo { fill: transparent; }
 .kit-serv-ficha h3 { font-size: var(--t-h1); margin: var(--e2) 0 var(--e4); }
-.kit-serv-descripcion { padding: var(--e5); background: var(--superficie); border: 1px solid var(--borde); border-left: 4px solid var(--oro); border-radius: var(--radio-chico); max-width: 72ch; }
+.kit-serv-descripcion { padding: var(--e5); background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio-chico); max-width: 72ch; }
 .kit-serv-descripcion p { margin: 0 0 var(--e3); font-size: 1.125rem; line-height: 1.65; }
 .kit-serv-descripcion ul { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; color: var(--texto-suave); font-size: var(--t-chico); }
 .kit-serv-casos-titulo { margin-top: var(--e5) !important; }
@@ -97,7 +97,7 @@ button.kit-logo-celda:hover, .kit-logo-celda[aria-expanded="true"] { background:
 .kit-logo-celda:hover img, .kit-logo-celda[aria-expanded="true"] img { filter: none; }
 .kit-logo-sector { font-family: var(--fuente-titulos); font-size: 1.15rem; font-weight: 500; }
 .kit-logo-pendiente { border-style: dashed; color: var(--texto-suave); }
-.kit-caso-ref { --caso-color: #B78D36; position: relative; margin-top: var(--e4); display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: var(--e5); padding: var(--e5); background: #F9F6F2; color: #1F241B; border-top: 6px solid var(--caso-color); border-radius: var(--radio-chico); animation: kit-aparece .4s var(--ease-out); --oro-texto: #7A5B1E; --texto-suave: #5B5E52; --texto: #1F241B; --borde: #DCD5C6; }
+.kit-caso-ref { --caso-color: #B78D36; position: relative; margin-top: var(--e4); display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: var(--e5); padding: var(--e5); background: #F9F6F2; color: #1F241B; border-top: 6px solid var(--caso-color); border-radius: 0; animation: kit-aparece .4s var(--ease-out); --oro-texto: #7A5B1E; --texto-suave: #5B5E52; --texto: #1F241B; --borde: #DCD5C6; }
 .kit-caso-ref[hidden] { display: none; }
 .kit-caso-logo { width: 200px; height: 200px; border-radius: 50%; display: grid; place-items: center; padding: var(--e4); text-align: center; background: color-mix(in srgb, var(--caso-color) 14%, #FFFFFF); border: 2px solid var(--caso-color); }
 .kit-caso-logo img { max-width: 80%; max-height: 80%; object-fit: contain; }
