@@ -25,3 +25,11 @@
 @media (max-width:390px) { .kq-pie > * { flex:1 1 120px; } .kq-revision dl { grid-template-columns:1fr; } }
 @media (prefers-reduced-motion:reduce) { .kq-zona { animation:none; } .kq-progreso i, .kq-pie .boton, .kq-pie button { transition:none; transform:none; } }
 @keyframes kq-aparecer { from { opacity:0; } to { opacity:1; } }
+/* E47: cuestionario del Módulo II. */
+.kq-eje { margin:var(--e1) 0 var(--e3); font-size:var(--t-h3); }
+.kq-criterio { margin:var(--e4) 0 var(--e2); font-weight:700; color:var(--oro-texto); }
+.kq-indicador { border:1px solid var(--borde); border-radius:var(--radio-chico); padding:var(--e3); margin-bottom:var(--e3); background:var(--superficie); }
+.kq-indicador .kq-escala { border:0; padding:0; }
+.kq-mas { margin:var(--e2) 0; }
+.kq-mas > summary { cursor:pointer; color:var(--principal); font-weight:600; min-height:32px; }
+.kq-escala > label { font-weight:400; }

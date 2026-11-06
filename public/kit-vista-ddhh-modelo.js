@@ -82,10 +82,72 @@
     const puntajes=Object.fromEntries(cat.ejes.map(e=>[e.id,e.componentes.length?promedio(e.componentes.map(c=>componentes[c.id])):promedio(cat.indicadores.filter(i=>i.eje===e.id).map(valor))]));
     return {componentes,puntajes};
   }
+
+  // Un solo camino para el Módulo II (E47, 6-nov): la carga por Excel y el cuestionario entregan los mismos datos
+  // planos y esta función valida, calcula los promedios y arma los registros. Si hay cualquier error no devuelve
+  // registros: un promedio calculado con datos a medias sería engañoso.
+  // entrada = { evaluacion: {nombre, fecha, fila}, indicadores: [{fila, indicador, incorporado, documentos, descripcion, calificacion, brecha}], dimensiones: [{fila, dimension, hallazgos, brechas}] }
+  // Cada error lleva la sección (evaluacion, indicadores o dimensiones), la fila de origen si existe, el campo y el mensaje.
+  function prepararDdhh(cat,esquemas,existentes,entrada,opciones={}) {
+    const presente=v=>v!==undefined&&v!==null&&!(typeof v==='string'&&!v.trim());
+    const normalizar=v=>String(v??'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim().replace(/\s+/g,' ');
+    const texto=v=>presente(v)?String(v).trim():'';
+    const pista=opciones.pistas||{};
+    const errores=[],avisos=[],cols=colecciones.ddhh.slice(0,4);
+    const vacio={registros:Object.fromEntries(cols.map(c=>[c,[]])),nuevos:0,actualizados:0,errores,avisos};
+    const sch=(c,r)=>esquema(esquemas[c],c,cat,r);
+    const ev=entrada.evaluacion||{},fecha=texto(ev.fecha);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(fecha)){errores.push({seccion:'evaluacion',fila:ev.fila,campo:'fecha',mensaje:`Fecha = ${JSON.stringify(fecha)}, se esperaba una fecha (AAAA-MM-DD).`});return vacio;}
+    const idEvaluacion='eval-'+fecha.slice(0,7),referencias={'ddhh-evaluaciones':new Set([idEvaluacion])};
+    const catalogo=new Set(cat.indicadores.map(i=>i.id)),vistos=new Map(),registrosIndicadores=[];let enBlanco=0;
+    for(const fila of entrada.indicadores||[]){
+      const codigo=texto(fila.indicador);
+      if(!catalogo.has(codigo)){errores.push({seccion:'indicadores',fila:fila.fila,campo:'indicador',mensaje:`Código = ${JSON.stringify(codigo)}, no corresponde a ningún indicador.`+(pista.codigo||'')});continue;}
+      if(vistos.has(codigo)){errores.push({seccion:'indicadores',fila:fila.fila,campo:'indicador',mensaje:`Indicador repetido${vistos.get(codigo)?': ya está en la fila '+vistos.get(codigo):''}. Deja una sola fila.`});continue;}
+      vistos.set(codigo,fila.fila);
+      let calificacion=fila.calificacion;if(!presente(calificacion)){calificacion=0;enBlanco++;}
+      let incorporado=fila.incorporado;
+      if(presente(incorporado)){const valores=esquemas['ddhh-indicadores'].campos.incorporado.valores;incorporado=valores.find(v=>normalizar(v)===normalizar(incorporado))??incorporado;}
+      const e={id:idEvaluacion+'--'+codigo,evaluacion:idEvaluacion,indicador:codigo,incorporado:texto(incorporado),documentos:texto(fila.documentos),descripcion:texto(fila.descripcion),calificacion,brecha:texto(fila.brecha),nota:'',origen:'cargada',...(fila.fila!==undefined?{fila_fuente:fila.fila}:{})};
+      const r=validar(e,sch('ddhh-indicadores',e),referencias);
+      if(!r.ok){r.errores.forEach(x=>errores.push({seccion:'indicadores',fila:fila.fila,campo:x.campo,mensaje:x.mensaje,indicador:codigo}));continue;}
+      registrosIndicadores.push(r.registro);
+    }
+    const faltantes=cat.indicadores.filter(i=>!vistos.has(i.id));
+    if((entrada.indicadores||[]).length&&faltantes.length)errores.push({seccion:'indicadores',mensaje:`Faltan ${faltantes.length} indicadores (${faltantes.slice(0,3).map(i=>i.id).join(', ')}${faltantes.length>3?'…':''}).`+(pista.faltantes||'')});
+    if(enBlanco)avisos.push({seccion:'indicadores',mensaje:`${enBlanco} ${enBlanco===1?'indicador sin calificación cuenta':'indicadores sin calificación cuentan'} como 0 en los promedios.`});
+    const dims=new Map(),registrosDimensiones=[];
+    for(const fila of entrada.dimensiones||[]){
+      const codigo=texto(fila.dimension);
+      if(dims.has(codigo)){errores.push({seccion:'dimensiones',fila:fila.fila,campo:'dimension',mensaje:`Dimensión repetida${dims.get(codigo)?': ya está en la fila '+dims.get(codigo):''}. Deja una sola fila.`});continue;}
+      dims.set(codigo,fila.fila);
+      const e={id:idEvaluacion+'--'+codigo,evaluacion:idEvaluacion,dimension:codigo,hallazgos:texto(fila.hallazgos),brechas:texto(fila.brechas)};
+      const r=validar(e,sch('ddhh-dimensiones',e),referencias);
+      if(!r.ok){r.errores.forEach(x=>errores.push({seccion:'dimensiones',fila:fila.fila,campo:x.campo,mensaje:x.mensaje}));continue;}
+      registrosDimensiones.push(r.registro);
+    }
+    const {componentes,puntajes}=calcular(cat,registrosIndicadores);
+    const entradaEvaluacion={id:idEvaluacion,nombre:texto(ev.nombre),fecha,origen:'cargada',...puntajes};
+    const validada=validar(entradaEvaluacion,sch('ddhh-evaluaciones',entradaEvaluacion),referencias);
+    validada.errores.filter(x=>['nombre','fecha','id'].includes(x.campo)).forEach(x=>errores.push({seccion:'evaluacion',fila:ev.fila,campo:x.campo,mensaje:x.mensaje}));
+    if(errores.length)return vacio;
+    if(!validada.ok)throw Error('Los puntajes calculados no pasaron la validación: '+validada.errores.map(x=>x.mensaje).join('; '));
+    const registrosComponentes=Object.entries(componentes).map(([componente,calificacion])=>{
+      const e={id:idEvaluacion+'--'+componente,evaluacion:idEvaluacion,componente,calificacion};
+      const r=validar(e,sch('ddhh-componentes',e),referencias);
+      if(!r.ok)throw Error('Un criterio calculado no pasó la validación: '+componente);
+      return r.registro;
+    });
+    const registros={'ddhh-evaluaciones':[validada.registro],'ddhh-indicadores':registrosIndicadores,'ddhh-componentes':registrosComponentes,'ddhh-dimensiones':registrosDimensiones};
+    const conteos={nuevos:0,actualizados:0};
+    for(const c of cols){const ex=new Set((existentes?.[c]||[]).map(r=>r.id));registros[c].forEach(r=>{if(ex.has(r.id))conteos.actualizados++;else conteos.nuevos++;});}
+    if(conteos.actualizados)avisos.push({seccion:'evaluacion',mensaje:`Ya existe una evaluación de ${fecha.slice(0,7)} (${idEvaluacion}); se reemplazan sus datos.`});
+    return {registros,...conteos,errores,avisos};
+  }
   function materialidad(cat,listas) {
     return {grupos:cat.grupos,evaluadores_financieros:cat.evaluadores_financieros,temas:(listas['materialidad-temas']||[]).map(t=>({...t,
       evaluacion_impacto:Object.fromEntries((listas['materialidad-impacto']||[]).filter(r=>r.tema===t.id).map(r=>[r.grupo,r])),
       evaluacion_financiera:Object.fromEntries((listas['materialidad-financiera']||[]).filter(r=>r.tema===t.id).map(r=>[r.evaluador,r]))}))};
   }
-  return {colecciones,escala,reglaEscala,esquema,validar,posicion,mostrar,empresa,reemplazar,ddhh,materialidad,calcular};
+  return {colecciones,escala,reglaEscala,esquema,validar,posicion,mostrar,empresa,reemplazar,ddhh,materialidad,calcular,prepararDdhh};
 }));
