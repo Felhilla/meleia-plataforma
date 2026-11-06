@@ -134,11 +134,12 @@
       const centro = svg('g', { class: 'kit-serv-centro' });
       centro.append(svg('circle', { cx: C[0], cy: C[1], r: 158 }));
       const t0 = svg('text', { x: C[0], y: C[1] - 52, 'text-anchor': 'middle', class: 'kit-serv-centro-ante' }); t0.textContent = 'MELEIA'; centro.append(t0);
+      // La frase se parte en dos renglones: donde diga la configuración (salto de línea) o por la mitad de las palabras.
       const palabras = tema.frase.split(' '), corte = Math.ceil(palabras.length / 2);
-      [palabras.slice(0, corte).join(' '), palabras.slice(corte).join(' ')].forEach((linea, k) => { const t = svg('text', { x: C[0], y: C[1] + 4 + k * 38, 'text-anchor': 'middle', class: 'kit-serv-centro-frase' }); t.textContent = linea; centro.append(t); });
+      (tema.frase.includes('\n') ? tema.frase.split('\n').slice(0, 2) : [palabras.slice(0, corte).join(' '), palabras.slice(corte).join(' ')]).forEach((linea, k) => { const t = svg('text', { x: C[0], y: C[1] + 4 + k * 38, 'text-anchor': 'middle', class: 'kit-serv-centro-frase' }); t.textContent = linea; centro.append(t); });
       centro.append(svg('circle', { cx: C[0], cy: C[1] + 90, r: 6, class: 'kit-hero-punto' }));
       dibujo.append(centro);
-      diagrama.replaceChildren(dibujo, el('p', tema.frase, 'solo-lectores'), titulos);
+      diagrama.replaceChildren(dibujo, el('p', tema.frase.replace('\n', ' '), 'solo-lectores'), titulos);
       diagrama.classList?.remove('recarga'); void diagrama.offsetWidth; diagrama.classList?.add('recarga');
     }
 

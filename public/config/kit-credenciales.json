@@ -254,7 +254,7 @@
     },
     "aliados": {
       "nombre": "Aliados",
-      "frase": "Trabajamos en red",
+      "frase": "Trabajamos\nen red",
       "titular": "Trabajamos en red con firmas especializadas."
     },
     "nota": "Frases y titulares: propuestas de Claude (6-nov). Por aprobar."
