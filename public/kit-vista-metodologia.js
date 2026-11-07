@@ -58,26 +58,70 @@
       if (intro) b.append(el('p', intro, 'kit-met-intro'));
     }
     const sinMovimiento = () => !!root.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    // Movimiento con propósito (Look and Feel, principio 7): solo en un navegador real y si el usuario no pidió movimiento reducido.
+    const anima = () => !!root.matchMedia && !sinMovimiento();
+    const pendientes = [];
+    const io = anima() && root.IntersectionObserver ? new root.IntersectionObserver(es => es.forEach(x => {
+      if (!x.isIntersecting) return;
+      io.unobserve(x.target); x.target.classList?.add('visto'); x.target._alVer?.();
+    }), { rootMargin: '0px 0px -10% 0px' }) : null;
+    // Aparición al llegar con el scroll: sube y aparece. En cascada, los hijos entran uno tras otro.
+    function revelar(n, cascada = false, alVer) {
+      if (alVer) n._alVer = alVer;
+      if (!io) { alVer?.(); return n; }
+      n.classList?.add(cascada ? 'kit-met-cascada' : 'kit-met-revela');
+      if (cascada) Array.from(n.children || []).forEach((h, k) => h.style?.setProperty?.('--i', k));
+      pendientes.push(n); return n;
+    }
+    // Desplegable: botón con flecha y panel que se abre en altura. El contenido siempre está en la página.
+    let nDesp = 0;
+    function desplegable(rotulo, contenido, clase = '') {
+      const caja = el('div', null, ('kit-met-despliega ' + clase).trim()), id = 'kit-met-desp-' + (++nDesp);
+      const b = el('button', null, 'kit-met-despliega-boton'); b.type = 'button';
+      b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-controls', id);
+      [].concat(rotulo).forEach(r => b.append(typeof r === 'string' ? el('span', r) : r));
+      const panel = el('div', null, 'kit-met-despliega-panel'), interior = el('div', null, 'kit-met-despliega-interior');
+      panel.id = id; panel.inert = true; interior.append(...[].concat(contenido)); panel.append(interior);
+      b.onclick = () => {
+        const abrir = b.getAttribute?.('aria-expanded') !== 'true';
+        b.setAttribute('aria-expanded', String(abrir)); caja.classList?.toggle('abierto', abrir); panel.inert = !abrir;
+      };
+      caja.append(b, panel); return caja;
+    }
+    // Las cifras del encabezado cuentan desde cero en 700 ms con curva de salida.
+    function contar(span, valor) {
+      if (!anima() || !root.requestAnimationFrame || !(valor > 0)) return;
+      const t0 = root.performance?.now?.() ?? Date.now(), dur = 700;
+      const paso = t => { const p = Math.min(1, (t - t0) / dur); span.textContent = '# ' + num(Math.round(valor * (1 - Math.pow(1 - p, 3)))); if (p < 1) root.requestAnimationFrame(paso); };
+      span.textContent = '# 0'; root.requestAnimationFrame(paso);
+    }
 
     // Escena: un contenido (gráfico, rejilla o tabla) sobre el que flotan las fichas, con el fondo difuminado.
     function escena(contenido) {
       const e = el('div', null, 'kit-serv-escena kit-met-escena'), capa = el('div', null, 'kit-ficha-capa');
       capa.hidden = true; capa.setAttribute('role', 'dialog'); capa.setAttribute('aria-modal', 'false');
       e.append(contenido, capa);
-      let origen = null;
+      let origen = null, turno = 0, ro = null;
+      // La escena crece con la ficha (también cuando dentro de ella se abre un desplegable).
+      const ajustar = t => { if (e.style && t.offsetHeight) e.style.minHeight = Math.max(contenido.offsetHeight || 0, t.offsetHeight + 48) + 'px'; };
       const cerrar = (enfocar = true) => {
         if (capa.hidden) return;
-        capa.hidden = true; capa.replaceChildren(); contenido.classList?.remove('difuminado'); if (e.style) e.style.minHeight = '';
-        if (enfocar) origen?.focus?.(); origen = null;
+        const mio = ++turno, fin = () => {
+          if (mio !== turno) return;
+          ro?.disconnect(); ro = null; capa.hidden = true; capa.replaceChildren(); if (e.style) e.style.minHeight = '';
+          if (enfocar) origen?.focus?.(); origen = null;
+        };
+        contenido.classList?.remove('difuminado');
+        if (anima()) { capa.firstChild?.classList?.add('saliendo'); root.setTimeout(fin, 180); } else fin();
       };
       capa.onkeydown = ev => { if (ev.key === 'Escape') { ev.preventDefault(); cerrar(); } };
       const abrir = (titulo, nodos, desde, clase = '') => {
-        origen = desde || null;
+        origen = desde || null; turno++;
         const t = el('article', null, ('kit-ficha-flotante kit-met-ficha ' + clase).trim());
         const volver = el('button', 'Volver', 'kit-serv-volver'); volver.type = 'button'; volver.onclick = () => cerrar();
         t.append(volver, ...nodos); capa.replaceChildren(t); capa.setAttribute('aria-label', titulo);
         contenido.classList?.add('difuminado'); capa.hidden = false;
-        if (e.style && t.offsetHeight) e.style.minHeight = Math.max(contenido.offsetHeight || 0, t.offsetHeight + 48) + 'px';
+        ajustar(t); ro?.disconnect(); ro = root.ResizeObserver ? new root.ResizeObserver(() => ajustar(t)) : null; ro?.observe(t);
         volver.focus?.({ preventScroll: true });
         if (e.getBoundingClientRect && e.getBoundingClientRect().top < 0) e.scrollIntoView?.({ behavior: sinMovimiento() ? 'auto' : 'smooth', block: 'start' });
       };
@@ -93,7 +137,14 @@
     const bloque = (rotulo, ...hijos) => { const s = el('section', null, 'kit-met-bloque'); s.append(mono(rotulo, 'kit-ficha-sub'), ...hijos); return s; };
     const parrafo = t => el('p', t, 'kit-met-texto');
     const lista = (items, clase = 'kit-met-lista') => { const ul = el('ul', null, clase); items.forEach(t => ul.append(typeof t === 'string' ? el('li', t) : t)); return ul; };
-    const preguntas = (id, n) => { const ol = el('ol', null, 'kit-met-preguntas'); d.indicadores(id).slice(0, n).forEach(i => ol.append(el('li', i.pregunta))); return ol; };
+    const preguntas = (id, n) => {
+      const todas = d.indicadores(id), ol = el('ol', null, 'kit-met-preguntas');
+      todas.slice(0, n).forEach(i => ol.append(el('li', i.pregunta)));
+      if (todas.length <= n) return ol;
+      const resto = el('ol', null, 'kit-met-preguntas'); resto.start = n + 1; resto.setAttribute('start', String(n + 1));
+      todas.slice(n).forEach(i => resto.append(el('li', i.pregunta)));
+      const caja = el('div'); caja.append(ol, desplegable(`Ver las ${num(todas.length - n)} preguntas restantes`, resto, 'kit-met-despliega-chico')); return caja;
+    };
 
     // 1. Encabezado: el para qué en una línea, el cuándo y las cifras del módulo leídas del catálogo.
     const hero = banda('kit-banda-oscura kit-met-hero');
@@ -105,8 +156,9 @@
     hero.append(textos);
     const cifras = el('ul', null, 'kit-datos kit-met-cifras');
     [[m.metodo.etapas.length, 'etapas del proceso de debida diligencia'], [m.temas.items.length, 'derechos evaluados en la operación y la cadena'], [d.totalIndicadores, 'preguntas, cada una con su evidencia'], [m.estandares.fichas.length, 'estándares de referencia, con su fuente']]
-      .forEach(([n, t]) => { const li = el('li'); li.append(el('span', '# ' + num(n), 'kit-dato-cifra'), el('span', t, 'kit-dato-texto')); cifras.append(li); });
-    hero.append(cifras); art.append(hero);
+      .forEach(([n, t]) => { const li = el('li'), s = el('span', '# ' + num(n), 'kit-dato-cifra'); s._valor = n; li.append(s, el('span', t, 'kit-dato-texto')); cifras.append(li); });
+    hero.append(revelar(cifras, true, () => Array.from(cifras.children).forEach(li => contar(li.children[0], li.children[0]._valor))));
+    art.append(hero);
 
     // 2. El método: las etapas sobre el arco de Meleia. Cada etapa abre su ficha.
     const bMetodo = banda('kit-met-metodo');
@@ -142,7 +194,8 @@
     centro.append(svg('circle', { cx: C[0], cy: C[1] + 90, r: 6, class: 'kit-hero-punto' }));
     dibujo.append(centro);
     diagrama.append(dibujo, el('p', 'Las seis etapas del proceso de debida diligencia.', 'solo-lectores'), titulos);
-    diagrama.classList?.add('recarga');
+    if (io) { diagrama.classList?.add('kit-met-espera'); diagrama._alVer = () => { diagrama.classList?.remove('kit-met-espera'); diagrama.classList?.add('recarga'); }; pendientes.push(diagrama); }
+    else diagrama.classList?.add('recarga');
     bMetodo.append(esc1.nodo); art.append(bMetodo);
     function fichaEtapa(i) {
       const e = etapas[i], eje = d.ejes.get(e.eje), crit = (eje?.componentes || []).map(x => x.nombre);
@@ -206,8 +259,8 @@
     });
     bCal.append(mono('Colores en los Resultados', 'kit-ficha-sub'), cortes);
     if (d.umbrales.hipotesis) bCal.append(el('p', 'Cortes de color en validación con el equipo técnico.', 'kit-met-nota'));
-    const reglas = el('ol', null, 'kit-met-numerada');
-    m.calificacion.reglas.forEach((r, i) => { const li = el('li'); li.append(el('span', dos(i), 'kit-mono'), el('strong', r.titulo), el('span', r.texto)); reglas.append(li); });
+    const reglas = el('ol', null, 'kit-met-reglas');
+    m.calificacion.reglas.forEach((r, i) => { const li = el('li'); li.append(desplegable([el('span', dos(i), 'kit-mono'), el('strong', r.titulo)], el('p', r.texto, 'kit-met-texto'), 'kit-met-regla')); reglas.append(li); });
     bCal.append(mono('Reglas', 'kit-ficha-sub'), reglas); art.append(bCal);
 
     // 5. Estándares: una ficha por estándar (qué es, por qué, cruce y enlace al documento) y la matriz de cruce.
@@ -283,7 +336,10 @@
         tbody.append(tr);
       });
       tabla.append(tbody); envoltura.append(tabla);
-      bEst.append(el('h3', m.estandares.cruce_titulo, 'kit-met-subtitulo'), el('p', m.estandares.cruce_intro, 'kit-met-intro'), esc4.nodo, el('p', m.estandares.cruce_nota, 'kit-met-nota'));
+      const totalRefs = d.ordenEjes.reduce((s, id) => s + d.columnas.reduce((t, col) => t + d.celda(id, col).length, 0), 0);
+      const resumen = [el('span', 'Ver la matriz de cruce', 'kit-met-despliega-titulo'), el('span', `${num(d.ordenEjes.length)} etapas y derechos, ${num(d.columnas.length)} estándares, ${num(totalRefs)} referencias exactas`, 'kit-dato-texto')];
+      bEst.append(el('h3', m.estandares.cruce_titulo, 'kit-met-subtitulo'), el('p', m.estandares.cruce_intro, 'kit-met-intro'),
+        desplegable(resumen, [esc4.nodo, el('p', m.estandares.cruce_nota, 'kit-met-nota')], 'kit-met-despliega-matriz'));
     }
     art.append(bEst);
 
@@ -302,7 +358,13 @@
     }
     if (botones) bEnt.append(sig);
     art.append(bEnt);
+    [rejilla, escala, calculo, cortes, reglas, celdasEst, ent].forEach(n => revelar(n, true));
+    [bMetodo, bTemas, bCal, bEst, bEnt].forEach(b => Array.from(b.children || []).forEach(h => {
+      if (h.classList?.contains?.('kit-met-escena') || /kit-met-(escala|calculo|cortes|reglas|numerada)/.test(h.className || '')) return;
+      revelar(h);
+    }));
     c.append(art);
+    pendientes.forEach(n => io.observe(n));
   }
 
   async function datos(modulo, m) {

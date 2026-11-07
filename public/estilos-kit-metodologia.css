@@ -143,3 +143,50 @@ body:has(.kit-met) { overflow-x: clip; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-tema="claro"]) .kit-met-escala-num, :root:not([data-tema="claro"]) .kit-met-estandar-sigla, :root:not([data-tema="claro"]) .kit-met-est-sigla { filter: brightness(1.55); }
 }
+
+/* Movimiento (Look and Feel, principio 7): curva de salida entre 200 y 500 ms, cascada de arriba hacia abajo,
+   fichas con zoom corto. Las clases de espera solo se ponen si hay navegador con IntersectionObserver y sin movimiento reducido. */
+.kit-met-revela { opacity: 0; transform: translateY(18px); transition: opacity .5s var(--ease-out), transform .5s var(--ease-out); }
+.kit-met-revela.visto { opacity: 1; transform: none; }
+.kit-met-cascada > * { opacity: 0; transform: translateY(18px); }
+.kit-met-cascada.visto > * { animation: kit-sube .5s var(--ease-out) both; animation-delay: calc(var(--i, 0) * 70ms); opacity: 1; transform: none; }
+.kit-met-cortes.kit-met-cascada > * { transform: scaleX(0); transform-origin: left center; }
+.kit-met-cortes.kit-met-cascada.visto > * { animation: kit-met-crece .45s var(--ease-out) both; animation-delay: calc(var(--i, 0) * 120ms); transform: none; }
+@keyframes kit-met-crece { from { opacity: 0; transform: scaleX(0); } }
+.kit-met-espera .kit-serv-seg, .kit-met-espera .kit-serv-titulo, .kit-met-espera .kit-serv-centro { opacity: 0; }
+.kit-ficha-flotante.saliendo { animation: kit-met-ficha-sale .18s ease-in both; }
+@keyframes kit-met-ficha-sale { to { opacity: 0; transform: scale(.94); } }
+
+/* Desplegables: botón con flecha ↓ que gira y panel que se abre en altura. */
+.kit-met-despliega-boton { all: unset; box-sizing: border-box; cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px var(--e3); width: 100%; position: relative; padding: var(--e3) calc(var(--e4) + 1.2rem) var(--e3) 0; color: var(--texto); }
+.kit-met-despliega-boton::after { content: "↓"; position: absolute; right: 4px; top: var(--e3); font-family: var(--fuente-mono); color: var(--oro-texto); transition: transform .3s var(--ease-out); }
+.kit-met-despliega-boton:hover::after { transform: translateY(3px); }
+.kit-met-despliega-boton:focus-visible { outline: 2px solid var(--oro); outline-offset: 3px; }
+.abierto > .kit-met-despliega-boton::after { transform: rotate(180deg); }
+.kit-met-despliega-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .4s var(--ease-out); }
+.abierto > .kit-met-despliega-panel { grid-template-rows: 1fr; }
+.kit-met-despliega-interior { min-height: 0; overflow: hidden; padding-left: 1.5em; margin-left: -1.5em; opacity: 0; transition: opacity .3s ease; }
+.abierto > .kit-met-despliega-panel > .kit-met-despliega-interior { opacity: 1; transition-delay: .08s; }
+.kit-met-despliega-chico { margin-top: var(--e2); }
+.kit-met-despliega-chico > .kit-met-despliega-boton { padding-block: var(--e2); font-family: var(--fuente-mono); font-size: var(--t-micro); letter-spacing: .08em; text-transform: uppercase; color: var(--oro-texto); }
+.kit-met-despliega-chico > .kit-met-despliega-boton::after { top: var(--e2); }
+.kit-met-despliega-chico .kit-met-preguntas { padding-top: var(--e2); }
+.kit-met-reglas { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0 var(--e5); align-items: start; }
+.kit-met-reglas li { border-top: 1px solid var(--linea); }
+.kit-met-regla .kit-met-despliega-boton { flex-direction: column; gap: var(--e2); }
+.kit-met-regla strong { font-family: var(--fuente-titulos); font-size: 1.25rem; font-weight: 500; }
+.kit-met-regla .kit-met-texto { padding-bottom: var(--e3); font-size: var(--t-chico); line-height: 1.5; color: var(--texto-suave); }
+.kit-met-despliega-matriz { border-top: 1px solid var(--linea); border-bottom: 1px solid var(--linea); }
+.kit-met-despliega-matriz > .kit-met-despliega-boton { padding-block: var(--e4); }
+.kit-met-despliega-matriz > .kit-met-despliega-boton::after { top: var(--e4); font-size: 1.2rem; }
+.kit-met-despliega-titulo { font-family: var(--fuente-titulos); font-size: 1.4rem; font-weight: 500; }
+.kit-met-despliega-matriz .kit-met-despliega-interior { padding-bottom: var(--e4); }
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-met-despliega-panel, .kit-met-despliega-interior, .kit-met-despliega-boton::after { transition: none; }
+  .kit-ficha-flotante.saliendo { animation: none; }
+}
+@media print {
+  .kit-met-revela, .kit-met-cascada > *, .kit-met-espera * { opacity: 1 !important; transform: none !important; }
+  .kit-met-despliega-panel { grid-template-rows: 1fr; } .kit-met-despliega-interior { opacity: 1; }
+}
