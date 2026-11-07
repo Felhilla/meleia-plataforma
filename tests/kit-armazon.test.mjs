@@ -111,12 +111,23 @@ test('DOM E46: temas en semicírculo, fichas flotantes y caso con entregables en
   assert.equal(explorar.hidden, false); assert.equal(boton('servicios').attrs['aria-pressed'], 'true'); assert.equal(titulos().length, 3);
   titulos()[0].onclick();
   assert.equal(capa.hidden, false); assert.match(capa.textContent, /Servicio 01/); assert.match(capa.textContent, /Casos/);
-  // Desde la ficha del servicio, el caso abre su ficha en Experiencia.
-  await capa.todos().find(n => n.className === 'kit-logo-celda').onclick();
-  assert.equal(boton('experiencia').attrs['aria-pressed'], 'true'); assert.equal(titulos().length, 4);
-  assert.match(capa.textContent, /Entregables/);
+  // E50 (Lógica Muñeca Rusa): el caso abre su ficha encima de la del servicio; la X regresa un nivel, en el mismo orden.
+  const x = () => capa.todos().find(n => String(n.className).startsWith('kit-serv-volver'));
+  capa.todos().find(n => n.className === 'kit-logo-celda').onclick();
+  assert.equal(boton('servicios').attrs['aria-pressed'], 'true');
+  assert.match(capa.textContent, /¿Qué hicimos y qué entregamos\?/);
   assert.deepEqual(capa.todos().filter(n => n.tag === 'a').map(n => n.href), ['#/ddhh', '#/riesgos']);
-  capa.todos().find(n => n.className === 'kit-serv-volver').onclick(); assert.equal(capa.hidden, true);
+  assert.match(x().attrs['aria-label'], /^Regresar a /);
+  x().onclick(); assert.equal(capa.hidden, false); assert.match(capa.textContent, /Servicio 01/);
+  x().onclick(); assert.equal(capa.hidden, true);
+  // Experiencia: un segmento por sector; el sector abre su ficha y la cifra abre el listado de sus clientes.
+  await boton('experiencia').onclick(); assert.equal(titulos().length, 4);
+  titulos()[0].onclick(); assert.match(capa.textContent, /¿Qué hemos hecho en este sector\?/);
+  capa.todos().find(n => n.className === 'kit-logo-celda kit-sector-cifra').onclick(); assert.match(capa.textContent, /Clientes del sector/);
+  x().onclick(); assert.match(capa.textContent, /¿Qué hemos hecho en este sector\?/); x().onclick(); assert.equal(capa.hidden, true);
+  // El centro muestra las cifras calculadas y abre todos los clientes por sector.
+  todos().find(n => n.className === 'kit-serv-centro-boton').onclick(); assert.match(capa.textContent, /Clientes por sector/);
+  x().onclick(); assert.equal(capa.hidden, true);
   await boton('equipo').onclick(); assert.equal(titulos().length, 4); titulos()[1].onclick(); assert.match(capa.textContent, /Felipe Hillón/);
   await boton('aliados').onclick(); assert.equal(titulos().length, 4); assert.equal(capa.hidden, true);
   // Sin logos confirmados, los casos siguen anonimizados (sin imágenes de clientes).

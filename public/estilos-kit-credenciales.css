@@ -174,3 +174,35 @@ a.kit-caso-enlace:hover { text-decoration: underline; }
 @media (max-width: 960px) { .kit-modulos.kit-rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 860px) { .kit-ingreso-banda { grid-template-columns: minmax(0, 1fr); min-height: 0; } }
 @media (max-width: 560px) { .kit-modulos.kit-rejilla { grid-template-columns: minmax(0, 1fr); } .kit-cred-modulos .kit-modulo { min-height: 0; } }
+
+/* E50 (7-nov): Lógica Muñeca Rusa. Cada ficha lleva una X que regresa un nivel; la ruta dice dónde está el lector. */
+.kit-ficha-x { width: 44px; height: 44px; padding: 0; display: grid; place-items: center; border-radius: 50%; font-size: 1.6rem; line-height: 1; font-weight: 400; transition: background .2s ease, color .2s ease, transform .2s var(--ease-out); }
+.kit-ficha-x::before { content: none; }
+.kit-ficha-x:hover { background: var(--principal); color: var(--fondo); transform: rotate(90deg); }
+.kit-ficha-x:focus-visible { outline: 2px solid var(--oro); outline-offset: 3px; }
+.kit-ficha-ruta { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 56px var(--e3) 0; color: var(--texto-suave); font-size: var(--t-micro); }
+.kit-ficha-ruta span:last-child { color: var(--oro-texto); }
+.kit-ficha-ruta-barra { color: var(--linea); }
+
+/* Experiencia: el centro muestra las cifras y abre el listado de clientes. */
+.kit-serv-centro-cifra { font-size: 36px; font-weight: 600; fill: var(--principal); }
+.kit-serv-centro-ver { font-family: var(--fuente-mono); font-size: 14px; letter-spacing: .2em; text-transform: uppercase; fill: var(--oro-texto); }
+.kit-serv-centro-activo { cursor: pointer; }
+.kit-serv-centro-activo circle:first-child { transition: stroke .2s ease, stroke-width .2s ease; }
+.kit-serv-centro-activo:hover circle:first-child { stroke: var(--oro); stroke-width: 3; }
+.kit-serv-centro-boton { position: absolute; left: 10.2%; top: 26%; width: 31.6%; aspect-ratio: 1; border-radius: 50%; background: transparent; border: 0; cursor: pointer; }
+.kit-serv-centro-boton:focus-visible { outline: 2px solid var(--oro); outline-offset: 4px; }
+.kit-sector-hecho { margin: 0 !important; padding-left: 1.1em; display: grid; gap: 6px; font-size: 1.0625rem !important; color: var(--texto) !important; }
+.kit-sector-cifra { background: var(--fondo-alterno); border-style: dashed; }
+.kit-sector-cifra .kit-dato-cifra { font-size: 2rem; }
+.kit-logo-celda.con-nombre { min-height: 110px; }
+.kit-logo-celda.con-nombre .kit-mono { max-width: 150px; color: var(--texto-suave); }
+.kit-clientes-titulo { font-size: clamp(1.4rem, 2.6vw, 2rem); font-weight: 500; margin: 0 0 var(--e3); }
+.kit-clientes-cifras { margin-bottom: var(--e3); }
+.kit-clientes-grupo + .kit-clientes-grupo { border-top: 1px solid var(--borde); }
+.kit-caso-descripcion { margin: 0 0 var(--e4); font-size: 1.0625rem; line-height: 1.6; color: var(--texto-suave); }
+.kit-caso-recuadro { display: grid; gap: var(--e3); }
+.kit-caso-recuadro .kit-ficha-sub { margin-top: 0 !important; }
+.kit-caso-servicio { font-family: var(--fuente-titulos); font-size: 1.2rem !important; }
+@media (max-width: 860px) { .kit-serv-centro-boton { left: 3%; top: 26%; width: 58%; } }
+@media (prefers-reduced-motion: reduce) { .kit-ficha-x { transition: none; } .kit-ficha-x:hover { transform: none; } }

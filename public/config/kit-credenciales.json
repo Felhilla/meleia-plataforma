@@ -65,8 +65,8 @@
   ],
   "experiencia": [
     {
-      "sector": "Sector mineroenergético y energía",
-      "tema": "Empresa y derechos humanos",
+      "sector": "Mineroenergético y energía",
+      "tema": "Gestión comunitaria y empresa y derechos humanos",
       "descripcion": "Empresa líder del sector energético en el Perú, parte de un grupo energético latinoamericano.",
       "alcance": "9 meses (junio 2025 a febrero 2026), 8 ciudades, 259 participantes de 5 grupos de interés",
       "logros": [
@@ -93,7 +93,8 @@
           "modulo": null
         }
       ],
-      "sigla": "ME"
+      "sigla": "ME",
+      "icono_sector": "sector-mineroenergetico"
     },
     {
       "sector": "Textil y confecciones",
@@ -119,7 +120,8 @@
           "modulo": null
         }
       ],
-      "sigla": "TX"
+      "sigla": "TX",
+      "icono_sector": "sector-textil"
     },
     {
       "sector": "Cemento y construcción",
@@ -145,10 +147,11 @@
           "modulo": null
         }
       ],
-      "sigla": "CM"
+      "sigla": "CM",
+      "icono_sector": "sector-cemento"
     },
     {
-      "sector": "Agroexportación",
+      "sector": "Agroindustrial",
       "tema": "Doble materialidad",
       "descripcion": "Empresa agroexportadora en el Perú, subsidiaria de una corporación estadounidense.",
       "alcance": "6 meses (enero a junio 2024), 4 grupos de interés",
@@ -176,7 +179,8 @@
           "modulo": null
         }
       ],
-      "sigla": "AG"
+      "sigla": "AG",
+      "icono_sector": "sector-agroindustrial"
     }
   ],
   "aliados": [
@@ -250,8 +254,9 @@
     },
     "experiencia": {
       "nombre": "Experiencia",
-      "frase": "Lo hemos hecho en el territorio",
-      "titular": "Lo hemos hecho con empresas líderes de la región."
+      "frase": "# clientes\n# sectores",
+      "titular": "Lo hemos hecho con empresas líderes de la región.",
+      "nota": "E50 (7-nov): el centro muestra las cifras calculadas. Titular por reemplazar (Felipe marcó No)."
     },
     "equipo": {
       "nombre": "Equipo",
