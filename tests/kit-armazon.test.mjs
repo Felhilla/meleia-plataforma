@@ -209,13 +209,32 @@ test('E30 y E40: rutas anteriores convergen y todos los módulos muestran sus pe
 });
 
 
-test('E40: Metodología pinta secciones y avisa cuando aún no hay contenido', async () => {
+test('E40/E49: Metodología del Módulo II con cifras del catálogo, fichas de estándares y aviso en los demás', async () => {
   const { default: M } = await import('../public/kit-vista-metodologia.js');
-  const cfg = JSON.parse(readFileSync(new URL('../public/config/kit-metodologia.json', import.meta.url), 'utf8'));
-  for (const m of ['actores', 'ddhh', 'materialidad', 'riesgos']) assert.ok(Array.isArray(cfg[m].secciones));
+  const leer = r => JSON.parse(readFileSync(new URL('../public/config/' + r, import.meta.url), 'utf8'));
+  const cfg = leer('kit-metodologia.json'), cat = leer('kit-ddhh-catalogo.json'), cruce = leer('kit-ddhh-cruce.json');
   globalThis.App = { el: (tag, texto, clase) => { const n = new Nodo(tag); if (texto) n.textContent = texto; if (clase) n.className = clase; return n; } };
-  const vacio = new Nodo('div'); M.pintar(vacio, { secciones: [] }); assert.match(vacio.textContent, /en preparación/);
-  const lleno = new Nodo('div'); M.pintar(lleno, { resumen: 'Resumen', secciones: [{ titulo: 'Paso 1', parrafos: ['Texto'], puntos: ['Uno'] }], fuentes: ['AA1000SES'] });
-  assert.match(lleno.textContent, /Resumen/); assert.match(lleno.textContent, /Paso 1/); assert.match(lleno.textContent, /Referencias/);
-  delete globalThis.App;
+  globalThis.document = { createElementNS: (_, t) => new Nodo(t) };
+  try {
+    const vacio = new Nodo('div'); M.pintar(vacio, cfg.actores); assert.match(vacio.textContent, /en preparación/);
+    const m = cfg.ddhh, d = M.datosDdhh(cat, cruce, m);
+    // Las cifras salen del catálogo, no se copian a mano.
+    assert.equal(d.totalIndicadores, cat.indicadores.length); assert.equal(d.totalEjes, cat.ejes.length);
+    assert.deepEqual(m.metodo.etapas.map(e => e.eje), cat.ejes.filter(e => e.grafico === 'etapas-ocde').map(e => e.id));
+    assert.deepEqual(m.temas.items.map(e => e.eje), cat.ejes.filter(e => e.grafico !== 'etapas-ocde').map(e => e.id));
+    assert.equal(d.columnas.length, 5, 'el cruce de petróleo y gas coincide fila a fila con el catálogo');
+    const n = new Nodo('div'); M.pintar(n, m, { datos: d, modulo: 'ddhh', empresa: 'uno', puedeEditar: true });
+    const texto = n.textContent;
+    assert.match(texto, new RegExp('# ' + cat.indicadores.length));
+    for (const f of m.estandares.fichas) {
+      assert.match(f.enlace, /^https:\/\//, f.sigla + ' necesita enlace oficial');
+      for (const k of ['que_es', 'por_que', 'nombre', 'emisor', 'anio']) assert.ok(f[k], f.sigla + ' sin ' + k);
+      assert.ok(f.cruces.length && f.cruces.every(x => m.estandares.fichas.some(o => o.id === x.con)), f.sigla + ': cruce con un estándar que no está');
+      assert.match(texto, new RegExp(f.sigla));
+    }
+    // Protocolo de redacción: sin punto y coma, comillas angulares ni punto medio en los textos.
+    assert.doesNotMatch(JSON.stringify(m), /[;«»·]/);
+    const enlaces = n.todos().filter(x => x.tag === 'a').map(x => x.href);
+    assert.ok(enlaces.includes('#/ddhh/uno/resultados') && enlaces.includes('#/ddhh/uno/alimentacion'));
+  } finally { delete globalThis.App; delete globalThis.document; }
 });

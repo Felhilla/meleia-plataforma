@@ -1,0 +1,145 @@
+/* E49 (7-nov): pestaña Metodología con el Look and Feel de Meleia. Reutiliza las piezas de Credenciales
+   (bandas, semicírculo, fichas flotantes, datos con #). Paleta, fuentes y semáforo de DISENO-BASE.md. */
+body:has(.kit-met) { overflow-x: clip; }
+.kit-met { display: block; margin: 0; }
+.kit-met-banda { padding-block: var(--e7); }
+.kit-met-banda.kit-met-temas, .kit-met-banda.kit-met-estandares { background: var(--fondo-alterno); }
+.kit-met-intro { max-width: 68ch; font-size: 1.125rem; line-height: 1.65; color: var(--texto-suave); margin: calc(-1 * var(--e3)) 0 var(--e6); }
+.kit-met-texto { margin: 0; font-size: 1.0625rem; line-height: 1.6; }
+.kit-met-nota { font-size: var(--t-chico); color: var(--texto-suave); margin: var(--e3) 0 0; }
+.kit-met-subtitulo { font-family: var(--fuente-titulos); font-weight: 500; font-size: var(--t-h2); margin: var(--e7) 0 var(--e4); }
+
+/* 1. Encabezado. */
+.kit-met-hero { padding-block: var(--e7); }
+.kit-met-marca { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e3) var(--e4); margin-bottom: var(--e3); }
+.kit-met-romano { font-family: var(--fuente-titulos); font-size: clamp(4rem, 9vw, 7rem); font-weight: 500; line-height: .9; color: var(--oro); }
+.kit-met-estado { font-family: var(--fuente-mono); font-size: var(--t-micro); letter-spacing: .1em; text-transform: uppercase; padding: 4px 10px; border: 1px solid var(--oro-texto); border-radius: 999px; color: var(--oro-texto); }
+.kit-met-nombre { font-family: var(--fuente-titulos); font-weight: 500; font-size: var(--t-h2); margin: 0 0 var(--e3); color: var(--texto-suave); }
+.kit-met-afirmacion { font-size: clamp(1.7rem, 3.4vw, 3rem); max-width: 26ch; text-wrap: balance; }
+.kit-met-hero-textos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e5); margin-bottom: var(--e6); }
+.kit-met-hero-textos .kit-hero-quienes { margin: 0; max-width: none; font-size: 1.0625rem; }
+.kit-met-cifras { --caso-color: #B78D36; }
+
+/* 2. El método: el semicírculo de Credenciales con números en los nodos. */
+.kit-met-nodo-num { font-size: 30px; }
+.kit-met-escena { margin-top: var(--e3); }
+
+/* Fichas de la metodología. */
+.kit-met-ficha { width: min(100%, 940px); }
+.kit-met-sello-texto { font-family: var(--fuente-titulos); font-size: 2.6rem; font-weight: 600; color: var(--sello); line-height: 1; }
+.kit-met-oficial { margin: 0 0 var(--e4); padding-left: var(--e3); border-left: 3px solid var(--oro); font-family: var(--fuente-titulos); font-style: italic; font-size: 1.1rem; line-height: 1.45; color: var(--texto-suave); }
+.kit-met-rejilla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--e5); }
+.kit-met-bloque { min-width: 0; }
+.kit-met-bloque .kit-ficha-sub { margin-top: var(--e4) !important; padding-top: var(--e2); border-top: 1px solid var(--borde); }
+.kit-met-lista { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; font-size: var(--t-chico); line-height: 1.5; }
+.kit-met-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.kit-met-chips li { padding: 4px 10px; border: 1px solid var(--borde-fuerte); border-radius: 999px; font-size: var(--t-micro); background: var(--fondo); }
+.kit-met-preguntas { margin: 0; padding-left: 1.3em; display: grid; gap: var(--e2); font-size: var(--t-chico); line-height: 1.5; color: var(--texto-suave); }
+.kit-met-preguntas li::marker { font-family: var(--fuente-mono); color: var(--oro-texto); }
+
+/* 3. Los derechos: celdas con filete del color del segmento. */
+.kit-met-celdas { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--e3); transition: filter .35s ease, opacity .3s ease; }
+.kit-met-celdas.difuminado, .kit-met-estandar-celdas.difuminado, .kit-met-matriz-caja.difuminado { filter: blur(7px) saturate(.7); opacity: .45; pointer-events: none; }
+.kit-met-celda { --color: #5E7A45; display: grid; align-content: start; gap: var(--e2); min-height: 150px; padding: var(--e3); text-align: left; background: var(--superficie); border: 1px solid var(--borde); border-top: 4px solid var(--color); border-radius: var(--radio-chico); color: var(--texto); font: inherit; cursor: pointer; transition: transform .2s var(--ease-out), box-shadow .2s ease; }
+.kit-met-celda:hover { transform: translateY(-3px); box-shadow: var(--sombra); }
+.kit-met-celda-titulo { font-family: var(--fuente-titulos); font-size: 1.2rem; font-weight: 500; line-height: 1.2; }
+.kit-met-celda-sub { margin-top: auto; font-size: var(--t-micro); color: var(--texto-suave); }
+.kit-met-celda-sub::after { content: " →"; }
+
+/* 4. Cómo se califica. */
+.kit-met-escala { list-style: none; margin: 0 0 var(--e6); padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--e3); }
+.kit-met-escala li { --color: var(--borde); display: grid; align-content: start; gap: var(--e2); padding-top: var(--e3); border-top: 6px solid var(--color); }
+.kit-met-escala-num { font-family: var(--fuente-titulos); font-size: 2.8rem; font-weight: 600; line-height: 1; color: var(--color); }
+.kit-met-escala-nombre { font-weight: 700; }
+.kit-met-escala-texto { font-size: var(--t-chico); line-height: 1.45; color: var(--texto-suave); }
+.kit-met-calculo { list-style: none; margin: 0 0 var(--e6); padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--e4); counter-reset: paso; }
+.kit-met-calculo li { position: relative; display: grid; align-content: start; gap: 4px; padding: var(--e3) var(--e4) var(--e3) 0; border-top: 2px solid var(--oro); }
+.kit-met-calculo li:not(:last-child)::after { content: "→"; position: absolute; right: 0; top: var(--e4); font-size: 1.4rem; font-family: var(--fuente-mono); color: var(--oro-texto); }
+.kit-met-calculo-rotulo { font-weight: 700; }
+.kit-met-cortes { display: flex; gap: 4px; margin: 0; }
+.kit-met-corte { --color: #5A9452; flex: 1 1 0; padding: var(--e3); border-radius: var(--radio-chico); background: var(--color); color: #FFFFFF; font-size: var(--t-chico); font-weight: 600; }
+.kit-met-numerada { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--e5); }
+.kit-met-numerada li { display: grid; align-content: start; gap: var(--e2); padding-top: var(--e3); border-top: 1px solid var(--linea); }
+.kit-met-numerada strong { font-family: var(--fuente-titulos); font-size: 1.25rem; font-weight: 500; }
+.kit-met-numerada li > span:last-child { font-size: var(--t-chico); line-height: 1.5; color: var(--texto-suave); }
+
+/* 5. Estándares: celdas con la sigla grande y fichas con identificación, cruce y enlace. */
+.kit-met-estandar-celdas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--e3); transition: filter .35s ease, opacity .3s ease; }
+.kit-met-estandar { --color: #3A4733; display: grid; align-content: start; gap: var(--e2); min-height: 210px; padding: var(--e4); text-align: left; background: var(--superficie); border: 1px solid var(--borde); border-left: 5px solid var(--color); border-radius: var(--radio-chico); color: var(--texto); font: inherit; cursor: pointer; transition: transform .2s var(--ease-out), box-shadow .2s ease; }
+.kit-met-estandar:hover { transform: translateY(-3px); box-shadow: var(--sombra); }
+.kit-met-estandar-sigla { font-family: var(--fuente-titulos); font-size: clamp(2rem, 3.2vw, 2.6rem); font-weight: 600; line-height: 1; color: var(--color); }
+.kit-met-estandar-nombre { font-size: var(--t-chico); line-height: 1.4; }
+.kit-met-estandar-tipo { margin-top: auto; font-size: var(--t-micro); color: var(--texto-suave); }
+.kit-met-estandar-tipo::after { content: " →"; }
+.kit-met-est-cabeza { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: var(--e5); align-items: center; margin: var(--e3) 0 var(--e3); }
+.kit-met-est-ident { --color: #3A4733; display: grid; place-content: center; gap: var(--e2); min-height: 160px; padding-right: var(--e5); border-right: 2px solid var(--texto); text-align: center; }
+.kit-met-est-sigla { font-family: var(--fuente-titulos); font-size: clamp(2.6rem, 5vw, 3.6rem); font-weight: 600; line-height: 1; color: var(--color); overflow-wrap: anywhere; }
+.kit-met-est-datos h3 { font-size: clamp(1.3rem, 2.4vw, 1.8rem); font-weight: 500; line-height: 1.2; margin: 0 0 var(--e2); }
+.kit-met-est-emisor { margin: 0 0 var(--e3); color: var(--texto-suave); font-size: var(--t-chico); }
+.kit-met-est-enlace { display: inline-flex; align-items: center; gap: 6px; padding: 10px var(--e4); border-radius: 999px; background: var(--principal); color: var(--fondo); font-weight: 600; font-size: var(--t-chico); text-decoration: none; }
+.kit-met-est-enlace:hover { background: var(--principal-fuerte); }
+.kit-met-est-cuerpo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--e5); }
+.kit-met-est-cuerpo > .kit-met-bloque:nth-child(n+3) { grid-column: 1 / -1; }
+.kit-met-cruces { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e2); }
+.kit-met-cruces li { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: var(--e3); align-items: baseline; font-size: var(--t-chico); line-height: 1.5; }
+.kit-met-cruce-sigla { --color: #3A4733; justify-self: start; padding: 2px 10px; background: var(--fondo); border: 1px solid var(--color); border-radius: 999px; color: var(--texto); font-family: var(--fuente-titulos); font-size: 1rem; font-weight: 600; cursor: pointer; }
+.kit-met-cruce-sigla:hover { background: var(--color); color: #FFFFFF; }
+
+/* Matriz de cruce. */
+.kit-met-matriz-caja { overflow-x: auto; background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); transition: filter .35s ease, opacity .3s ease; }
+.kit-met-matriz { width: 100%; border-collapse: collapse; font-size: var(--t-chico); }
+.kit-met-matriz th, .kit-met-matriz td { padding: 8px 12px; border-bottom: 1px solid var(--borde); text-align: center; vertical-align: middle; }
+.kit-met-matriz tbody th { text-align: left; font-weight: 500; white-space: nowrap; }
+.kit-met-matriz thead th:first-child { text-align: left; font-family: var(--fuente-mono); font-size: var(--t-micro); font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--oro-texto); }
+.kit-met-matriz-grupo th { text-align: left !important; background: var(--fondo-alterno); font-family: var(--fuente-mono); font-size: var(--t-micro) !important; letter-spacing: .12em; text-transform: uppercase; color: var(--oro-texto); font-weight: 500 !important; }
+.kit-met-matriz-col { padding: 4px 8px; background: none; border: 0; font-family: var(--fuente-titulos); font-size: 1.05rem; font-weight: 600; color: var(--texto); cursor: pointer; border-bottom: 2px solid var(--oro); }
+.kit-met-matriz-celda { width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--kit-titulo-fondo); color: var(--principal); font: inherit; font-weight: 700; cursor: pointer; transition: transform .15s var(--ease-out), background .15s ease; }
+.kit-met-matriz-celda:hover { transform: scale(1.12); background: var(--principal); color: var(--fondo); }
+.kit-met-matriz-vacia { color: var(--linea); }
+.kit-met-ficha-refs { width: min(100%, 720px); }
+.kit-met-refs-titulo { font-size: var(--t-h2); font-weight: 500; margin: var(--e2) 0 var(--e4); }
+.kit-met-refs { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e3); }
+.kit-met-refs li { display: grid; grid-template-columns: 140px minmax(0, 1fr) auto; gap: var(--e3); align-items: baseline; padding-top: var(--e2); border-top: 1px solid var(--borde); }
+.kit-met-ref-codigo { font-family: var(--fuente-mono); font-size: var(--t-chico); color: var(--oro-texto); }
+.kit-met-refs-enlace { margin-top: var(--e4); }
+.kit-met-ref-pagina { font-size: var(--t-micro); color: var(--texto-suave); white-space: nowrap; }
+
+/* 6. Qué entrega y siguiente paso. */
+.kit-met-siguiente { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--e3); margin-top: var(--e6); }
+.kit-met-ir { display: grid; gap: 4px; padding: var(--e4) var(--e5); border: 1px solid var(--principal); border-radius: var(--radio); background: var(--superficie); color: var(--texto); text-decoration: none; transition: transform .2s var(--ease-out), box-shadow .2s ease; }
+.kit-met-ir:first-child { background: var(--principal); color: var(--fondo); }
+.kit-met-ir:first-child .kit-dato-texto { color: inherit; opacity: .85; }
+.kit-met-ir:hover { transform: translateY(-3px); box-shadow: var(--sombra-alta); }
+.kit-met-ir-texto { font-family: var(--fuente-titulos); font-size: 1.4rem; font-weight: 500; }
+.kit-met-ir-texto::after { content: " →"; }
+
+@media (max-width: 960px) {
+  .kit-met-celdas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .kit-met-estandar-celdas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kit-met-escala { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: var(--e5); }
+  .kit-met-calculo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kit-met-calculo li::after { display: none; }
+}
+@media (max-width: 860px) {
+  .kit-met-hero-textos, .kit-met-rejilla, .kit-met-est-cuerpo { grid-template-columns: minmax(0, 1fr); }
+  .kit-met-est-cabeza { grid-template-columns: minmax(0, 1fr); }
+  .kit-met-est-ident { border-right: 0; border-bottom: 2px solid var(--texto); padding: 0 0 var(--e3); min-height: 0; }
+  .kit-met-refs li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+}
+@media (max-width: 560px) {
+  .kit-met-celdas, .kit-met-estandar-celdas { grid-template-columns: minmax(0, 1fr); }
+  .kit-met-celda, .kit-met-estandar { min-height: 0; }
+  .kit-met-escala { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kit-met-calculo { grid-template-columns: minmax(0, 1fr); }
+  .kit-met-cortes { flex-direction: column; }
+  .kit-met-cruces li { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kit-met-celda, .kit-met-estandar, .kit-met-ir, .kit-met-matriz-celda, .kit-met-celdas, .kit-met-estandar-celdas, .kit-met-matriz-caja { transition: none; }
+}
+
+/* Modo oscuro: los colores del semáforo y de las siglas son tonos pensados para fondo claro; se aclaran sin cambiar el tono. */
+:root[data-tema="oscuro"] .kit-met-escala-num, :root[data-tema="oscuro"] .kit-met-estandar-sigla, :root[data-tema="oscuro"] .kit-met-est-sigla { filter: brightness(1.55); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) .kit-met-escala-num, :root:not([data-tema="claro"]) .kit-met-estandar-sigla, :root:not([data-tema="claro"]) .kit-met-est-sigla { filter: brightness(1.55); }
+}
