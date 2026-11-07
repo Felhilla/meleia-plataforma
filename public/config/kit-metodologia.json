@@ -1,6 +1,156 @@
 {
   "actores": { "secciones": [] },
-  "ddhh": { "secciones": [] },
+  "ddhh": {
+    "estado": "borrador",
+    "romano": "II",
+    "nombre": "Debida diligencia en derechos humanos",
+    "afirmacion": "Cuánto de lo que exige la debida diligencia en derechos humanos ya hace la empresa, y qué le falta.",
+    "resumen": "El módulo compara la gestión de la empresa con lo que piden los estándares internacionales. Cada práctica se califica de 0 a 5 con evidencia documental y entrevistas. El resultado muestra en qué etapa del proceso y en qué derecho están las brechas, y qué estándar respalda cada exigencia.",
+    "cuando": "Sirve como línea base, antes de una exigencia de un cliente, un financiador o una auditoría, y para medir el avance año a año con la misma escala.",
+    "metodo": {
+      "titular": "Seis etapas, en el orden que define la OCDE.",
+      "intro": "El proceso de debida diligencia de la Guía de la OCDE (2018) es la columna vertebral del módulo. Cada etapa se evalúa por separado: así se ve si la empresa tiene la política pero no la aplica, o identifica riesgos pero no les hace seguimiento.",
+      "frase": "Debida\ndiligencia",
+      "etapas": [
+        { "eje": "etapa-ocde-1", "titulo": "Incorporar", "oficial": "Incorporar la conducta empresarial responsable a las políticas y sistemas de gestión", "pagina": "p. 26",
+          "pide": "Adoptar una política de conducta empresarial responsable aprobada por la alta dirección, incorporarla a la supervisión y a los sistemas de gestión, y extender esas expectativas a proveedores y socios.",
+          "evidencia": "Política aprobada y publicada, responsables asignados, cláusulas en contratos con proveedores y capacitación." },
+        { "eje": "etapa-ocde-2", "titulo": "Identificar", "oficial": "Identificar y evaluar los impactos negativos reales y potenciales asociados a las actividades, productos o servicios de la empresa", "pagina": "p. 29",
+          "pide": "Establecer dónde son más probables y graves los impactos, en la operación y en la cadena de suministro, y determinar si la empresa los causa, contribuye a ellos o está directamente vinculada.",
+          "evidencia": "Evaluación de riesgos en derechos humanos, evaluación de proveedores de mayor riesgo y consulta con los grupos afectados." },
+        { "eje": "etapa-ocde-3", "titulo": "Prevenir y mitigar", "oficial": "Detener, prevenir y mitigar los impactos negativos", "pagina": "p. 33",
+          "pide": "Detener las actividades que causan o contribuyen a un impacto, y aplicar planes para prevenir y mitigar los impactos potenciales, incluidos los de la cadena de suministro.",
+          "evidencia": "Planes de acción con responsables y plazos, medidas en contratos y uso de la influencia sobre proveedores." },
+        { "eje": "etapa-ocde-4", "titulo": "Hacer seguimiento", "oficial": "Hacer un seguimiento de la implementación y los resultados", "pagina": "p. 36",
+          "pide": "Verificar si las medidas se aplican y si funcionan, con indicadores cualitativos y cuantitativos y con la opinión de las personas afectadas.",
+          "evidencia": "Indicadores de seguimiento, auditorías y revisiones periódicas en la operación y en la cadena." },
+        { "eje": "etapa-ocde-5", "titulo": "Comunicar", "oficial": "Informar sobre cómo se abordan los impactos", "pagina": "p. 37",
+          "pide": "Comunicar las políticas, los procesos de debida diligencia, los impactos identificados y las medidas tomadas, de forma accesible para los interesados.",
+          "evidencia": "Informe de sostenibilidad o de derechos humanos y comunicación directa con comunidades y grupos afectados." },
+        { "eje": "etapa-ocde-6", "titulo": "Reparar", "oficial": "Reparar o colaborar en la reparación del impacto cuando corresponda", "pagina": "p. 38",
+          "pide": "Cuando la empresa causa o contribuye a un impacto, repararlo o colaborar en su reparación, con mecanismos de reclamación legítimos, accesibles y eficaces.",
+          "evidencia": "Mecanismo de quejas en funcionamiento, casos atendidos y cumplimiento de los criterios de eficacia del Principio 31 de los PRNU." }
+      ]
+    },
+    "temas": {
+      "titular": "Diez derechos, en la operación y en la cadena.",
+      "intro": "La segunda dimensión mira la gestión de cada derecho. Los temas salen de los principios fundamentales de la OIT y de los temas sectoriales de GRI. Cada uno se evalúa con preguntas propias. En cada ficha se muestran algunas, tal como se le formulan a la empresa.",
+      "items": [
+        { "eje": "tema-ddhh-1", "protege": "Que nadie trabaje bajo amenaza, por deudas, con sus documentos retenidos o sin libertad para renunciar." },
+        { "eje": "tema-ddhh-2", "protege": "Que ningún menor de la edad mínima trabaje en la operación o en la cadena, y ningún menor de 18 años en trabajos peligrosos." },
+        { "eje": "tema-ddhh-3", "protege": "La igualdad de trato en la contratación, el pago y los ascensos, y un entorno libre de acoso y violencia." },
+        { "eje": "tema-ddhh-4", "protege": "La igualdad de oportunidades y de remuneración entre mujeres y hombres por un trabajo de igual valor." },
+        { "eje": "tema-ddhh-5", "protege": "El derecho a afiliarse a un sindicato y a negociar colectivamente sin represalias." },
+        { "eje": "tema-ddhh-6", "protege": "Un entorno de trabajo seguro y saludable, principio fundamental de la OIT desde 2022." },
+        { "eje": "tema-ddhh-7", "protege": "Un salario completo y pagado a tiempo, y el análisis de la brecha frente a un salario digno." },
+        { "eje": "tema-ddhh-8", "protege": "Jornadas dentro del límite legal, con descanso y con horas extra voluntarias y pagadas." },
+        { "eje": "tema-ddhh-9", "protege": "Condiciones de empleo dignas para trabajadores propios y de contratistas." },
+        { "eje": "tema-ddhh-10", "protege": "Que la operación no afecte la salud, el agua ni los medios de vida de las comunidades vecinas." }
+      ]
+    },
+    "calificacion": {
+      "titular": "Una sola escala, de 0 a 5, para todo el módulo.",
+      "intro": "Cada indicador se califica con la evidencia que entrega la empresa y con las entrevistas a sus responsables. Los promedios los calcula la plataforma: no se escriben a mano.",
+      "reglas": [
+        { "titulo": "Sin evidencia vale 0", "texto": "Un indicador sin calificación cuenta como 0 en los promedios. Lo que no se puede demostrar no se da por cumplido." },
+        { "titulo": "El nivel no se redondea hacia arriba", "texto": "Un 3,8 es En gestión, no Gestionado. El nivel se alcanza solo con el puntaje completo." },
+        { "titulo": "Todo o nada al cargar", "texto": "Si a una carga le falta un dato o tiene un error, no se calcula nada. Un promedio con datos a medias sería engañoso." }
+      ]
+    },
+    "estandares": {
+      "titular": "Trabajamos sobre los hombros de otros.",
+      "intro": "El método no es propio: se construye sobre estándares internacionales. Cada ficha explica qué es el estándar, por qué lo usamos, cómo se relaciona con los demás y dónde encontrar el documento original.",
+      "cruce_titulo": "Cruce de estándares",
+      "cruce_intro": "Cada celda indica cuántos requisitos de ese estándar respaldan la etapa o el tema. Toque una celda para ver el código y la página exactos.",
+      "cruce_sector": "oil-gas",
+      "cruce_nota": "Referencias para el sector de petróleo y gas, el del caso de ejemplo. En otro sector cambian GRI 11 e IPIECA por su estándar sectorial.",
+      "fichas": [
+        { "id": "prnu", "sigla": "PRNU", "nombre": "Principios Rectores sobre las Empresas y los Derechos Humanos", "emisor": "Naciones Unidas, Consejo de Derechos Humanos", "anio": "2011", "tipo": "Marco de referencia", "color": "var(--principal)", "columna": "PRNU",
+          "que_es": "Treinta y un principios que distribuyen los papeles: el Estado protege, la empresa respeta y las víctimas acceden a reparación. Para la empresa piden tres cosas: un compromiso político, un proceso de debida diligencia y procesos de reparación (Principio 15).",
+          "por_que": "Definen qué significa que una empresa respete los derechos humanos. Son el punto de partida del módulo: cada una de las seis etapas se respalda en uno o varios principios (del 16 al 22, más el 29 y el 31 para los mecanismos de queja).",
+          "cruces": [
+            { "con": "ocde", "texto": "La Guía de la OCDE convierte en pasos prácticos el proceso de debida diligencia de los Principios 17 a 21." },
+            { "con": "oit", "texto": "El Principio 12 fija como mínimo los derechos de la Declaración de la OIT sobre los principios y derechos fundamentales en el trabajo." },
+            { "con": "pidesc", "texto": "El mismo Principio 12 incluye la Carta Internacional de Derechos Humanos, de la que hace parte el PIDESC." },
+            { "con": "gri", "texto": "GRI 2 pide informar los compromisos, la debida diligencia y la reparación en los términos de los Principios (contenidos 2-23 a 2-26)." },
+            { "con": "ipieca", "texto": "La guía de IPIECA aplica los Principios a la industria de petróleo, gas y energías alternativas." }
+          ],
+          "enlace": "https://www.ohchr.org/sites/default/files/documents/publications/guidingprinciplesbusinesshr_sp.pdf", "enlace_texto": "Texto oficial en español (ACNUDH, PDF)" },
+        { "id": "ocde", "sigla": "OCDE", "nombre": "Guía de la OCDE de Debida Diligencia para una Conducta Empresarial Responsable", "emisor": "Organización para la Cooperación y el Desarrollo Económicos", "anio": "2018", "tipo": "Guía de aplicación", "color": "#5E7A45", "columna": "Guía OCDE",
+          "que_es": "Explica en términos prácticos cómo hacer la debida diligencia que piden las Líneas Directrices de la OCDE para Empresas Multinacionales. Organiza el proceso en seis pasos y lo aplica a derechos humanos, trabajo, medio ambiente, corrupción y consumidores.",
+          "por_que": "Da la estructura del módulo: las seis etapas del método son sus seis pasos, en su orden, y sus medidas definen los criterios de cada etapa. Por eso el puntaje de una etapa se lee como cuánto del paso cumple la empresa.",
+          "cruces": [
+            { "con": "prnu", "texto": "La Guía se alinea con los Principios Rectores: sus pasos 2 a 6 corresponden a los Principios 17 a 22." },
+            { "con": "gri", "texto": "GRI 3 remite a la Guía para identificar y evaluar los impactos que luego se reportan como temas materiales." },
+            { "con": "ipieca", "texto": "IPIECA sigue el mismo ciclo y lo aterriza en los riesgos típicos del sector energético." },
+            { "con": "pna", "texto": "El Plan Nacional de Acción del Perú pide a las empresas aplicar la debida diligencia según los Principios Rectores y la Guía de la OCDE." }
+          ],
+          "enlace": "https://www.oecd.org/es/publications/guia-de-la-ocde-de-debida-diligencia-para-una-conducta-empresarial-responsable_14922561-es", "enlace_texto": "Publicación oficial en español (OCDE)" },
+        { "id": "oit", "sigla": "OIT", "nombre": "Declaración de la OIT relativa a los principios y derechos fundamentales en el trabajo, y sus convenios", "emisor": "Organización Internacional del Trabajo", "anio": "1998, enmendada en 2022", "tipo": "Norma internacional del trabajo", "color": "#B78D36", "columna": "OIT",
+          "que_es": "Cinco principios que todo Estado miembro debe respetar, aunque no haya ratificado los convenios: libertad de asociación y negociación colectiva, eliminación del trabajo forzoso, abolición del trabajo infantil, no discriminación y, desde 2022, un entorno de trabajo seguro y saludable. Cada principio se desarrolla en convenios fundamentales.",
+          "por_que": "Define el contenido de los temas laborales: trabajo forzoso (C29, C105 y Protocolo de 2014), trabajo infantil (C138 y C182), discriminación e igualdad (C100 y C111), libertad sindical (C87 y C98) y salud y seguridad (C155 y C187). Para acoso, remuneración y horario usamos convenios técnicos (C190, C95, C131, C1 y C30), que no son fundamentales.",
+          "cruces": [
+            { "con": "prnu", "texto": "Los Principios Rectores toman estos derechos como el mínimo que toda empresa debe respetar (Principio 12)." },
+            { "con": "gri", "texto": "Los temas laborales de GRI 11 (11.9 a 11.13) y GRI 403 piden informar sobre estos mismos derechos." },
+            { "con": "ods5", "texto": "Los convenios C100 y C111 son la base laboral de la meta de igualdad de género." },
+            { "con": "ipieca", "texto": "IPIECA aplica estos derechos a contratistas y a la cadena de suministro del sector." }
+          ],
+          "enlace": "https://www.ilo.org/es/media/267411/download", "enlace_texto": "Texto de la Declaración (OIT, PDF)" },
+        { "id": "gri", "sigla": "GRI", "nombre": "Estándares GRI: GRI 2, GRI 3, GRI 403 y GRI 11 (Petróleo y Gas)", "emisor": "Global Reporting Initiative", "anio": "2021", "tipo": "Estándar de reporte", "color": "#A8503A", "columna": "GRI",
+          "que_es": "Los estándares de reporte de sostenibilidad más usados en el mundo. No dicen cómo gestionar: dicen qué informar y cómo. GRI 2 cubre los contenidos generales, GRI 3 los temas materiales, GRI 403 la salud y seguridad, y GRI 11 los temas probables del sector de petróleo y gas.",
+          "por_que": "Conectan el diagnóstico con el informe de sostenibilidad. La etapa Comunicar se evalúa con GRI 2 y GRI 3, salud y seguridad con GRI 403, y en el sector energético GRI 11 indica qué temas no pueden faltar. Así, lo que se mide aquí ya está en formato reportable.",
+          "cruces": [
+            { "con": "prnu", "texto": "GRI 2-23 a 2-26 piden informar compromisos, debida diligencia y reparación en los términos de los Principios Rectores." },
+            { "con": "ocde", "texto": "GRI 3 remite a la Guía de la OCDE para identificar los impactos." },
+            { "con": "oit", "texto": "Los temas laborales de GRI 11 remiten a los convenios de la OIT." },
+            { "con": "ipieca", "texto": "En petróleo y gas, GRI 11 e IPIECA se complementan: uno define qué reportar y el otro cómo gestionarlo." }
+          ],
+          "enlace": "https://www.globalreporting.org/standards/download-the-standards/", "enlace_texto": "Descarga oficial de los Estándares GRI" },
+        { "id": "ipieca", "sigla": "IPIECA", "nombre": "Guía de debida diligencia en derechos humanos para la industria de petróleo, gas y energías alternativas", "emisor": "IPIECA", "anio": "2021, 2.ª edición", "tipo": "Guía sectorial", "color": "#5E7A45", "columna": "IPIECA",
+          "que_es": "La guía de la asociación mundial de la industria de petróleo y gas para aplicar la debida diligencia en derechos humanos. Recoge la práctica de sus empresas miembro e incluye riesgos típicos del sector, grupos afectados y casos.",
+          "por_que": "Se usa cuando el cliente es del sector energético, como en el caso de ejemplo. Aterriza las etapas en los riesgos propios de la industria: contratistas, seguridad, comunidades y mecanismos de queja.",
+          "cruces": [
+            { "con": "prnu", "texto": "Está alineada con los Principios Rectores y explica cómo cumplir su responsabilidad de respetar." },
+            { "con": "ocde", "texto": "Sigue el mismo ciclo de debida diligencia de la Guía de la OCDE." },
+            { "con": "gri", "texto": "Complementa a GRI 11: GRI dice qué reportar e IPIECA cómo gestionarlo." }
+          ],
+          "enlace": "https://www.ipieca.org/resources/human-rights-due-diligence-guidance", "enlace_texto": "Página oficial de la guía (IPIECA, en inglés)" },
+        { "id": "pidesc", "sigla": "PIDESC", "nombre": "Pacto Internacional de Derechos Económicos, Sociales y Culturales", "emisor": "Naciones Unidas, Asamblea General", "anio": "1966", "tipo": "Tratado de derechos humanos", "color": "var(--principal)", "catalogo": "PIDESC",
+          "que_es": "Tratado de la ONU que reconoce, entre otros, el derecho a condiciones de trabajo equitativas y satisfactorias (artículo 7) y el derecho al más alto nivel posible de salud, que incluye el mejoramiento del medio ambiente (artículo 12).",
+          "por_que": "Respalda los temas que no tienen un convenio fundamental de la OIT. El artículo 12 es la base del tema Derechos ambientales: la empresa no debe afectar la salud de las personas por sus impactos en el ambiente.",
+          "cruces": [
+            { "con": "prnu", "texto": "Hace parte de la Carta Internacional de Derechos Humanos, que los Principios Rectores fijan como mínimo (Principio 12)." },
+            { "con": "gri", "texto": "Los temas ambientales de GRI 11 (agua, emisiones, comunidades locales) muestran cómo se reporta ese impacto." }
+          ],
+          "enlace": "https://www.ohchr.org/es/instruments-mechanisms/instruments/international-covenant-economic-social-and-cultural-rights", "enlace_texto": "Texto oficial en español (ACNUDH)" },
+        { "id": "ods5", "sigla": "ODS 5", "nombre": "Objetivo de Desarrollo Sostenible 5: Igualdad de género", "emisor": "Naciones Unidas, Agenda 2030", "anio": "2015", "tipo": "Meta global", "color": "#B78D36", "catalogo": "ODS 5",
+          "que_es": "Uno de los 17 objetivos de la Agenda 2030: lograr la igualdad entre los géneros y empoderar a todas las mujeres y las niñas.",
+          "por_que": "Da el propósito del tema Igualdad de género y permite que la empresa muestre su contribución a una meta que entienden inversionistas, clientes y gobiernos.",
+          "cruces": [
+            { "con": "oit", "texto": "Los convenios C100 (igualdad de remuneración) y C111 (no discriminación) son su base en el trabajo." },
+            { "con": "gri", "texto": "GRI permite reportar los avances en igualdad con contenidos comparables." }
+          ],
+          "enlace": "https://www.un.org/sustainabledevelopment/es/gender-equality/", "enlace_texto": "Página oficial del ODS 5 (ONU)" },
+        { "id": "pna", "sigla": "PNA", "nombre": "Plan Nacional de Acción sobre Empresas y Derechos Humanos 2021–2025 (Perú)", "emisor": "Ministerio de Justicia y Derechos Humanos del Perú", "anio": "2021", "tipo": "Política pública nacional", "color": "#A8503A", "catalogo": "PNA",
+          "que_es": "La política pública con la que el Estado peruano aplica los Principios Rectores: qué hará el Estado y qué espera de las empresas. Fue aprobada por el Decreto Supremo 009-2021-JUS.",
+          "por_que": "Cuando el país de operación tiene un plan nacional, lo usamos como referencia local: muestra qué espera el Estado de las empresas. Aplica al caso de ejemplo que opera en el Perú. En otro país se usa su plan, si existe.",
+          "cruces": [
+            { "con": "prnu", "texto": "Es la forma como el Perú aplica los Principios Rectores." },
+            { "con": "ocde", "texto": "Pide a las empresas aplicar la debida diligencia según los Principios Rectores y la Guía de la OCDE." }
+          ],
+          "enlace": "https://www.gob.pe/50408-ministerio-de-justicia-y-derechos-humanos-plan-nacional-de-accion-sobre-empresas-y-derechos-humanos-pna-2021-2025", "enlace_texto": "Página oficial del Plan (gob.pe)" }
+      ]
+    },
+    "entrega": {
+      "titular": "Qué recibe la empresa.",
+      "items": [
+        { "titulo": "Tablero de madurez", "texto": "El puntaje de las seis etapas y los diez temas en un solo gráfico, con el semáforo de la escala." },
+        { "titulo": "Ficha por etapa y por tema", "texto": "Puntaje, componentes, hallazgos clave y estándares que respaldan cada exigencia." },
+        { "titulo": "Detalle de los indicadores", "texto": "Cada pregunta con su calificación, los documentos que la soportan y la brecha encontrada." },
+        { "titulo": "Comparación en el tiempo", "texto": "Dos evaluaciones en el mismo gráfico para ver el avance con la misma escala." }
+      ]
+    }
+  },
   "materialidad": { "secciones": [] },
   "riesgos": { "secciones": [] }
 }
