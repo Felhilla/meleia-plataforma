@@ -40,7 +40,7 @@
     const temasCfg = cfg.temas || {};
     // E50 (boceto Experiencia, 7-nov): Experiencia se organiza por sector. Los casos con ficha completa y los demás
     // clientes (solo nombre, logo y descripción) se agrupan por sector, en el orden en que aparecen.
-    const clientes = [...experiencia.map(e => ({ ...e, caso: true })), ...(cfg.clientes || []).map(c => ({ ...c, caso: false }))];
+    const clientes = [...experiencia.map(e => ({ ...e, caso: true })), ...(cfg.clientes || []).map(c => ({ ...c, caso: c.caso === true }))];
     const sectores = [];
     clientes.forEach(c => {
       let s = sectores.find(x => x.sector === c.sector);
@@ -281,6 +281,13 @@
         entregables.append(li);
       });
       cuerpo.append(mono(e.sector), el('h3', nombreCliente(e)), el('p', e.descripcion || '', 'kit-caso-descripcion'));
+      // Proyectos hechos a través de otra organización (por ejemplo, la Universidad EAN): «Desarrollado con» y su logo.
+      if (e.desarrollado_con?.nombre) {
+        const dc = el('div', null, 'kit-caso-con'); dc.append(mono('Desarrollado con'));
+        if (e.desarrollado_con.logo) { const img = el('img'); img.src = e.desarrollado_con.logo; img.alt = e.desarrollado_con.nombre; dc.append(img); }
+        else dc.append(el('strong', e.desarrollado_con.nombre));
+        cuerpo.append(dc);
+      }
       if (e.caso) {
         const recuadro = el('div', null, 'kit-ficha-descripcion kit-caso-recuadro');
         recuadro.append(mono('¿Qué hicimos y qué entregamos?', 'kit-ficha-sub'));
@@ -316,8 +323,30 @@
     // 3. Contacto.
     if (cfg.contacto?.correo) {
       const s = el('section', null, 'kit-cred-seccion kit-banda kit-banda-oscura kit-cred-contacto'), p = el('p', null, 'kit-contacto-linea'), a = el('a', cfg.contacto.correo);
-      a.href = 'mailto:' + cfg.contacto.correo; s.append(el('h2', 'Contacto', 'kit-mono kit-antetitulo'), el('p', 'Hablemos.', 'kit-titular')); p.append(el('span', 'Escríbenos a '), a); s.append(p);
-      if (cfg.contacto.telefono) s.append(el('p', 'Teléfono: ' + cfg.contacto.telefono)); partes.push(s);
+      a.href = 'mailto:' + cfg.contacto.correo; s.append(el('h2', 'Contacto', 'kit-mono kit-antetitulo'), el('p', 'Hablemos.', 'kit-titular'));
+      const rejilla = el('div', null, 'kit-contacto-rejilla'), lado = el('div', null, 'kit-contacto-lado');
+      lado.append(el('p', cfg.contacto.invitacion || 'Déjanos tus datos y te contactamos para agendar una reunión.', 'kit-contacto-invitacion'));
+      p.append(el('span', 'O escríbenos a '), a); lado.append(p);
+      if (cfg.contacto.telefono) lado.append(el('p', 'Teléfono: ' + cfg.contacto.telefono));
+      rejilla.append(lado);
+      // E50 (7-nov): formulario con el diseño de la referencia de Olivia. Todavía no envía: lo dice en pantalla y deja el correo.
+      if (cfg.contacto.formulario?.campos?.length) {
+        const f = el('form', null, 'kit-contacto-form'); f.noValidate = true; f.setAttribute('aria-label', 'Formulario de contacto');
+        cfg.contacto.formulario.campos.forEach((c, k) => {
+          const id = 'kit-contacto-' + k, et = el('label', c.etiqueta + (c.obligatorio ? '*' : ''), 'kit-contacto-etiqueta'); et.htmlFor = id;
+          let campo;
+          if (c.opciones) { campo = el('select'); const o0 = el('option', 'Selecciona'); o0.value = ''; campo.append(o0); c.opciones.forEach(o => { const op = el('option', o); op.value = o; campo.append(op); }); }
+          else if (c.tipo === 'texto-largo') { campo = el('textarea'); campo.rows = 4; }
+          else { campo = el('input'); campo.type = c.tipo || 'text'; if (c.autocompletar) campo.autocomplete = c.autocompletar; }
+          campo.id = id; campo.name = c.id; campo.className = 'kit-contacto-campo' + (c.opciones ? ' es-lista' : ''); if (c.obligatorio) campo.required = true;
+          const caja = el('div', null, 'kit-contacto-grupo' + (c.ancho === 'completo' ? ' completo' : '')); caja.append(et, campo); f.append(caja);
+        });
+        const enviar = el('button', cfg.contacto.formulario.boton || 'Agendar una reunión', 'kit-contacto-enviar'); enviar.type = 'submit';
+        const aviso = el('p', null, 'kit-contacto-aviso'); aviso.setAttribute('role', 'status');
+        f.onsubmit = ev => { ev?.preventDefault?.(); aviso.textContent = 'El formulario todavía no envía mensajes. Mientras lo activamos, escríbenos a ' + cfg.contacto.correo + '.'; };
+        f.append(enviar, aviso); rejilla.append(f);
+      }
+      s.append(rejilla); partes.push(s);
     }
     destino.replaceChildren(...partes);
     return { mostrarTema, abrirFicha: (id, i) => abrirFicha(temas.find(t => t.id === id), i), cerrarFicha };

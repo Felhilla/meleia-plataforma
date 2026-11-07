@@ -242,7 +242,76 @@
   ],
   "contacto": {
     "correo": "ghillon@ghestudio.com.co",
-    "nota": "Correo provisional mientras Meleia habilita su dominio (decisión de Felipe del 5-nov)."
+    "nota": "Correo provisional mientras Meleia habilita su dominio (decisión de Felipe del 5-nov).",
+    "invitacion": "Déjanos tus datos y te contactamos para agendar una reunión.",
+    "formulario": {
+      "nota": "E50 (7-nov): solo diseño. El envío se resuelve después (opción a: base propia y aviso por correo). Roles y países por aprobar.",
+      "boton": "Agendar una reunión",
+      "campos": [
+        {
+          "id": "nombre",
+          "etiqueta": "Nombre",
+          "obligatorio": true,
+          "autocompletar": "given-name"
+        },
+        {
+          "id": "apellidos",
+          "etiqueta": "Apellidos",
+          "obligatorio": true,
+          "autocompletar": "family-name"
+        },
+        {
+          "id": "correo",
+          "etiqueta": "Correo",
+          "tipo": "email",
+          "obligatorio": true,
+          "autocompletar": "email"
+        },
+        {
+          "id": "telefono",
+          "etiqueta": "Teléfono",
+          "tipo": "tel",
+          "obligatorio": true,
+          "autocompletar": "tel"
+        },
+        {
+          "id": "pais",
+          "etiqueta": "País",
+          "obligatorio": true,
+          "opciones": [
+            "Colombia",
+            "Perú",
+            "Otro país"
+          ]
+        },
+        {
+          "id": "rol",
+          "etiqueta": "Rol",
+          "obligatorio": true,
+          "opciones": [
+            "Gerencia general",
+            "Sostenibilidad",
+            "Asuntos corporativos o relacionamiento",
+            "Jurídica o cumplimiento",
+            "Operaciones",
+            "Otro"
+          ]
+        },
+        {
+          "id": "empresa",
+          "etiqueta": "Nombre de la empresa",
+          "obligatorio": true,
+          "autocompletar": "organization",
+          "ancho": "completo"
+        },
+        {
+          "id": "mensaje",
+          "etiqueta": "¿En qué te podemos ayudar?",
+          "tipo": "texto-largo",
+          "ancho": "completo"
+        }
+      ]
+    }
   },
   "afirmacion": "Transformamos información en mejores decisiones.",
   "pendientes_look": "6-nov: logos de clientes sin confirmar (casos anonimizados con sigla del sector). Servicio 2 sin caso. Significado del «#» bajo cada entregable por confirmar con Felipe. Aliados: nombres, logos y casos compartidos por confirmar (6-nov). Datos resaltados tomados de su descripción. 6-nov tarde: GLP reemplazado por sector mineroenergético y energía (Germán). Julio vuelve al equipo (Felipe y Germán).",

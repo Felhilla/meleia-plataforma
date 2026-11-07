@@ -206,3 +206,28 @@ a.kit-caso-enlace:hover { text-decoration: underline; }
 .kit-caso-servicio { font-family: var(--fuente-titulos); font-size: 1.2rem !important; }
 @media (max-width: 860px) { .kit-serv-centro-boton { left: 3%; top: 26%; width: 58%; } }
 @media (prefers-reduced-motion: reduce) { .kit-ficha-x { transition: none; } .kit-ficha-x:hover { transform: none; } }
+
+/* E50: «Desarrollado con» en la ficha del cliente. */
+.kit-caso-con { display: flex; align-items: center; gap: var(--e3); margin: 0 0 var(--e4); padding: var(--e2) var(--e3); border: 1px solid var(--borde); border-radius: var(--radio-chico); width: fit-content; background: var(--superficie); }
+.kit-caso-con .kit-mono { margin: 0; }
+.kit-caso-con img { max-height: 40px; max-width: 140px; object-fit: contain; }
+
+/* E50: formulario de contacto (referencia de Olivia con el Look and Feel de Meleia). */
+.kit-contacto-rejilla { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: var(--e6); align-items: start; }
+.kit-contacto-invitacion { font-family: var(--fuente-titulos); font-size: clamp(1.2rem, 2vw, 1.6rem); line-height: 1.35; margin: 0 0 var(--e4); }
+.kit-contacto-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e4) var(--e4); padding: var(--e5); border: 1px solid rgba(249,246,242,.25); border-radius: 28px; }
+.kit-contacto-grupo { display: grid; gap: var(--e2); min-width: 0; }
+.kit-contacto-grupo.completo { grid-column: 1 / -1; }
+.kit-contacto-etiqueta { font-family: var(--fuente-mono); font-size: var(--t-micro); letter-spacing: .12em; text-transform: uppercase; color: #F9F6F2; }
+.kit-contacto-campo { width: 100%; box-sizing: border-box; min-height: 52px; padding: 12px 22px; border: 1px solid transparent; border-radius: 999px; background: rgba(249,246,242,.12); color: #F9F6F2; font: inherit; font-size: 1rem; transition: background .2s ease, border-color .2s ease; }
+textarea.kit-contacto-campo { border-radius: 24px; resize: vertical; }
+.kit-contacto-campo:hover { background: rgba(249,246,242,.18); }
+.kit-contacto-campo:focus { outline: none; border-color: var(--oro); background: rgba(249,246,242,.2); }
+.kit-contacto-campo.es-lista { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 16 10'%3E%3Cpath d='M1 1l7 7 7-7' fill='none' stroke='%23F9F6F2' stroke-width='2'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 22px center; padding-right: 52px; }
+.kit-contacto-campo option { color: #1F241B; }
+.kit-contacto-enviar { grid-column: 1 / -1; justify-self: start; padding: 14px 32px; border: 0; border-radius: 999px; background: var(--oro); color: #1F241B; font: inherit; font-weight: 700; cursor: pointer; transition: transform .2s var(--ease-out), box-shadow .2s ease; }
+.kit-contacto-enviar:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,.25); }
+.kit-contacto-aviso { grid-column: 1 / -1; margin: 0; font-size: var(--t-chico); color: #F9F6F2; opacity: .85; }
+.kit-contacto-aviso:empty { display: none; }
+@media (max-width: 860px) { .kit-contacto-rejilla, .kit-contacto-form { grid-template-columns: minmax(0, 1fr); } .kit-contacto-form { padding: var(--e4); } }
+@media (prefers-reduced-motion: reduce) { .kit-contacto-campo, .kit-contacto-enviar { transition: none; } .kit-contacto-enviar:hover { transform: none; } }
