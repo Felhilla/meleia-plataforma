@@ -53,7 +53,7 @@
       { id: 'servicios', items: servicios.map(v => ({ titulo: v.titulo, sub: 'Ver servicio', nodo: { icono: v.icono }, dato: v })), ficha: fichaServicio },
       { id: 'experiencia', items: sectores.map(x => ({ titulo: x.sector, sub: plural(x.clientes.length, 'cliente', 'clientes'), nodo: { icono: x.icono, sigla: x.clientes[0]?.sigla || '' }, dato: x })), ficha: fichaSector, centro: fichaClientes },
       { id: 'equipo', items: personas.map(p => ({ titulo: p.nombre, sub: p.cargo, nodo: { tarjeta: 'foto', foto: p.foto, sigla: p.nombre }, dato: p })), ficha: fichaPersona },
-      { id: 'aliados', items: aliados.map(a => ({ titulo: a.nombre || a.titulo, sub: a.nombre ? a.titulo : 'Ver aliado', nodo: { tarjeta: 'logo', logo: a.logo, icono: a.icono, texto: a.nombre || a.titulo }, dato: a })), ficha: fichaAliado }
+      { id: 'aliados', items: aliados.map(a => ({ titulo: a.nombre || a.titulo, sub: a.nombre ? a.titulo : 'Ver aliado', nodo: { tarjeta: 'logo', logo: a.logo, fondo: a.logo_fondo, icono: a.icono, texto: a.nombre || a.titulo }, dato: a })), ficha: fichaAliado }
     ].filter(t => t.items.length).map(t => ({ ...t, nombre: temasCfg[t.id]?.nombre || t.id, frase: temasCfg[t.id]?.frase || '', titular: temasCfg[t.id]?.titular || '' }));
     const partes = [];
 
@@ -119,7 +119,7 @@
         const nodo = svg('g', { class: 'kit-serv-nodo' + (item.nodo.tarjeta ? ' kit-serv-tarjeta' : ''), transform: `translate(${cx} ${cy})` });
         if (item.nodo.tarjeta) {
           const clip = 'kit-clip-' + tema.id + '-' + i, def = svg('clipPath', { id: clip }), forma = { x: -ancho / 2, y: -alto / 2, width: ancho, height: alto, rx: 14 };
-          def.append(svg('rect', forma)); nodo.append(def, svg('rect', { ...forma, class: 'kit-serv-tarjeta-fondo' }));
+          def.append(svg('rect', forma)); nodo.append(def, svg('rect', { ...forma, class: 'kit-serv-tarjeta-fondo' + (item.nodo.fondo === 'oscuro' ? ' oscuro' : '') }));
           if (item.nodo.foto || item.nodo.logo) {
             const m = item.nodo.foto ? 0 : 16;
             nodo.append(svg('image', { href: item.nodo.foto || item.nodo.logo, x: -ancho / 2 + m, y: -alto / 2 + m, width: ancho - 2 * m, height: alto - 2 * m, 'clip-path': `url(#${clip})`, preserveAspectRatio: item.nodo.foto ? 'xMidYMid slice' : 'xMidYMid meet' }));
@@ -302,11 +302,12 @@
     // Ficha del aliado (boceto, 6-nov): Logo | nombre, descripción y datos resaltados con #; cada dato lleva a Experiencia.
     function fichaAliado(a, i) {
       const logoA = el('div', null, 'kit-caso-logo');
-      if (a.logo) { const img = el('img'); img.src = a.logo; img.alt = a.nombre || a.titulo; logoA.append(img); }
+      if (a.logo) { const img = el('img'); img.src = a.logo; img.alt = a.nombre || a.titulo; if (a.logo_fondo === 'oscuro') img.className = 'kit-logo-fondo-oscuro'; logoA.append(img); }
       else { const sello = el('div', null, 'kit-aliado-sello'); sello.append(icono(a.icono)); logoA.append(sello, el('span', 'Logo por confirmar', 'kit-mono')); }
       const cuerpo = el('div', null, 'kit-caso-cuerpo'), barra = el('div', null, 'kit-ficha-barra kit-aliado-barra');
       barra.append(mono('Aliado ' + dos(i)), el('h3', a.nombre || a.titulo));
       cuerpo.append(barra, caja(el('p', a.descripcion || '')));
+      if (a.sitio) { const w = el('a', 'Visitar su sitio ↗', 'kit-aliado-sitio'); w.href = a.sitio; w.target = '_blank'; w.rel = 'noopener noreferrer'; cuerpo.append(w); }
       const casos = (a.casos || []).map(id => clientes.find(e => e.id === id)).filter(Boolean);
       if ((a.datos || []).length) {
         const fila = el('ul', null, 'kit-datos');

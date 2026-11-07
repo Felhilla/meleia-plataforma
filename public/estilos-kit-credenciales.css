@@ -231,3 +231,9 @@ textarea.kit-contacto-campo { border-radius: 24px; resize: vertical; }
 .kit-contacto-aviso:empty { display: none; }
 @media (max-width: 860px) { .kit-contacto-rejilla, .kit-contacto-form { grid-template-columns: minmax(0, 1fr); } .kit-contacto-form { padding: var(--e4); } }
 @media (prefers-reduced-motion: reduce) { .kit-contacto-campo, .kit-contacto-enviar { transition: none; } .kit-contacto-enviar:hover { transform: none; } }
+
+/* E50: logos de aliados en versión blanca (Alante, Azaí) van sobre fondo oscuro en claro y en oscuro. */
+.kit-serv-tarjeta-fondo.oscuro { fill: #1F241B; }
+.kit-logo-fondo-oscuro { background: #1F241B; padding: 14px 18px; border-radius: var(--radio-chico); box-sizing: content-box; }
+.kit-aliado-sitio { display: inline-flex; margin-top: var(--e3); padding: 8px var(--e4); border-radius: 999px; background: var(--principal); color: var(--fondo); font-weight: 600; font-size: var(--t-chico); text-decoration: none; }
+.kit-aliado-sitio:hover { background: var(--principal-fuerte); }
