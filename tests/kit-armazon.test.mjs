@@ -224,8 +224,34 @@ test('E40/E49: Metodología del Módulo II con cifras del catálogo, fichas de e
     assert.deepEqual(m.temas.items.map(e => e.eje), cat.ejes.filter(e => e.grafico !== 'etapas-ocde').map(e => e.id));
     assert.equal(d.columnas.length, 5, 'el cruce de petróleo y gas coincide fila a fila con el catálogo');
     const n = new Nodo('div'); M.pintar(n, m, { datos: d, modulo: 'ddhh', empresa: 'uno', puedeEditar: true });
-    const texto = n.textContent;
-    assert.match(texto, new RegExp('# ' + cat.indicadores.length));
+    // E51: primer vistazo con cuatro cifras que abren ventanas anidadas (Lógica Muñeca Rusa).
+    const todos = () => n.todos(), clase = c => todos().filter(x => (x.className || '').split(' ').includes(c));
+    const tiles = clase('kit-met-tile');
+    assert.deepEqual(tiles.map(t => t.children[1].textContent), ['Estándares', 'Etapas', 'Dimensiones', 'Criterios']);
+    assert.equal(tiles[0].children[0].textContent, String(m.estandares.fichas.length));
+    assert.match(tiles[3].textContent, new RegExp(String(cat.indicadores.length)));
+    const capa = clase('kit-ven-capa')[0], abiertas = () => capa.children.length, cima = () => capa.children[capa.children.length - 1];
+    const x = () => cima().todos().find(y => y.className === 'kit-ven-x');
+    assert.equal(capa.hidden, true);
+    tiles[0].onclick(); assert.equal(abiertas(), 1); assert.equal(capa.hidden, false);
+    const texto = cima().textContent;
+    const tarjetas = cima().todos().filter(y => y.className === 'kit-est-tarjeta');
+    assert.equal(tarjetas.length, m.estandares.fichas.length);
+    tarjetas[0].onclick(); assert.equal(abiertas(), 2, 'la ficha se abre encima de las portadas');
+    assert.match(cima().textContent, /Metodología: ¿qué es\?/);
+    cima().todos().find(y => y.className === 'kit-est-relacion-boton').onclick(); assert.equal(abiertas(), 3, 'un estándar relacionado se apila');
+    assert.equal(x().attrs['aria-label'], 'Cerrar y volver a ' + m.estandares.fichas[0].sigla);
+    x().onclick(); assert.equal(abiertas(), 2);
+    capa.onkeydown({ key: 'Escape', preventDefault() {} }); assert.equal(abiertas(), 1, 'Escape regresa un nivel');
+    // El cruce: los grupos se despliegan al clic.
+    cima().todos().find(y => y.className === 'kit-met-pastilla').onclick(); assert.equal(abiertas(), 2);
+    const grupo = cima().todos().find(y => y.className === 'kit-cruce-grupo-boton'), filas = cima().todos().filter(y => y.className === 'kit-cruce-fila');
+    assert.ok(filas.length && filas.every(f => f.hidden)); grupo.onclick(); assert.ok(filas.filter(f => !f.hidden).length > 0);
+    x().onclick(); x().onclick(); assert.equal(abiertas(), 0); assert.equal(capa.hidden, true);
+    tiles[2].onclick(); cima().todos().find(y => y.className === 'kit-met-dimension').onclick(); assert.equal(abiertas(), 2);
+    cima().todos().find(y => y.className === 'kit-serv-titulo').onclick(); assert.equal(abiertas(), 3, 'dimensión, etapas y ficha de la etapa');
+    x().onclick(); x().onclick(); x().onclick(); assert.equal(abiertas(), 0);
+    tiles[3].onclick(); assert.match(cima().textContent, /Reglas/); x().onclick();
     for (const f of m.estandares.fichas) {
       assert.match(f.enlace, /^https:\/\//, f.sigla + ' necesita enlace oficial');
       for (const k of ['que_es', 'por_que', 'nombre', 'emisor', 'anio']) assert.ok(f[k], f.sigla + ' sin ' + k);
