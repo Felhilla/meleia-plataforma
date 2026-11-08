@@ -548,3 +548,13 @@ button.kit-cri-chip:focus-visible { outline: 2px solid var(--oro); outline-offse
 @media (max-width: 600px) { .kit-pro-preguntas li:has(> .kit-pro-etiqueta) { grid-template-columns: minmax(0, 1fr); gap: var(--e2); } .kit-pro-etiqueta { justify-self: start; } }
 .kit-cri-nivel-largo .kit-cri-nivel-num { font-size: clamp(1.3rem, 2.4vw, 1.8rem); line-height: 1.15; text-align: center; }
 button.kit-cri-alimentacion { all: unset; box-sizing: border-box; cursor: help; display: grid; align-content: end; gap: 4px; width: 100%; min-height: 128px; padding: var(--e3) var(--e4); border: 2px solid #A9C48A; border-radius: 14px; color: var(--texto); }
+
+/* E57 (8-nov): portada de los Resultados con la lógica del Look and Feel (misma banda, panel, arco y cifras doradas). */
+.kit-res-caso:empty { display: none; }
+.kit-res-caso { margin: var(--e2) 0 0; }
+.kit-res-caso .kit-casos, .kit-res-caso .kit-caso-unico { margin: 0; }
+.kit-res-portada .kit-met-tile-num { font-variant-numeric: tabular-nums; }
+.kit-res-criterios { text-decoration: none; }
+.kit-res-ancla { scroll-margin-top: 90px; outline: none; }
+.kit-res-cuerpo { padding-block: var(--e5) var(--e7); }
+.kit-res-criterios, .kit-res-criterios:visited, .kit-res-criterios:hover { color: #FFFFFF !important; }

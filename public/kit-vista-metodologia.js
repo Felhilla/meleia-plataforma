@@ -342,6 +342,33 @@
     return { fichas, partes, enfoques, criterios, calificar, tiles: tilesBase(m, partes, enfoques, crit.length + 1, 'de gravedad y probabilidad que fijan la prioridad') };
   }
 
+  // Selector en arco: Metodología, Alimentación y Resultados (reemplaza las pestañas en el primer vistazo).
+  // Lo usan la Metodología y la portada de los Resultados. extra = { modulo, empresa, puedeEditar, resultados }.
+  function selectorArco(extra = {}, actual = 'Metodología') {
+    const el = root.App.el, doc = root.document;
+    const svg = (tag, attrs = {}) => { const n = doc.createElementNS(SVG, tag); Object.entries(attrs).forEach(([k, v]) => n.setAttribute(k, String(v))); return n; };
+    const nav = el('nav', null, 'kit-met-selector'); nav.setAttribute('aria-label', 'Secciones del módulo');
+    const base = extra.empresa ? `#/${extra.modulo}/${extra.empresa}/` : '';
+    const ops = [['Metodología', base && base + 'metodologia'], ['Alimentación', extra.puedeEditar && base && base + 'alimentacion'], ['Resultados', base && base + (extra.resultados || { actores: 'mapa', riesgos: 'matriz' }[extra.modulo] || 'resultados')]]
+      .map(([n, h]) => [n, h, n === actual]).filter(o => o[2] || o[1]);
+    const C = [-120, 180], R = 300, p = g => [C[0] + R * Math.cos(g * Math.PI / 180), C[1] + R * Math.sin(g * Math.PI / 180)];
+    const angulos = ops.length === 3 ? [-24, 0, 24] : ops.length === 2 ? [-12, 12] : [0];
+    const dibujo = svg('svg', { class: 'kit-met-selector-arco', viewBox: '0 0 220 360', 'aria-hidden': 'true', focusable: 'false' });
+    const [a0, a1] = [p(-36), p(36)];
+    dibujo.append(svg('path', { d: `M${a0[0]} ${a0[1]}A${R} ${R} 0 0 1 ${a1[0]} ${a1[1]}`, class: 'kit-met-selector-linea' }));
+    const ul = el('ul');
+    ops.forEach(([nombre, href, esta], k) => {
+      const [x, y] = p(angulos[k]);
+      if (esta) dibujo.append(svg('circle', { cx: x, cy: y, r: 13, class: 'kit-met-selector-perilla' }), svg('circle', { cx: x, cy: y, r: 4.5, class: 'kit-hero-punto' }));
+      else dibujo.append(svg('circle', { cx: x, cy: y, r: 5, class: 'kit-met-selector-punto' }));
+      const li = el('li'), a = el('a', nombre, 'kit-met-selector-op' + (esta ? ' actual' : ''));
+      a.href = href || '#'; if (esta) a.setAttribute('aria-current', 'page');
+      if (li.style) { li.style.left = (x + 24) + 'px'; li.style.top = y + 'px'; }
+      li.append(a); ul.append(li);
+    });
+    nav.append(dibujo, ul); return nav;
+  }
+
   function pintar(c, m, extra = {}) {
     const App = root.App, el = App.el, doc = root.document;
     const art = el('article', null, 'kit-met');
@@ -448,7 +475,7 @@
     const desc = el('div', null, 'kit-met-descripcion');
     desc.append(el('p', m.afirmacion, 'kit-met-afirmacion'), el('p', m.resumen, 'kit-met-texto'), el('p', m.cuando, 'kit-met-texto kit-met-cuando'));
     texto.append(marca, el('h2', m.nombre, 'kit-met-titulo'), desc);
-    panel.append(texto, selector());
+    panel.append(texto, selectorArco(extra));
 
     const tiles = el('ul', null, 'kit-met-tiles');
     const abreCon = { estandares: b => ventanaEstandares(b), proceso: (b, t) => ventanaProceso(b, t.parte), enfoques: b => ventanaEnfoques(b), criterios: b => ventanaCriterios(b) };
@@ -465,30 +492,6 @@
       a.href = `#/${extra.modulo}/${extra.empresa}/alimentacion`; pie.append(a); portada.append(pie);
     }
     art.append(portada, capa);
-
-    // Selector en arco: Metodología, Alimentación y Resultados (reemplaza las pestañas en el primer vistazo).
-    function selector() {
-      const nav = el('nav', null, 'kit-met-selector'); nav.setAttribute('aria-label', 'Secciones del módulo');
-      const base = extra.empresa ? `#/${extra.modulo}/${extra.empresa}/` : '';
-      const ops = [['Metodología', base + 'metodologia', true], ['Alimentación', extra.puedeEditar && base && base + 'alimentacion'], ['Resultados', base && base + 'resultados']]
-        .filter(o => o[2] || o[1]);
-      const C = [-120, 180], R = 300, p = g => [C[0] + R * Math.cos(g * Math.PI / 180), C[1] + R * Math.sin(g * Math.PI / 180)];
-      const angulos = ops.length === 3 ? [-24, 0, 24] : ops.length === 2 ? [-12, 12] : [0];
-      const dibujo = svg('svg', { class: 'kit-met-selector-arco', viewBox: '0 0 220 360', 'aria-hidden': 'true', focusable: 'false' });
-      const [a0, a1] = [p(-36), p(36)];
-      dibujo.append(svg('path', { d: `M${a0[0]} ${a0[1]}A${R} ${R} 0 0 1 ${a1[0]} ${a1[1]}`, class: 'kit-met-selector-linea' }));
-      const ul = el('ul');
-      ops.forEach(([nombre, href, actual], k) => {
-        const [x, y] = p(angulos[k]);
-        if (actual) dibujo.append(svg('circle', { cx: x, cy: y, r: 13, class: 'kit-met-selector-perilla' }), svg('circle', { cx: x, cy: y, r: 4.5, class: 'kit-hero-punto' }));
-        else dibujo.append(svg('circle', { cx: x, cy: y, r: 5, class: 'kit-met-selector-punto' }));
-        const li = el('li'), a = el('a', nombre, 'kit-met-selector-op' + (actual ? ' actual' : ''));
-        a.href = href || '#'; if (actual) a.setAttribute('aria-current', 'page');
-        if (li.style) { li.style.left = (x + 24) + 'px'; li.style.top = y + 'px'; }
-        li.append(a); ul.append(li);
-      });
-      nav.append(dibujo, ul); return nav;
-    }
 
     // ---------- Ventana: Estándares (portadas) ----------
     function ventanaEstandares(desde) {
@@ -950,7 +953,7 @@
       return pintar(c, m, { datos: d, modulo, empresa: p?.empresa, puedeEditar: p?.puedeEditar });
     }
   });
-  const api = { pintar, vista, datos, datosDdhh, datosActores, datosMaterialidad, datosRiesgos, FUENTES };
+  const api = { pintar, vista, datos, selectorArco, ICONOS, datosDdhh, datosActores, datosMaterialidad, datosRiesgos, FUENTES };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.KitVistaMetodologia = api;
   if (root.App) ['actores', 'ddhh', 'materialidad', 'riesgos'].forEach(m => root.App.registrarVista(m + '/metodologia', vista(m)));

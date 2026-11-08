@@ -45,7 +45,7 @@ test('entrada del Kit no carga el relato, conserva SDK fijo y orden defer', () =
   assert.match(html, /<title>Meleia · Kit de sostenibilidad<\/title>/); assert.doesNotMatch(html, /GH Estudio|logo-gh/);
   assert.doesNotMatch(html, /src="vista-|caso\.json|src="app.js"|api-supabase.js/);
   const scripts = [...html.matchAll(/<script defer src="([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'vendor/xlsx.full.min.js', 'kit-riesgos.js', 'kit-cuestionario.js', 'kit-actores.js', 'kit-carga-excel.js', 'kit-armazon.js', 'kit-vista-credenciales.js', 'kit-vista-carga-excel.js', 'kit-vista-riesgos.js', 'kit-vista-actores.js', 'kit-vista-metodologia.js', 'kit-vista-ddhh-modelo.js', 'kit-vista-ddhh-motor.js', 'kit-vista-ddhh-comun.js', 'kit-vista-ddhh.js', 'kit-vista-ddhh-cuestionario.js', 'kit-vista-materialidad-motor.js', 'kit-vista-materialidad.js']);
+  assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'vendor/xlsx.full.min.js', 'kit-riesgos.js', 'kit-cuestionario.js', 'kit-actores.js', 'kit-carga-excel.js', 'kit-armazon.js', 'kit-vista-credenciales.js', 'kit-vista-carga-excel.js', 'kit-vista-riesgos.js', 'kit-vista-actores.js', 'kit-vista-metodologia.js', 'kit-vista-ddhh-modelo.js', 'kit-vista-ddhh-motor.js', 'kit-vista-ddhh-comun.js', 'kit-vista-ddhh.js', 'kit-vista-ddhh-cuestionario.js', 'kit-vista-materialidad-motor.js', 'kit-vista-materialidad.js', 'kit-vista-portada-resultados.js']);
 });
 
 // DOM mínimo: prueba los flujos reales del armazón sin red ni dependencias de navegador.
@@ -398,4 +398,23 @@ test('E40/E49: Metodología del Módulo II con cifras del catálogo, fichas de e
     const enlaces = n.todos().filter(x => x.tag === 'a').map(x => x.href);
     assert.ok(enlaces.includes('#/ddhh/uno/resultados') && enlaces.includes('#/ddhh/uno/alimentacion'));
   } finally { delete globalThis.App; delete globalThis.document; }
+});
+
+test('E57: la portada de los Resultados calcula sus cifras con los datos de la empresa (datos inventados)', async () => {
+  const { default: P } = await import('../public/kit-vista-portada-resultados.js');
+  const leer = r => JSON.parse(readFileSync(new URL('../public/' + r, import.meta.url), 'utf8'));
+  globalThis.fetch = async r => ({ ok: true, json: async () => leer(r) });
+  const req = (await import('node:module')).createRequire(import.meta.url);
+  globalThis.KitRiesgos = req('../public/kit-riesgos.js');
+  try {
+    const reg = { 'materialidad-temas': [{ tipo: 'Doble' }, { tipo: 'Impacto' }], 'materialidad-aspectos': [{}, {}, {}, {}],
+      riesgos: [{ id: 'a' }, { id: 'b' }], 'riesgos-calificacion': [{ riesgo: 'a', escala: 3, alcance: 3, irremediabilidad: 3, probabilidad: 'Alta' }, { riesgo: 'b', escala: 1, alcance: 1, irremediabilidad: 1, probabilidad: 'Baja' }],
+      'riesgos-medidas': [{ id: 'm', estado: 'Cumplida', componente: 'componente-1' }] };
+    const d = { listar: async (_, c) => reg[c] || [] };
+    const m = await P.CIFRAS.materialidad(d, 'x');
+    assert.deepEqual(m.tiles.map(t => t.n), [4, 2, 1]); assert.doesNotMatch(JSON.stringify(m), /[;«»·]/);
+    const r = await P.CIFRAS.riesgos(d, 'x');
+    assert.deepEqual(r.tiles.map(t => t.n), [2, 1, 1]); assert.match(r.afirmacion, /1 de prioridad alta/);
+    assert.deepEqual(Object.keys(P.VISTAS), ['actores', 'ddhh', 'materialidad', 'riesgos']);
+  } finally { delete globalThis.fetch; delete globalThis.KitRiesgos; }
 });
