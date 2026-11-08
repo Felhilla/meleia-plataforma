@@ -14,7 +14,7 @@
   // Fuentes de cada módulo: sus parámetros y los esquemas de su Alimentación. La Metodología no copia cifras.
   const FUENTES = {
     actores: ['config/kit-actores-config.json', E('actores'), E('actores-organizaciones')],
-    ddhh: ['config/kit-ddhh-catalogo.json', 'config/kit-ddhh-cruce.json'],
+    ddhh: ['config/kit-ddhh-catalogo.json', 'config/kit-ddhh-cruce.json', 'config/kit-carga-excel.json', E('ddhh-indicadores')],
     materialidad: ['config/kit-materialidad-catalogo.json', E('materialidad-temas'), E('materialidad-impacto'), E('materialidad-financiera'), E('materialidad-participacion')],
     riesgos: ['config/kit-riesgos-config.json', E('riesgos'), E('riesgos-calificacion'), E('riesgos-validaciones'), E('riesgos-medidas')]
   };
@@ -57,10 +57,11 @@
     ficha: 'M4 5h16v14H4zM7 9h4M7 13h10M7 16h7' + CIRC(16, 9, 1.5),
     matriz: 'M4 4h16v16H4zM12 4v16M4 12h16',
     diana: CIRC(12, 12, 8) + CIRC(12, 12, 4.5) + CIRC(12, 12, 1),
-    lista: 'M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2'
+    lista: 'M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2',
+    genero: CIRC(10, 13, 4.5) + 'M13.2 9.8L19 4M15 4h4v4M10 17.5V22M8 20h4'
   };
   const ICONO_EJE = { 'etapa-ocde-1': 'documento', 'etapa-ocde-2': 'lupa', 'etapa-ocde-3': 'escudo', 'etapa-ocde-4': 'grafica', 'etapa-ocde-5': 'dialogo', 'etapa-ocde-6': 'corazon',
-    'tema-ddhh-1': 'cadena', 'tema-ddhh-2': 'nino', 'tema-ddhh-3': 'igual', 'tema-ddhh-4': 'balanza', 'tema-ddhh-5': 'personas', 'tema-ddhh-6': 'casco',
+    'tema-ddhh-1': 'cadena', 'tema-ddhh-2': 'nino', 'tema-ddhh-3': 'igual', 'tema-ddhh-4': 'genero', 'tema-ddhh-5': 'personas', 'tema-ddhh-6': 'casco',
     'tema-ddhh-7': 'moneda', 'tema-ddhh-8': 'reloj', 'tema-ddhh-9': 'maletin', 'tema-ddhh-10': 'hoja' };
   // Respaldo: cada marco citado se enlaza a la ficha de su estándar. Si no hay ficha, queda como texto.
   const fichaDeMarco = (fichas, t) => (fichas.find(f => [f.sigla, f.columna, f.catalogo].filter(Boolean).some(s => t.startsWith(s))) || (/OIT|Protocolo de 2014/.test(t) ? fichas.find(f => f.id === 'oit') : null))?.id || null;
@@ -88,7 +89,7 @@
     { n: nCrit, rotulo: 'Criterios', sub: subCrit, abre: 'criterios' }];
 
   // Lo que la Metodología necesita del catálogo del Módulo II, calculado y no copiado.
-  function datosDdhh(cat, cruce, m) {
+  function datosDdhh(cat, cruce, m, excel, esqInd) {
     const ejes = new Map(cat.ejes.map(e => [e.id, e]));
     const indicadores = id => cat.indicadores.filter(i => i.eje === id);
     const corto = id => cat.dimensiones?.ejes?.[id]?.corto || ejes.get(id)?.nombre || id;
@@ -151,8 +152,33 @@
       tiles: [{ n: fichas.length, rotulo: 'Estándares', sub: 'internacionales que respaldan el método', abre: 'estandares' },
         { n: m.metodo.etapas.length, rotulo: 'Etapas', sub: 'del proceso de debida diligencia de la OCDE', abre: 'proceso', parte: 'etapas' },
         { n: dimensiones.length, rotulo: 'Enfoques', sub: 'con los que se lee el resultado', abre: 'enfoques' },
-        { n: totalCriterios, rotulo: 'Criterios', sub: `que agrupan ${num(cat.indicadores.length)} preguntas calificadas de 0 a 5`, abre: 'criterios' }]
+        { n: totalCriterios, icono: 'balanza', rotulo: 'Criterios', sub: `de calificación: qué se califica, cómo y por qué`, abre: 'criterios' }],
+      calificar: calificarDdhh()
     };
+    // Ventana Criterios de calificación (boceto 261108_Home_Criterios). Todo sale del catálogo, del esquema y de la
+    // tabla de columnas del Excel. El texto (metodología y variable de cada enfoque) sale de kit-metodologia.json.
+    function calificarDdhh() {
+      const K = m.criterios;
+      if (!K?.enfoques) return null;
+      const niveles = cat.calificacion?.brechas?.niveles || [];
+      const escalaDe = id => (cat.estandares.find(e => e.id === id) || cat.estandares[0]).escala.niveles
+        .map(n => ({ valor: n.valor, nombre: niveles.find(x => x.valor === n.valor)?.nombre || '', descripcion: n.descripcion, color: color(n.valor) }))
+        .sort((a, b) => a.valor - b.valor);
+      const columnas = (excel?.ddhh?.hojas || []).find(h => h.coleccion === 'ddhh-indicadores')?.columnas || [];
+      const col = campo => columnas.find(c => c.campo === campo)?.encabezado || esqInd?.campos?.[campo]?.etiqueta || campo;
+      const VALOR = { si: 'Sí', no: 'No', parcial: 'Parcial' };
+      const valores = (esqInd?.campos?.incorporado?.valores || []).map(v => VALOR[v] || v);
+      const registros = ['documentos', 'descripcion', 'brecha'].map(col);
+      return { ante: K.ante, titular: K.titular, escalaTitular: K.escala_titular, escalaNota: K.escala_nota, temasNota: K.temas_nota,
+        alimentacion: K.alimentacion, plantilla: 'plantillas/plantilla-modulo-ii.xlsx', reglas: m.calificacion.reglas,
+        enfoques: dimensiones.map(g => { const t = K.enfoques[g.id] || {};
+          return { id: g.id, nombre: g.titulo, corto: t.corto || g.titulo, metodologia: t.metodologia, variable: t.variable, parte: g.id === 'etapas-ocde' ? 'etapas' : 'derechos', escala: escalaDe(g.id) }; }),
+        grupos: [
+          { n: 1, rotulo: ['variable calificada', 'variables calificadas'], items: [col('calificacion')], texto: K.grupos.calificada },
+          { n: 1, rotulo: ['verificación', 'verificaciones'], items: [`${col('incorporado')}: ${valores.join(', ')}`], texto: K.grupos.verificacion },
+          { n: registros.length, rotulo: ['registro de evidencia', 'registros de evidencia'], items: registros, texto: K.grupos.registros },
+          { n: criterios.calculo.length, rotulo: ['paso de cálculo', 'pasos de cálculo'], items: criterios.calculo.map(x => `${num(x.cifra)} ${x.rotulo}: ${x.texto}`), texto: K.grupos.calculo }] };
+    }
   }
 
   // ---------- Módulo I: Mapeo de actores ----------
@@ -258,6 +284,10 @@
     const d = extra.datos, fichas = d.fichas, porId = new Map(fichas.map(f => [f.id, f]));
     const svg = (tag, attrs = {}) => { const n = doc.createElementNS(SVG, tag); Object.entries(attrs).forEach(([k, v]) => n.setAttribute(k, String(v))); return n; };
     const mono = (t, clase = '') => el('p', t, ('kit-mono ' + clase).trim());
+    const icono = (it, clase = 'kit-pro-icono') => {
+      const s = svg('svg', { class: clase, viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false' });
+      s.append(svg('path', { d: it.icono || ICONOS.lista })); return s;
+    };
     const boton = (clase, ...hijos) => { const b = el('button', null, clase); b.type = 'button'; b.append(...hijos); return b; };
     const sinMovimiento = () => !!root.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     // Movimiento con propósito (Look and Feel, principio 7): solo en un navegador real y si el usuario no pidió movimiento reducido.
@@ -354,11 +384,11 @@
     const tiles = el('ul', null, 'kit-met-tiles');
     const abreCon = { estandares: b => ventanaEstandares(b), proceso: (b, t) => ventanaProceso(b, t.parte), enfoques: b => ventanaEnfoques(b), criterios: b => ventanaCriterios(b) };
     d.tiles.forEach((t, k) => {
-      const cifra = el('span', num(t.n), 'kit-met-tile-num');
+      const cifra = t.icono ? icono({ icono: ICONOS[t.icono] }, 'kit-met-tile-icono') : el('span', num(t.n), 'kit-met-tile-num');
       const b = boton('kit-met-tile', cifra, el('span', t.rotulo, 'kit-met-tile-rotulo'), el('span', t.sub, 'kit-met-tile-sub'), el('span', 'Abrir', 'kit-met-tile-abrir'));
-      b.setAttribute('aria-label', `${num(t.n)} ${t.rotulo.toLowerCase()} ${t.sub}. Abrir la ventana`); b.setAttribute('aria-haspopup', 'dialog');
+      b.setAttribute('aria-label', `${t.icono ? '' : num(t.n) + ' '}${t.rotulo.toLowerCase()} ${t.sub}. Abrir la ventana`); b.setAttribute('aria-haspopup', 'dialog');
       b.style?.setProperty?.('--i', k); b.onclick = () => abreCon[t.abre](b, t);
-      const li = el('li'); li.append(b); tiles.append(li); contar(cifra, t.n);
+      const li = el('li'); li.append(b); tiles.append(li); if (!t.icono) contar(cifra, t.n);
     });
     portada.append(panel, tiles);
     if (extra.empresa && extra.puedeEditar) {
@@ -496,10 +526,6 @@
     // y la ficha abre la ventana de preguntas.
     const ESG = { A: 'Ambiental', S: 'Social', G: 'Gobernanza' };
     const partes = d.partes;
-    const icono = (it, clase = 'kit-pro-icono') => {
-      const s = svg('svg', { class: clase, viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false' });
-      s.append(svg('path', { d: it.icono || ICONOS.lista })); return s;
-    };
     function arcoProceso(parte, cual) {
       const items = parte.items, n = items.length, denso = n > 6;
       const diagrama = el('div', null, 'kit-serv-diagrama kit-met-diagrama' + (denso ? ' kit-pro-denso' : '')), angosta = root.matchMedia?.('(max-width: 860px)');
@@ -643,8 +669,111 @@
       abrir('Enfoques', [...encabezado('Cómo se lee el resultado', E.titular || 'Enfoques', E.intro), rejilla, pie], desde, 'kit-ven-enfoques');
     }
 
-    // ---------- Ventana: Criterios (cómo se califica). Provisional hasta el boceto de Felipe ----------
+    // ---------- Vistazo (boceto 261108_Home_Criterios) ----------
+    // Una ventana pequeña que aparece al pasar el cursor y desaparece al quitarlo. También se abre con el foco del
+    // teclado y, en pantallas táctiles, con un toque (el toque fuera la cierra). Solo hay uno abierto a la vez.
+    let vzAbierto = null;
+    const sinCursor = () => !!root.matchMedia?.('(hover: none)').matches;
+    function vistazo(disparador, contenido, clase = '') {
+      const caja = el('div', null, ('kit-vz ' + clase).trim()), panel = el('div', null, 'kit-vz-panel'), id = 'kit-vz-' + (++nDesp);
+      panel.id = id; panel.setAttribute('role', 'tooltip'); panel.append(...[].concat(contenido));
+      disparador.setAttribute('aria-describedby', id);
+      let on = false;
+      const abre = v => { if (v && vzAbierto && vzAbierto !== abre) vzAbierto(false); on = v; caja.classList?.toggle('abierto', v); disparador.setAttribute('aria-expanded', String(v)); vzAbierto = v ? abre : (vzAbierto === abre ? null : vzAbierto); };
+      disparador.setAttribute('aria-expanded', 'false');
+      caja.addEventListener?.('mouseenter', () => { if (!sinCursor()) abre(true); });
+      caja.addEventListener?.('mouseleave', () => { if (!sinCursor()) abre(false); });
+      disparador.addEventListener?.('focus', () => abre(true));
+      disparador.addEventListener?.('blur', () => abre(false));
+      caja.append(disparador, panel);
+      return { caja, abre, abierto: () => on };
+    }
+
+    // ---------- Ventana: Criterios de calificación (boceto 261108_Home_Criterios) ----------
+    // Explica qué se califica, cómo y por qué. Enfoque (se cambia con la pastilla), metodología, temas que llevan a
+    // lo que se califica en cada uno (laberinto inteligente), una escala para todos con Vistazo por nivel, la variable
+    // (qué es, qué no es, qué evalúa), los grupos de datos que se llenan y Alimentación.
+    function ventanaCalificacion(desde) {
+      const C = d.calificar, zona = el('div', null, 'kit-cri-zona');
+      let k = 0;
+      const chip = boton('kit-cri-chip', el('span', 'Enfoque'), el('span', '⇄', 'kit-cri-chip-flecha'));
+      const nombre = el('h3', null, 'kit-cri-enfoque-nombre');
+      const cabeza = el('div', null, 'kit-cri-enfoque'); cabeza.append(chip, nombre);
+      chip.onclick = () => { k = (k + 1) % C.enfoques.length; pintarEnfoque(); chip.focus?.({ preventScroll: true }); };
+      const plural = (g) => g.rotulo[g.n === 1 ? 0 : 1];
+      function pintarEnfoque() {
+        const E = C.enfoques[k], parte = partes[E.parte], otro = C.enfoques[(k + 1) % C.enfoques.length];
+        nombre.textContent = E.nombre;
+        chip.setAttribute('aria-label', `Enfoque: ${E.nombre}. Cambiar al enfoque ${otro.nombre}`);
+        chip.title = 'Cambiar a ' + otro.corto;
+        // Metodología del enfoque.
+        const metodo = el('p', null, 'kit-cri-metodo'); metodo.append(el('strong', 'Metodología: '), el('span', E.metodologia || parte.intro));
+        // Temas: cada botón lleva a lo que se califica en esa etapa o derecho (la ventana de preguntas que ya existe).
+        const pista = el('ul', null, 'kit-est-pista kit-cri-pista');
+        parte.items.forEach((it, i) => {
+          const b = boton('kit-cri-tema' + (i % 2 ? ' kit-cri-claro' : ''), icono(it, 'kit-cri-tema-icono'), el('span', dos(i), 'kit-mono'), el('span', it.titulo, 'kit-cri-tema-titulo'), el('span', it.sub, 'kit-cri-tema-sub'));
+          b.setAttribute('aria-label', `${parte.unidad} ${i + 1}: ${it.titulo}. Ver qué se califica`); b.setAttribute('aria-haspopup', 'dialog');
+          b.onclick = () => ventanaPreguntas({ ...it, preguntasRotulo: '¿Qué calificamos?' }, b);
+          const li = el('li'); li.style?.setProperty?.('--i', i); li.append(b); pista.append(li);
+        });
+        const mover = sgn => () => pista.scrollBy?.({ left: sgn * (pista.clientWidth || 600) * .8, behavior: sinMovimiento() ? 'auto' : 'smooth' });
+        const ant = boton('kit-est-flecha', el('span', '←')), sig = boton('kit-est-flecha', el('span', '→'));
+        ant.setAttribute('aria-label', 'Ver los anteriores'); sig.setAttribute('aria-label', 'Ver más'); ant.onclick = mover(-1); sig.onclick = mover(1);
+        const carrusel = el('div', null, 'kit-est-carrusel kit-cri-carrusel'); carrusel.append(ant, pista, sig);
+        // Una escala para todos. El Vistazo de cada número explica el nivel para la variable del enfoque.
+        const escala = el('ol', null, 'kit-cri-escala');
+        E.escala.forEach(nv => {
+          const b = boton('kit-cri-nivel', el('span', null, 'kit-cri-nivel-barra'), el('span', String(nv.valor), 'kit-cri-nivel-num'), el('span', nv.nombre, 'kit-cri-nivel-nombre'));
+          b.style?.setProperty?.('--color', nv.color);
+          b.setAttribute('aria-label', `${nv.valor}, ${nv.nombre}`);
+          const tit = el('p', null, 'kit-vz-titulo kit-vz-nivel'); tit.append(el('strong', String(nv.valor)), el('span', nv.nombre));
+          const contenido = [tit, el('p', nv.descripcion, 'kit-vz-texto'), mono('Variable: ' + (E.variable?.nombre || ''), 'kit-vz-pie')];
+          const vz = vistazo(b, contenido, 'kit-cri-nivel-vz'); vz.caja.style?.setProperty?.('--color', nv.color);
+          b.onclick = () => vz.abre(!vz.abierto());
+          const li = el('li'); li.append(vz.caja); escala.append(li);
+        });
+        // Variable: qué es, qué no es y qué evalúa.
+        const V = E.variable || {};
+        const variable = el('section', null, 'kit-cri-variable');
+        const vcab = el('div', null, 'kit-cri-variable-cab'); vcab.append(el('span', 'Variable', 'kit-cri-chip kit-cri-chip-fijo'), el('h4', V.nombre || '', 'kit-cri-variable-nombre'));
+        const vcaja = el('dl', null, 'kit-cri-variable-caja');
+        [['¿Qué es?', V.que_es], ['¿Qué no es?', V.que_no_es], ['¿Qué evalúa?', V.que_evalua]].filter(x => x[1]).forEach(([t, x]) => { const g = el('div'); g.append(el('dt', t), el('dd', x)); vcaja.append(g); });
+        variable.append(vcab, vcaja);
+        // Lo que se llena: grupos de datos con Vistazo, y Alimentación (laberinto inteligente).
+        const grupos = el('ul', null, 'kit-cri-grupos');
+        C.grupos.forEach((g, i) => {
+          const b = boton('kit-cri-grupo' + (i % 2 ? ' kit-cri-oro' : ''), el('span', num(g.n), 'kit-cri-grupo-n'), el('span', plural(g), 'kit-cri-grupo-rotulo'));
+          b.setAttribute('aria-label', `${num(g.n)} ${plural(g)}`);
+          const vz = vistazo(b, [el('p', `${num(g.n)} ${plural(g)}`, 'kit-vz-titulo'), lista(g.items, 'kit-vz-lista'), el('p', g.texto, 'kit-vz-texto')]);
+          b.onclick = () => vz.abre(!vz.abierto());
+          const li = el('li'); li.append(vz.caja); grupos.append(li);
+        });
+        const destino = extra.empresa && extra.puedeEditar ? `#/${extra.modulo}/${extra.empresa}/alimentacion` : C.plantilla;
+        const a = el('a', null, 'kit-cri-alimentacion'); a.href = destino;
+        if (destino === C.plantilla) a.setAttribute('download', '');
+        a.append(el('span', 'Alimentación', 'kit-cri-alimentacion-titulo'), el('span', destino === C.plantilla ? 'Descargar la plantilla de Excel' : 'Ir a Alimentación', 'kit-cri-alimentacion-sub'));
+        const reglas = el('ol', null, 'kit-vz-lista kit-vz-reglas');
+        (C.reglas || []).forEach(r => { const li = el('li'); li.append(el('strong', r.titulo + '. '), el('span', r.texto)); reglas.append(li); });
+        const vzA = vistazo(a, [el('p', C.alimentacion, 'kit-vz-titulo'), reglas], 'kit-cri-alimentacion-vz');
+        // Sin cursor, el primer toque muestra las reglas y el segundo lleva a Alimentación.
+        a.onclick = ev => { if (sinCursor() && !vzA.abierto()) { ev.preventDefault?.(); vzA.abre(true); } };
+        const liA = el('li', null, 'kit-cri-grupos-alimentacion'); liA.append(vzA.caja); grupos.append(liA);
+
+        zona.replaceChildren(metodo, carrusel, el('p', C.temasNota, 'kit-met-nota'),
+          el('h3', C.escalaTitular, 'kit-cri-escala-titulo'), escala, el('p', C.escalaNota, 'kit-met-nota'),
+          variable, grupos);
+        zona.classList?.remove('recarga'); void zona.offsetWidth; zona.classList?.add('recarga');
+      }
+      pintarEnfoque();
+      const v = abrir('Criterios', [mono(C.ante, 'kit-ven-ante'), el('h2', C.titular, 'kit-titular kit-ven-titular'), cabeza, zona], desde, 'kit-ven-criterios kit-ven-calificacion');
+      // Un toque fuera de un Vistazo lo cierra (pantallas táctiles).
+      v.addEventListener?.('click', ev => { if (vzAbierto && !ev.target?.closest?.('.kit-vz')) vzAbierto(false); });
+      return v;
+    }
+
+    // ---------- Ventana: Criterios (cómo se califica). Provisional en los módulos que aún no tienen la ventana nueva ----------
     function ventanaCriterios(desde) {
+      if (d.calificar) return ventanaCalificacion(desde);
       const K = d.criterios, nodos = [...encabezado(K.ante || 'Cómo se califica', K.titular, K.intro)];
       (K.escalas || []).forEach(es => {
         const caja = el('section', null, 'kit-met-escala-bloque');
@@ -692,7 +821,7 @@
   async function datos(modulo, m) {
     if (!FUENTES[modulo] || (!m?.proceso && !m?.metodo)) return null;
     const f = await Promise.all(FUENTES[modulo].map(cargar));
-    if (modulo === 'ddhh') return datosDdhh(f[0], f[1], m);
+    if (modulo === 'ddhh') return datosDdhh(f[0], f[1], m, f[2], f[3]);
     if (modulo === 'actores') return datosActores(f[0], f[1], f[2], m);
     if (modulo === 'materialidad') return datosMaterialidad(f[0], { temas: f[1], impacto: f[2], financiera: f[3], participacion: f[4] }, m);
     return datosRiesgos(f[0], { riesgos: f[1], calificacion: f[2], validaciones: f[3], medidas: f[4] }, m);

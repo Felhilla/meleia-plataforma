@@ -1513,32 +1513,32 @@
         {
           "valor": 5,
           "nombre": "Optimizado",
-          "color": "verde"
+          "color": "nivel-5"
         },
         {
           "valor": 4,
           "nombre": "Gestionado",
-          "color": "verde"
+          "color": "nivel-4"
         },
         {
           "valor": 3,
           "nombre": "En gestión",
-          "color": "ambar"
+          "color": "nivel-3"
         },
         {
           "valor": 2,
           "nombre": "Inicial",
-          "color": "naranja"
+          "color": "nivel-2"
         },
         {
           "valor": 1,
           "nombre": "Declarativo",
-          "color": "rojo"
+          "color": "nivel-1"
         },
         {
           "valor": 0,
           "nombre": "Sin información",
-          "color": "rojo"
+          "color": "nivel-0"
         }
       ],
       "nota": "Cada criterio se califica con la evidencia documental y las entrevistas; el puntaje de una dimensión es el promedio de sus criterios."
@@ -1589,24 +1589,39 @@
     },
     "cortes": [
       {
-        "menor_que": 3.0,
-        "nombre": "naranja",
-        "color": "#9A3412"
+        "menor_que": 1,
+        "nombre": "Sin información",
+        "color": "var(--nivel-0)"
       },
       {
-        "menor_que": 4.0,
-        "nombre": "amarillo",
-        "color": "#806000"
+        "menor_que": 2,
+        "nombre": "Declarativo",
+        "color": "var(--nivel-1)"
+      },
+      {
+        "menor_que": 3,
+        "nombre": "Inicial",
+        "color": "var(--nivel-2)"
+      },
+      {
+        "menor_que": 4,
+        "nombre": "En gestión",
+        "color": "var(--nivel-3)"
+      },
+      {
+        "menor_que": 5,
+        "nombre": "Gestionado",
+        "color": "var(--nivel-4)"
       },
       {
         "menor_que": null,
-        "nombre": "verde",
-        "color": "#166534"
+        "nombre": "Optimizado",
+        "color": "var(--nivel-5)"
       }
     ],
-    "hipotesis": true,
-    "origen": "propuesta",
-    "nota": "Umbrales y colores por confirmar. Tonos oscuros legibles sobre fondo claro."
+    "hipotesis": false,
+    "origen": "aprobado",
+    "nota": "Un color por nivel de la escala de 0 a 5 (boceto 261108_Home_Criterios, aprobado por Felipe el 8-nov-2026). Un promedio toma el color del nivel que alcanza completo. Los tonos son los tokens --nivel-0 a --nivel-5 de estilos.css."
   },
   "logos": [
     {

@@ -46,7 +46,19 @@ Se escribe una función `datosX(parametros, esquemas, m)` que devuelve `{ fichas
 - Revisar en el navegador: el primer vistazo, cada paso y su ficha, "¿Qué preguntamos?", Enfoques y Criterios, con tema claro y oscuro y a 390 px de ancho.
 - Ningún dato de cliente en el repo.
 
+## Ventana Criterios de calificación (E55, boceto 261108_Home_Criterios)
+
+Ya está en el Módulo II y es la base para los otros tres. El adaptador devuelve `calificar` y la vista pinta:
+
+1. **Enfoque:** la pastilla cambia entre los enfoques del módulo. Debajo va una breve explicación de la metodología.
+2. **Temas:** un botón con ícono por cada tema del enfoque, en carrusel. Cada uno lleva a lo que se califica en ese tema (laberinto inteligente).
+3. **Una escala para todos:** un color por nivel (tokens `--nivel-*`). Al pasar el cursor, con el foco o con un toque se abre un **Vistazo** con la descripción del nivel para la variable.
+4. **Variable:** qué es, qué no es y qué evalúa.
+5. **Lo que se llena:** grupos de datos con su Vistazo (sus nombres salen de `kit-carga-excel.json`) y Alimentación, cuyo Vistazo tiene las reglas de llenado.
+
+Para replicarla: escribir `criterios.enfoques` en el bloque del módulo y devolver `calificar` desde el adaptador. Los nombres y las descripciones de los niveles se adaptan a las variables de cada módulo y salen de sus parámetros, nunca del texto.
+
 ## Pendiente
 
-- **Criterios:** está provisional hasta que llegue el boceto de Felipe.
+- **Criterios en los Módulos I, III y IV:** siguen con la ventana provisional hasta replicar la del Módulo II.
 - **Módulo II:** es el único con cruce de estándares por sector. Su adaptador es `datosDdhh`.

@@ -42,11 +42,10 @@
       return r;
     }, []);
   }
-  const TONOS = ['var(--alta)', 'var(--media)', 'var(--baja)'];
+  // Un color por nivel de la escala de 0 a 5 (boceto 261108_Home_Criterios, 8-nov). El color sale del catálogo, igual que en la Metodología.
   function tono(valor, umbrales) {
     if (valor === null || valor === undefined) return 'var(--texto-suave)';
-    const i = umbrales.cortes.findIndex(c => c.menor_que === null || valor < c.menor_que);
-    return TONOS[i] || 'var(--principal)';
+    return umbrales.cortes.find(c => c.menor_que === null || valor < c.menor_que)?.color || 'var(--principal)';
   }
   const promedio = vs => { const v = vs.filter(n => typeof n === 'number'); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
 

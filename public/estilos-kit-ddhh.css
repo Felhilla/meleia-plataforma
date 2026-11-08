@@ -331,3 +331,11 @@ button.enlace:focus-visible { outline: 2px solid var(--principal); outline-offse
  .ddhh-cruce-tema { width: 8.5rem; }
  .ddhh-cruce-tabla th, .ddhh-cruce-tabla td { padding: var(--e2); }
 }
+
+/* E55 (8-nov): escala de 0 a 5 con un color por nivel (boceto 261108_Home_Criterios, aprobado por Felipe). Tokens --nivel-* de estilos.css. */
+.dim-circulo.sem-nivel-0 { background: var(--nivel-0); color: var(--sobre-nivel-0); } .sem-fondo-nivel-0 { background: color-mix(in srgb, var(--nivel-0) 18%, var(--superficie)); color: var(--texto); box-shadow: inset 4px 0 0 var(--nivel-0); }
+.dim-circulo.sem-nivel-1 { background: var(--nivel-1); color: var(--sobre-nivel-1); } .sem-fondo-nivel-1 { background: color-mix(in srgb, var(--nivel-1) 18%, var(--superficie)); color: var(--texto); box-shadow: inset 4px 0 0 var(--nivel-1); }
+.dim-circulo.sem-nivel-2 { background: var(--nivel-2); color: var(--sobre-nivel-2); } .sem-fondo-nivel-2 { background: color-mix(in srgb, var(--nivel-2) 18%, var(--superficie)); color: var(--texto); box-shadow: inset 4px 0 0 var(--nivel-2); }
+.dim-circulo.sem-nivel-3 { background: var(--nivel-3); color: var(--sobre-nivel-3); } .sem-fondo-nivel-3 { background: color-mix(in srgb, var(--nivel-3) 18%, var(--superficie)); color: var(--texto); box-shadow: inset 4px 0 0 var(--nivel-3); }
+.dim-circulo.sem-nivel-4 { background: var(--nivel-4); color: var(--sobre-nivel-4); } .sem-fondo-nivel-4 { background: color-mix(in srgb, var(--nivel-4) 18%, var(--superficie)); color: var(--texto); box-shadow: inset 4px 0 0 var(--nivel-4); }
+.dim-circulo.sem-nivel-5 { background: var(--nivel-5); color: var(--sobre-nivel-5); } .sem-fondo-nivel-5 { background: color-mix(in srgb, var(--nivel-5) 18%, var(--superficie)); color: var(--texto); box-shadow: inset 4px 0 0 var(--nivel-5); }

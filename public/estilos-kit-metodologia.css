@@ -430,3 +430,89 @@ a.kit-enf-entregable:hover { border-color: var(--tono); background: rgba(241,238
 .kit-met-tabla { width: 100%; border-collapse: separate; border-spacing: 6px; margin-bottom: var(--e4); font-size: var(--t-chico); }
 .kit-met-tabla th { text-align: left; font-family: var(--fuente-mono); font-size: var(--t-micro); letter-spacing: .1em; text-transform: uppercase; color: var(--texto-suave); padding: var(--e2); }
 .kit-met-tabla td { padding: var(--e3); border-radius: 10px; background: var(--superficie); border: 1px solid var(--borde); line-height: 1.45; }
+
+/* E55 (8-nov): ventana Criterios de calificación (boceto 261108_Home_Criterios). Enfoque con pastilla que cambia,
+   temas en carrusel con ícono, una escala para todos con un color por nivel (tokens --nivel-* de estilos.css),
+   variable con qué es, qué no es y qué evalúa, grupos de datos y Alimentación. Los Vistazos se abren con el cursor,
+   el foco o un toque. */
+.kit-met-tile-icono { width: clamp(3rem, 6vw, 4.6rem); height: clamp(3rem, 6vw, 4.6rem); fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 2px; }
+.kit-cri-enfoque { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e3); margin: var(--e2) 0 var(--e3); padding-bottom: var(--e3); border-bottom: 1px solid var(--linea); }
+.kit-cri-chip { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border: 2px solid #A9C48A; border-radius: 8px; font-family: var(--fuente-mono); font-size: var(--t-micro); letter-spacing: .12em; text-transform: uppercase; color: var(--texto); }
+button.kit-cri-chip { cursor: pointer; transition: background .2s ease, color .2s ease; }
+button.kit-cri-chip:hover { background: #A9C48A; color: #1B2216; }
+button.kit-cri-chip:focus-visible { outline: 2px solid var(--oro); outline-offset: 3px; }
+.kit-cri-chip-flecha { font-size: 1rem; letter-spacing: 0; }
+.kit-cri-enfoque-nombre { margin: 0; padding-left: var(--e3); border-left: 2px solid var(--linea); font-family: var(--fuente-titulos); font-weight: 500; font-size: clamp(1.4rem, 2.6vw, 2.1rem); line-height: 1.15; }
+.kit-cri-zona.recarga > * { animation: kit-sube .4s var(--ease-out) both; }
+.kit-cri-metodo { margin: 0 0 var(--e4); font-size: 1.0625rem; line-height: 1.6; color: var(--texto-suave); }
+.kit-cri-metodo strong { color: var(--texto); font-weight: 600; }
+.kit-cri-carrusel { padding: var(--e4); }
+.kit-cri-pista { grid-auto-columns: minmax(124px, 1fr); gap: var(--e3); }
+.kit-cri-tema { all: unset; box-sizing: border-box; cursor: pointer; display: grid; align-content: start; gap: 6px; width: 100%; height: 100%; min-height: 168px; padding: var(--e3); border-radius: 14px; background: #B78D36; color: #FFFFFF; transition: transform .25s var(--ease-out), box-shadow .25s ease; }
+.kit-cri-tema.kit-cri-claro { background: #F1EEE6; color: #1F241B; }
+.kit-cri-tema.kit-cri-claro .kit-mono { color: #7A5B1E; }
+.kit-cri-tema .kit-mono { color: inherit; opacity: .85; }
+.kit-cri-tema:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(0,0,0,.25); }
+.kit-cri-tema:focus-visible { outline: 3px solid var(--oro); outline-offset: 3px; }
+.kit-cri-tema-icono { width: 40px; height: 40px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.kit-cri-tema-titulo { font-family: var(--fuente-titulos); font-size: 1.05rem; font-weight: 500; line-height: 1.25; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: normal; }
+.kit-cri-tema-sub { font-size: var(--t-micro); opacity: .85; margin-top: auto; }
+.kit-cri-escala-titulo { margin: var(--e6) 0 var(--e3); font-family: var(--fuente-titulos); font-weight: 500; font-size: clamp(1.4rem, 2.6vw, 2rem); color: #C9A04E; }
+.kit-cri-escala { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: var(--e2); }
+.kit-cri-escala > li + li { border-left: 2px solid var(--linea); }
+.kit-cri-nivel { all: unset; box-sizing: border-box; cursor: help; display: grid; justify-items: center; gap: 4px; width: 100%; padding: var(--e2) var(--e1); border-radius: 10px; transition: background .2s ease; }
+.kit-cri-nivel:hover, .kit-vz.abierto > .kit-cri-nivel { background: color-mix(in srgb, var(--color) 14%, transparent); }
+.kit-cri-nivel:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; }
+.kit-cri-nivel-barra { width: 64%; height: 8px; border-radius: 3px; border: 2px solid var(--color); }
+.kit-cri-nivel-num { font-family: var(--fuente-titulos); font-size: clamp(3rem, 7vw, 5rem); font-weight: 500; line-height: 1; color: var(--color); font-variant-numeric: tabular-nums; }
+.kit-cri-nivel-nombre { font-size: var(--t-chico); font-weight: 600; text-align: center; }
+.kit-cri-variable { margin-top: var(--e6); }
+.kit-cri-variable-cab { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e3); margin-bottom: var(--e3); }
+.kit-cri-chip-fijo { font-size: var(--t-chico); }
+.kit-cri-variable-nombre { margin: 0; font-family: var(--fuente-titulos); font-weight: 500; font-size: 1.35rem; }
+.kit-cri-variable-caja { margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--e4); padding: var(--e4); border: 1px solid var(--borde-fuerte); border-radius: 14px; background: var(--fondo-alterno); }
+.kit-cri-variable-caja dt { font-family: var(--fuente-titulos); font-size: 1.1rem; font-weight: 600; margin-bottom: var(--e1); }
+.kit-cri-variable-caja dd { margin: 0; line-height: 1.55; color: var(--texto-suave); }
+.kit-cri-grupos { list-style: none; margin: var(--e5) 0 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--e3); }
+.kit-cri-grupo { all: unset; box-sizing: border-box; cursor: help; display: grid; align-content: start; gap: 4px; width: 100%; min-height: 128px; padding: var(--e3) var(--e4); border-radius: 14px; background: #F1EEE6; color: #7A5B1E; transition: transform .25s var(--ease-out), box-shadow .25s ease; }
+.kit-cri-grupo.kit-cri-oro { background: #B78D36; color: #FFFFFF; }
+.kit-cri-grupo:hover, .kit-vz.abierto > .kit-cri-grupo { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(0,0,0,.22); }
+.kit-cri-grupo:focus-visible { outline: 3px solid var(--oro); outline-offset: 3px; }
+.kit-cri-grupo-n { font-family: var(--fuente-titulos); font-size: 2.8rem; font-weight: 500; line-height: 1; }
+.kit-cri-grupo-rotulo { font-family: var(--fuente-titulos); font-size: 1.1rem; line-height: 1.2; }
+.kit-cri-alimentacion { box-sizing: border-box; display: grid; align-content: end; gap: 4px; width: 100%; min-height: 128px; padding: var(--e3) var(--e4); border: 2px solid #A9C48A; border-radius: 14px; color: var(--texto) !important; text-decoration: none; transition: background .2s ease; }
+.kit-cri-alimentacion:hover { background: color-mix(in srgb, #A9C48A 16%, transparent); }
+.kit-cri-alimentacion:focus-visible { outline: 3px solid var(--oro); outline-offset: 3px; }
+.kit-cri-alimentacion-titulo { font-family: var(--fuente-titulos); font-size: clamp(1.1rem, 1.6vw, 1.4rem); overflow-wrap: normal; word-break: keep-all; hyphens: none; }
+.kit-cri-alimentacion-sub { font-size: var(--t-chico); color: var(--texto-suave); }
+.kit-cri-alimentacion-sub::after { content: " →"; font-family: var(--fuente-mono); }
+/* Vistazo */
+.kit-vz { position: relative; height: 100%; }
+.kit-vz-panel { position: absolute; z-index: 5; left: 50%; bottom: calc(100% + 10px); width: min(320px, 80vw); padding: var(--e3) var(--e4); border-radius: 12px; background: var(--superficie); color: var(--texto); border: 1px solid var(--borde-fuerte); border-top: 4px solid var(--color, var(--oro)); box-shadow: 0 18px 44px rgba(0,0,0,.35);
+  opacity: 0; visibility: hidden; transform: translate(-50%, 6px); transition: opacity .16s ease, transform .16s var(--ease-out), visibility 0s linear .16s; pointer-events: none; text-align: left; }
+.kit-vz.abierto > .kit-vz-panel { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition: opacity .16s ease, transform .16s var(--ease-out); }
+.kit-cri-grupos > li:first-child .kit-vz-panel, .kit-cri-escala > li:first-child .kit-vz-panel { left: 0; transform: translate(0, 6px); }
+.kit-cri-grupos > li:first-child .kit-vz.abierto > .kit-vz-panel, .kit-cri-escala > li:first-child .kit-vz.abierto > .kit-vz-panel { transform: none; }
+.kit-cri-grupos > li:last-child .kit-vz-panel, .kit-cri-escala > li:last-child .kit-vz-panel { left: auto; right: 0; transform: translate(0, 6px); }
+.kit-cri-grupos > li:last-child .kit-vz.abierto > .kit-vz-panel, .kit-cri-escala > li:last-child .kit-vz.abierto > .kit-vz-panel { transform: none; }
+.kit-cri-nivel-vz > .kit-vz-panel { bottom: auto; top: calc(100% + 10px); border-top: 1px solid var(--borde-fuerte); border-bottom: 4px solid var(--color, var(--oro)); }
+.kit-vz-titulo { margin: 0 0 var(--e2); font-weight: 600; line-height: 1.35; }
+.kit-vz-nivel { display: flex; align-items: baseline; gap: 10px; }
+.kit-vz-nivel strong { font-family: var(--fuente-titulos); font-size: 2rem; line-height: 1; color: var(--color); }
+.kit-vz-texto { margin: 0; font-size: var(--t-chico); line-height: 1.55; color: var(--texto-suave); }
+.kit-vz-pie { margin-top: var(--e2) !important; }
+.kit-vz-lista { margin: 0 0 var(--e2); padding-left: 1.1em; font-size: var(--t-chico); line-height: 1.5; }
+.kit-vz-lista li + li { margin-top: 4px; }
+.kit-vz-reglas strong { color: var(--texto); }
+@media (max-width: 860px) {
+  .kit-cri-escala { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: var(--e3); }
+  .kit-cri-escala > li + li { border-left: 0; }
+  .kit-cri-variable-caja { grid-template-columns: minmax(0, 1fr); }
+  .kit-cri-grupos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kit-cri-grupos-alimentacion { grid-column: 1 / -1; }
+  .kit-vz-panel { position: fixed; left: 16px !important; right: 16px !important; bottom: 16px; width: auto; transform: translateY(6px) !important; }
+  .kit-vz.abierto > .kit-vz-panel { transform: none !important; }
+}
+@media (prefers-reduced-motion: reduce) { .kit-cri-zona.recarga > *, .kit-vz-panel { animation: none; transition: none; } }
+/* El bloque que tiene un Vistazo abierto pasa por encima de sus vecinos (cada bloque animado crea su propia capa). */
+.kit-cri-zona > *:has(.kit-vz.abierto), .kit-cri-zona > * > li:has(.kit-vz.abierto) { position: relative; z-index: 6; }

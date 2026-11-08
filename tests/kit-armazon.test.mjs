@@ -273,7 +273,8 @@ test('E40/E49: Metodología del Módulo II con cifras del catálogo, fichas de e
     const tiles = clase('kit-met-tile');
     assert.deepEqual(tiles.map(t => t.children[1].textContent), ['Estándares', 'Etapas', 'Enfoques', 'Criterios']);
     assert.equal(tiles[0].children[0].textContent, String(m.estandares.fichas.length));
-    assert.match(tiles[3].textContent, new RegExp(String(cat.indicadores.length)));
+    // E55: la cifra de Criterios es un ícono (pedido de Felipe, 8-nov).
+    assert.equal(tiles[3].children[0].attrs.class, 'kit-met-tile-icono'); assert.doesNotMatch(tiles[3].children[0].textContent, /\d/);
     const capa = clase('kit-ven-capa')[0], abiertas = () => capa.children.length, cima = () => capa.children[capa.children.length - 1];
     const x = () => cima().todos().find(y => y.className === 'kit-ven-x');
     assert.equal(capa.hidden, true);
@@ -297,7 +298,7 @@ test('E40/E49: Metodología del Módulo II con cifras del catálogo, fichas de e
     cima().todos().find(y => y.className === 'kit-enf-metodo').onclick(); assert.equal(abiertas(), 2);
     cima().todos().find(y => y.className === 'kit-serv-titulo').onclick(); assert.equal(abiertas(), 3, 'enfoque, proceso y ficha de la etapa');
     capa.onclick({ target: capa }); assert.equal(abiertas(), 0, 'el fondo regresa de una vez a la vista central'); assert.equal(capa.hidden, true);
-    tiles[2].onclick(); cima().todos().find(y => (y.className || '').includes('kit-enf-criterios')).onclick(); assert.match(cima().textContent, /Reglas/);
+    tiles[2].onclick(); cima().todos().find(y => (y.className || '').includes('kit-enf-criterios')).onclick(); assert.match(cima().textContent, /Criterios de calificación/);
     x().onclick(); x().onclick(); assert.equal(abiertas(), 0);
     // E52: Proceso con dos partes (Incorporación y Gestión). Ficha y ventana de preguntas apiladas.
     tiles[1].onclick(); assert.equal(abiertas(), 1);
@@ -313,7 +314,38 @@ test('E40/E49: Metodología del Módulo II con cifras del catálogo, fichas de e
     x().onclick(); x().onclick(); assert.equal(abiertas(), 1);
     navs()[1].onclick(); titulosArco()[0].onclick(); assert.match(cima().textContent, /¿Qué protege\?/);
     x().onclick(); x().onclick(); assert.equal(abiertas(), 0);
-    tiles[3].onclick(); assert.match(cima().textContent, /Reglas/); x().onclick();
+    // E55: ventana Criterios de calificación (boceto 261108_Home_Criterios).
+    tiles[3].onclick(); assert.equal(abiertas(), 1);
+    const deClase = c => cima().todos().filter(y => (y.className || '').split(' ').includes(c));
+    const [dd, dh] = cat.dimensiones.grandes;
+    assert.equal(deClase('kit-cri-enfoque-nombre')[0].textContent, dd.titulo);
+    assert.equal(deClase('kit-cri-tema').length, m.metodo.etapas.length, 'un botón por etapa');
+    assert.ok(deClase('kit-cri-tema').every(b => b.children[0].attrs.class === 'kit-cri-tema-icono' && b.children[0].children[0]?.attrs.d), 'cada etapa con su ícono');
+    const niveles = deClase('kit-cri-nivel');
+    assert.deepEqual(niveles.map(b => b.children[1].textContent), ['0', '1', '2', '3', '4', '5']);
+    assert.deepEqual(niveles.map(b => b.children[2].textContent), [...cat.calificacion.brechas.niveles].sort((a, b) => a.valor - b.valor).map(x => x.nombre));
+    assert.equal(niveles[3].attrs['aria-expanded'], 'false'); niveles[3].onclick(); assert.equal(niveles[3].attrs['aria-expanded'], 'true', 'el Vistazo se abre con un toque');
+    niveles[4].onclick(); assert.equal(niveles[3].attrs['aria-expanded'], 'false', 'solo un Vistazo abierto a la vez');
+    assert.match(cima().textContent, new RegExp(cat.estandares[0].escala.niveles[5].descripcion.slice(0, 30)));
+    assert.match(cima().textContent, /¿Qué es\?/); assert.match(cima().textContent, /¿Qué no es\?/); assert.match(cima().textContent, /¿Qué evalúa\?/);
+    assert.equal(deClase('kit-cri-grupo').length, 4);
+    assert.ok(cima().todos().some(y => y.tag === 'a' && y.href === '#/ddhh/uno/alimentacion'), 'Alimentación lleva a la pestaña');
+    for (const r of m.calificacion.reglas) assert.match(cima().textContent, new RegExp(r.titulo), 'la regla está en el Vistazo de Alimentación');
+    deClase('kit-cri-tema')[0].onclick(); assert.equal(abiertas(), 2, 'el tema lleva a lo que se califica');
+    assert.match(cima().textContent, /¿Qué calificamos\?/);
+    assert.equal(cima().todos().filter(y => y.tag === 'li').length, d.indicadores(m.metodo.etapas[0].eje).length);
+    x().onclick(); assert.equal(abiertas(), 1);
+    deClase('kit-cri-chip')[0].onclick();
+    assert.equal(deClase('kit-cri-enfoque-nombre')[0].textContent, dh.titulo, 'la pastilla cambia de enfoque');
+    assert.equal(deClase('kit-cri-tema').length, m.temas.items.length, 'un botón por derecho');
+    x().onclick(); assert.equal(abiertas(), 0);
+    // Los colores de la escala son los mismos de los Resultados: uno por nivel.
+    assert.deepEqual(cat.umbrales.cortes.map(c => c.color), [0, 1, 2, 3, 4, 5].map(k => `var(--nivel-${k})`));
+    assert.deepEqual(cat.umbrales.cortes.map(c => c.menor_que), [1, 2, 3, 4, 5, null]);
+    // Con la tabla de columnas del Excel, los grupos nombran las columnas reales de la plantilla.
+    const conExcel = M.datosDdhh(cat, cruce, m, leer('kit-carga-excel.json'), leer('esquemas/ddhh-indicadores.json'));
+    const columnas = leer('kit-carga-excel.json').ddhh.hojas.find(h => h.coleccion === 'ddhh-indicadores').columnas.map(c => c.encabezado);
+    for (const it of conExcel.calificar.grupos.slice(0, 3).flatMap(g => g.items)) assert.ok(columnas.some(c => it.startsWith(c)), it + ' no es una columna de la plantilla');
     for (const f of m.estandares.fichas) {
       assert.match(f.enlace, /^https:\/\//, f.sigla + ' necesita enlace oficial');
       for (const k of ['que_es', 'por_que', 'nombre', 'emisor', 'anio']) assert.ok(f[k], f.sigla + ' sin ' + k);

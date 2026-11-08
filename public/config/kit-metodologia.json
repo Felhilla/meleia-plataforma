@@ -533,6 +533,42 @@
         { "titulo": "Detalle de los indicadores", "texto": "Cada pregunta con su calificación, los documentos que la soportan y la brecha encontrada." },
         { "titulo": "Comparación en el tiempo", "texto": "Dos evaluaciones en el mismo gráfico para ver el avance con la misma escala." }
       ]
+    },
+    "criterios": {
+      "ante": "Cómo se califica",
+      "titular": "Criterios de calificación",
+      "escala_titular": "Una escala para evaluarlos a todos.",
+      "escala_nota": "Pase el cursor o toque un número para ver qué significa. Los Resultados usan estos mismos colores, y un promedio toma el color del nivel que alcanza completo: un 3,8 es En gestión.",
+      "temas_nota": "Cada botón lleva a lo que se califica en esa parte.",
+      "enfoques": {
+        "etapas-ocde": {
+          "corto": "Debida diligencia",
+          "metodologia": "Seguimos las seis etapas de la Guía de la OCDE. En cada etapa calificamos qué tan instalada está la práctica en la empresa, con los documentos que entrega y las entrevistas a sus responsables. El puntaje del enfoque es el promedio de las seis etapas.",
+          "variable": {
+            "nombre": "Madurez de la práctica",
+            "que_es": "El grado en que la empresa tiene instalada cada práctica de debida diligencia: si existe, si tiene responsables e indicadores y si hace seguimiento y reporte.",
+            "que_no_es": "No mide el desempeño en derechos humanos ni la ausencia de impactos. Una empresa puede tener una práctica madura y aun así tener impactos que atender.",
+            "que_evalua": "Cada pregunta de la etapa, con la evidencia documental y las entrevistas. Lo que no se demuestra con evidencia no se da por cumplido."
+          }
+        },
+        "temas-ddhh": {
+          "corto": "Derechos humanos",
+          "metodologia": "Miramos cómo gestiona la empresa cada uno de los diez derechos del módulo, en su operación y en su cadena. Cada derecho se califica con sus propias preguntas. El puntaje del enfoque es el promedio de los diez derechos.",
+          "variable": {
+            "nombre": "Madurez de la gestión del derecho",
+            "que_es": "El grado en que la empresa gestiona cada derecho: si tiene compromisos, procesos, responsables, indicadores y seguimiento.",
+            "que_no_es": "No es una auditoría de cumplimiento legal ni una verificación en campo de que no haya vulneraciones. Califica la gestión que la empresa puede demostrar.",
+            "que_evalua": "Las preguntas de cada derecho, con la evidencia que entrega la empresa y las entrevistas a sus responsables."
+          }
+        }
+      },
+      "grupos": {
+        "calificada": "Es la única cifra que entra a los promedios. Cada pregunta se califica de 0 a 5 con su evidencia.",
+        "verificacion": "Dice si la práctica existe en la empresa. Acompaña la calificación, pero no entra a los promedios.",
+        "registros": "Sustentan la calificación y son el texto que se lee en las fichas de los Resultados.",
+        "calculo": "Nadie escribe promedios. La plataforma los calcula en este orden."
+      },
+      "alimentacion": "Se llena en la pestaña Alimentación, con el cuestionario o con la plantilla de Excel."
     }
   },
   "materialidad": {
