@@ -35,7 +35,7 @@
     const estandares=el('section',null,'dim-ficha-estandares-fila');estandares.append(el('h3','Estándares relacionados'),ul);
     const cuerpo=el('section',null,'dim-ficha-cuerpo');
     function cajaTabla(titulo,columnas,filas){cuerpo.append(el('h3',titulo),tabla(titulo,columnas,filas));}
-    if(tipo!=='financiera')cajaTabla('Calificación de los grupos de interés',['Grupo','Importancia','Probabilidad'],[['col','Colaboradores'],['cli','Clientes'],['pro','Proveedores']].map(([k,l])=>[l,calificacion(a[k+'_importancia']),calificacion(a[k+'_probabilidad'])]));
+    if(tipo!=='financiera')cajaTabla('Calificación de los grupos de interés',['Grupo','Importancia','Probabilidad'],(a.por_grupo?.length?a.por_grupo.map(g=>[g.nombre,calificacion(g.importancia),calificacion(g.probabilidad)]):[['col','Colaboradores'],['cli','Clientes'],['pro','Proveedores']].map(([k,l])=>[l,calificacion(a[k+'_importancia']),calificacion(a[k+'_probabilidad'])])));
     if(tipo!=='impacto')cajaTabla('Calificación del taller financiero',['Variable','Calificación'],taller.map(([k,l])=>[l,calificacion(a[k])]));
     cuerpo.append(el('p','Escala de 0 (nulo) a 5 (muy alto).','mat-micro'));
     d.append(cerrar,cab,estado,estandares,cuerpo);
@@ -101,7 +101,7 @@
       label.htmlFor='mat-tipo';selector.id='mat-tipo';
       Object.entries(titulos).forEach(([k,t])=>{const o=el('option',t);o.value=k;selector.append(o);});selector.value='doble';
       const listado=el('section'),grupos=el('section');grupos.append(el('h3','Grupos de interés consultados','antetitulo'));
-      const ul=el('ul');[['colaboradores','Colaboradores'],['clientes','Clientes'],['proveedores','Proveedores'],['taller','Directivos (taller financiero)']].forEach(([k,l])=>ul.append(el('li',l+(resumen['participantes_'+k]==null?'':' · '+resumen['participantes_'+k]))));grupos.append(ul);
+      const ul=el('ul');/* E62: con grupos variables (Alimentación por secciones) la lista sale de resumen.grupos. */if(resumen.grupos?.length){resumen.grupos.forEach(g=>ul.append(el('li',`${g.nombre}: ${g.participantes}`)));ul.append(el('li',`Comité financiero: ${resumen.participantes_taller??0}`));}else[['colaboradores','Colaboradores'],['clientes','Clientes'],['proveedores','Proveedores'],['taller','Directivos (taller financiero)']].forEach(([k,l])=>ul.append(el('li',l+(resumen['participantes_'+k]==null?'':' · '+resumen['participantes_'+k]))));grupos.append(ul);
       lateral.append(label,selector,listado,grupos);tarjeta.append(lateral,derecha);raiz.append(tarjeta);
       let anchoMapa=650;
       function dibujar(){

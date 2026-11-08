@@ -45,7 +45,7 @@ test('entrada del Kit no carga el relato, conserva SDK fijo y orden defer', () =
   assert.match(html, /<title>Meleia · Kit de sostenibilidad<\/title>/); assert.doesNotMatch(html, /GH Estudio|logo-gh/);
   assert.doesNotMatch(html, /src="vista-|caso\.json|src="app.js"|api-supabase.js/);
   const scripts = [...html.matchAll(/<script defer src="([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'vendor/xlsx.full.min.js', 'kit-riesgos.js', 'kit-cuestionario.js', 'kit-actores.js', 'kit-carga-excel.js', 'kit-armazon.js', 'kit-vista-credenciales.js', 'kit-vista-carga-excel.js', 'kit-vista-riesgos.js', 'kit-vista-actores.js', 'kit-vista-metodologia.js', 'kit-vista-ddhh-modelo.js', 'kit-vista-ddhh-motor.js', 'kit-vista-ddhh-comun.js', 'kit-vista-ddhh.js', 'kit-vista-ddhh-cuestionario.js', 'kit-vista-materialidad-motor.js', 'kit-vista-materialidad.js', 'kit-vista-portada-resultados.js', 'kit-vista-alimentacion-ddhh.js', 'kit-vista-alimentacion-registros.js']);
+  assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'vendor/xlsx.full.min.js', 'kit-riesgos.js', 'kit-cuestionario.js', 'kit-actores.js', 'kit-carga-excel.js', 'kit-armazon.js', 'kit-vista-credenciales.js', 'kit-vista-carga-excel.js', 'kit-vista-riesgos.js', 'kit-vista-actores.js', 'kit-vista-metodologia.js', 'kit-vista-ddhh-modelo.js', 'kit-vista-ddhh-motor.js', 'kit-vista-ddhh-comun.js', 'kit-vista-ddhh.js', 'kit-vista-ddhh-cuestionario.js', 'kit-vista-materialidad-motor.js', 'kit-vista-materialidad.js', 'kit-vista-portada-resultados.js', 'kit-vista-alimentacion-ddhh.js', 'kit-vista-alimentacion-registros.js', 'kit-vista-alimentacion-materialidad.js']);
 });
 
 // DOM mínimo: prueba los flujos reales del armazón sin red ni dependencias de navegador.
@@ -469,4 +469,30 @@ test('E61: Alimentación por secciones de los Módulos I y IV valida con las fun
     assert.ok(A.enlaceValido('https://a.co/x')); assert.ok(!A.enlaceValido('javascript:x'));
     assert.deepEqual(await A.enProceso({ listar: async () => [{ id: 'evaluacion', ciclo: 1, estado: 'en-proceso', nombre: 'N' }, { id: 'sec-a', ciclo: 1, estado: 'completa' }] }, 'x', 'actores'), { nombre: 'N', completas: 1, total: null });
   } finally { delete globalThis.fetch; delete globalThis.KitActores; delete globalThis.KitRiesgos; }
+});
+
+test('E62: Alimentación del Módulo III calcula con el motor E38 y escribe lo que leen los Resultados (datos inventados)', async () => {
+  const req = (await import('node:module')).createRequire(import.meta.url);
+  globalThis.KitMaterialidad = req('../public/kit-vista-materialidad-motor.js');
+  try {
+    const A = req('../public/kit-vista-alimentacion-materialidad.js');
+    const asp = (id, orden) => ({ id, orden, nombre: 'Aspecto ' + id, col_importancia: 1, col_probabilidad: 1, cli_importancia: 1, cli_probabilidad: 1, pro_importancia: 1, pro_probabilidad: 1 });
+    const L = { 'materialidad-aspectos': [asp('a1', 1), asp('a2', 2)], 'materialidad-resumen': [],
+      'materialidad-grupos': [{ id: 'colaboradores', orden: 1, nombre: 'Colaboradores' }, { id: 'vecinos', orden: 2, nombre: 'Vecinos' }],
+      'materialidad-participantes': [{ id: 'colaboradores-p01', grupo: 'colaboradores' }, { id: 'colaboradores-p02', grupo: 'colaboradores' }, { id: 'vecinos-p01', grupo: 'vecinos' }],
+      // p02 no respondió nada: cuenta con 0. Impacto negativo: promedio de escala, alcance e irremediabilidad.
+      'materialidad-consulta': [{ participante: 'colaboradores-p01', aspecto: 'a1', signo: 'Negativo', escala: 4, alcance: 4, irremediabilidad: 4, probabilidad: 4 },
+        { participante: 'vecinos-p01', aspecto: 'a1', signo: 'Positivo', escala: 2, alcance: 4, probabilidad: 2 }],
+      'materialidad-evaluadores': [{ id: 'e-finanzas', area: 'Finanzas' }], 'materialidad-taller': [{ evaluador: 'e-finanzas', aspecto: 'a2', rentabilidad: 4, gasto: 2 }] };
+    const R = A.calcularRegistros(L), a1 = R.aspectos.find(a => a.id === 'a1'), a2 = R.aspectos.find(a => a.id === 'a2');
+    assert.equal(a1.por_grupo.find(g => g.nombre === 'Colaboradores').importancia, 2, 'el participante sin respuesta cuenta con 0');
+    assert.equal(a1.por_grupo.find(g => g.nombre === 'Vecinos').importancia, 3, 'impacto positivo: promedio de escala y alcance');
+    assert.equal(a1.importancia, 2.5); assert.equal(a2.financiera, 3);
+    assert.equal(a1.col_importancia, 2, 'el grupo Colaboradores también llena el campo fijo de la vista anterior');
+    assert.equal(a1.pro_importancia, 1, 'un grupo que no existe conserva su valor anterior');
+    assert.deepEqual([a1.cuadrante, a2.cuadrante], ['Impacto', 'Financiera']);
+    assert.deepEqual(R.resumen.grupos, [{ nombre: 'Colaboradores', participantes: 2 }, { nombre: 'Vecinos', participantes: 1 }]);
+    assert.equal(R.resumen.participantes_taller, 1); assert.doesNotMatch(R.resumen.notas, /[;«»·]/);
+    assert.equal(await A.enProceso({ listar: async () => [] }, 'x'), null);
+  } finally { delete globalThis.KitMaterialidad; }
 });

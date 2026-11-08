@@ -111,8 +111,9 @@
           if (proc) return enProcesoVista(c, d, p, proc, () => { c.replaceChildren(); return root.App.vista(VISTAS[modulo]).render(c, d, { ...p, verPublicada: true }); });
         }
         // E61: en I y IV los registros se califican en el sitio, así que no hay una versión anterior que mostrar.
-        if (['actores', 'riesgos'].includes(modulo) && root.KitAlimentacionRegistros) {
-          let proc = null; try { proc = await root.KitAlimentacionRegistros.enProceso(d, p.empresa, modulo); } catch (_) { proc = null; }
+        const AR = modulo === 'materialidad' ? root.KitAlimentacionMaterialidad : root.KitAlimentacionRegistros;
+        if (['actores', 'riesgos', 'materialidad'].includes(modulo) && AR) {
+          let proc = null; try { proc = await AR.enProceso(d, p.empresa, modulo); } catch (_) { proc = null; }
           if (p.vigente && !p.vigente()) return;
           if (proc) return enProcesoVista(c, d, p, proc, null, modulo);
         }
