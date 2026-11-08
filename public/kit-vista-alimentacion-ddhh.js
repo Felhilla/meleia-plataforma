@@ -43,6 +43,10 @@
   async function render(c, d, p, original) {
     const App = root.App, el = App.el;
     if (!p.puedeEditar) return original.render(c, d, p);
+    // Casos de muestra: la Alimentación por secciones no los modifica (sus Resultados los ven los clientes).
+    // Se prueba en la Empresa de demostración.
+    { const emp = (await d.empresas?.())?.find?.(x => x.id === p.empresa);
+      if (emp?.muestra_comercial && p.empresa !== 'empresa-demo') { c.append(root.App.el('p', 'Caso de muestra: sus datos no se modifican desde aquí. Para probar la Alimentación por secciones use la Empresa de demostración.', 'kit-met-nota kit-ali-aviso-muestra')); return original.render(c, d, p); } }
     const [cat, esquemasL, existentesL, borrador, avance] = await Promise.all([
       json('config/kit-ddhh-catalogo.json'), Promise.all(COLECCIONES.map(n => json('config/esquemas/' + n + '.json'))),
       Promise.all(COLECCIONES.map(n => d.listar(p.empresa, n))), d.listar(p.empresa, BORRADOR), d.listar(p.empresa, AVANCE)]);

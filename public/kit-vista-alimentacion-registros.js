@@ -77,6 +77,10 @@
   async function render(modulo, c, d, p, original) {
     const el = root.App.el;
     if (!p.puedeEditar) return original.render(c, d, p);
+    // Casos de muestra: la Alimentación por secciones no los modifica (sus Resultados los ven los clientes).
+    // Se prueba en la Empresa de demostración.
+    { const emp = (await d.empresas?.())?.find?.(x => x.id === p.empresa);
+      if (emp?.muestra_comercial && p.empresa !== 'empresa-demo') { c.append(root.App.el('p', 'Caso de muestra: sus datos no se modifican desde aquí. Para probar la Alimentación por secciones use la Empresa de demostración.', 'kit-met-nota kit-ali-aviso-muestra')); return original.render(c, d, p); } }
     const M = await MODULOS[modulo](d, p), AV = modulo + '-avance', EV = modulo + '-evidencias';
     const cargar = async () => Object.fromEntries(await Promise.all([...M.colecciones, AV, EV].map(async n => [n, await d.listar(p.empresa, n)])));
     let L = await cargar();
