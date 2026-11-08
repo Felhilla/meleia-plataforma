@@ -132,7 +132,7 @@
       {
         "hoja": "Indicadores",
         "coleccion": "ddhh-indicadores",
-        "informativas": ["Etapa o tema", "Criterio", "Pregunta"],
+        "informativas": ["Etiqueta", "Etapa o tema", "Criterio", "Pregunta"],
         "columnas": [
           {"campo": "indicador", "encabezado": "Código"},
           {"campo": "incorporado", "encabezado": "Incorporado"},

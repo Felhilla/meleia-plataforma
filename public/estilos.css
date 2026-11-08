@@ -27,6 +27,10 @@
   /* Semáforo de los documentos base (sobrio, sin neón). Texto sobre el color: --sobre-semaforo. */
   --sem-rojo: #B9503A; --sem-naranja: #D27F2F; --sem-ambar: #DDAE3E; --sem-amarillo: #E6D267; --sem-verde: #5A9452; --sem-gris: #AEB5AF;
   --sem-rojo-fondo: #F6E1DA; --sem-naranja-fondo: #F8E6D3; --sem-ambar-fondo: #F7EDD2; --sem-amarillo-fondo: #F6F1D3; --sem-verde-fondo: #E1EEDD; --sem-gris-fondo: #ECEEEC;
+  /* Escala de calificación 0 a 5 (boceto 261108_Home_Criterios, aprobado por Felipe el 8-nov-2026). Rojo, rojo, dorado,
+     blanco cálido, verde hoja y azul, con tonos de la paleta. Se usa en la Metodología y en los Resultados. */
+  --nivel-0: #8A3F2B; --nivel-1: #B9503A; --nivel-2: #B78D36; --nivel-3: #9C9483; --nivel-4: #5E7A45; --nivel-5: #315B80;
+  --sobre-nivel-0: #FFFFFF; --sobre-nivel-1: #FFFFFF; --sobre-nivel-2: #1F241B; --sobre-nivel-3: #1F241B; --sobre-nivel-4: #FFFFFF; --sobre-nivel-5: #FFFFFF;
   /* Ritmo */
   --e1: 4px; --e2: 8px; --e3: 16px; --e4: 24px; --e5: 32px; --e6: 48px; --e7: 72px; --e8: 112px;
   --ancho: 1200px; --radio: 14px; --radio-chico: 8px;
@@ -54,6 +58,8 @@
   --alta: #EDB9A3; --media: #E3CD8F; --baja: #C9D6B4;
   --alta-fondo: #3E2A22; --media-fondo: #352F1E; --baja-fondo: #2C3323;
     --sem-rojo-fondo: #43281F; --sem-naranja-fondo: #45311D; --sem-ambar-fondo: #423719; --sem-amarillo-fondo: #3D3A1E; --sem-verde-fondo: #233A24; --sem-gris-fondo: #2A322E;
+  --nivel-0: #C8644B; --nivel-1: #E39A82; --nivel-2: #C9A04E; --nivel-3: #F1EEE6; --nivel-4: #A9C48A; --nivel-5: #96BEE3;
+  --sobre-nivel-0: #14170F; --sobre-nivel-1: #14170F; --sobre-nivel-2: #14170F; --sobre-nivel-3: #14170F; --sobre-nivel-4: #14170F; --sobre-nivel-5: #14170F;
   --sombra: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 25%);
   --sombra-alta: 0 2px 4px rgb(0 0 0 / 35%), 0 16px 40px rgb(0 0 0 / 35%);
 }
@@ -68,6 +74,8 @@
     --alta: #EDB9A3; --media: #E3CD8F; --baja: #C9D6B4;
     --alta-fondo: #3E2A22; --media-fondo: #352F1E; --baja-fondo: #2C3323;
     --sem-rojo-fondo: #43281F; --sem-naranja-fondo: #45311D; --sem-ambar-fondo: #423719; --sem-amarillo-fondo: #3D3A1E; --sem-verde-fondo: #233A24; --sem-gris-fondo: #2A322E;
+  --nivel-0: #C8644B; --nivel-1: #E39A82; --nivel-2: #C9A04E; --nivel-3: #F1EEE6; --nivel-4: #A9C48A; --nivel-5: #96BEE3;
+  --sobre-nivel-0: #14170F; --sobre-nivel-1: #14170F; --sobre-nivel-2: #14170F; --sobre-nivel-3: #14170F; --sobre-nivel-4: #14170F; --sobre-nivel-5: #14170F;
     --sombra: 0 1px 2px rgb(0 0 0 / 30%), 0 8px 24px rgb(0 0 0 / 25%);
     --sombra-alta: 0 2px 4px rgb(0 0 0 / 35%), 0 16px 40px rgb(0 0 0 / 35%);
   }

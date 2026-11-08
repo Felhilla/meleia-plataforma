@@ -33,6 +33,7 @@
   const App = {
     resolverRuta, pestanas, modulos, casos, tituloMarca,
     registrarVista(nombre, vista) { vistas.set(nombre, vista); },
+    vista(nombre) { return vistas.get(nombre); },
     el(tag, texto, clase) { const n = root.document.createElement(tag); if (texto !== undefined && texto !== null) n.textContent = texto; if (clase) n.className = clase; return n; },
     numero(valor, opciones = {}) { return new Intl.NumberFormat('es-CO', opciones).format(valor); },
     async iniciar(datos) {
