@@ -437,6 +437,8 @@ test('E59: la tabla de contactos solo deja insertar y leer a los administradores
   assert.match(sql, /for select to authenticated using \(public\.es_admin\(\)\)/);
   assert.doesNotMatch(sql, /grant (update|delete)|for (update|delete)/i, 'nadie edita ni borra mensajes desde la plataforma');
   for (const c of ['nombre', 'correo', 'empresa', 'mensaje']) assert.match(sql, new RegExp(c + '\\s+text.*check'), c + ' con límite en la base');
+});
+
 test('E60: Alimentación del Módulo II por secciones (estado, avance, enlaces y "En proceso")', async () => {
   const req = (await import('node:module')).createRequire(import.meta.url);
   globalThis.KitCuestionarioDdhh = req('../public/kit-vista-ddhh-cuestionario.js');
