@@ -61,7 +61,7 @@
   function indicadoresEje(estandares, ejeId) {
     const h = estandares.ejes.find(e => e.id === ejeId)?.hallazgos;
     const indicadores = h?.indicadores || h?.grupos?.flatMap(g => g.indicadores) || [];
-    return indicadores.map((i, n) => ({...i, codigo: `I${n + 1}`, calificacion: parsearPuntaje(i.calificacion)}));
+    return indicadores.map((i, n) => ({...i, codigo: i.etiqueta || `I${n + 1}`, calificacion: parsearPuntaje(i.calificacion)}));
   }
   // El nivel inferior evita presentar como alcanzado el siguiente nivel de madurez.
   function nivelEscala(valor, escala) {

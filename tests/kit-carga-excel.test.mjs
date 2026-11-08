@@ -271,16 +271,19 @@ const baseDdhh = (existentes = {}) => ({
   existentes: Object.fromEntries(coleccionesDdhh.map(coleccion => [coleccion, existentes[coleccion] || []]))
 });
 
+// Letra de la columna de la hoja Indicadores según su encabezado (la plantilla puede ganar columnas informativas).
+const colDdhh = libro => { const enc = XLSX.utils.sheet_to_json(libro.Sheets.Indicadores, { header: 1 })[0];
+  return titulo => { const i = enc.indexOf(titulo); assert.ok(i >= 0, 'falta la columna ' + titulo); return XLSX.utils.encode_col(i); }; };
 // Llena la plantilla descargable con datos inventados. `ajustar(libro)` permite dañarla a propósito.
 function plantillaDdhh({ fecha = new Date(2026, 11, 1), calificacion = () => 3, ajustar } = {}) {
   const contenido = readFileSync(new URL('../public/plantillas/plantilla-modulo-ii.xlsx', import.meta.url));
   const libro = XLSX.read(contenido, { type: 'buffer', cellDates: true });
   XLSX.utils.sheet_add_aoa(libro.Sheets['Evaluación'], [['Evaluación inventada', fecha]], { origin: 'A2' });
-  const hoja = libro.Sheets.Indicadores;
+  const hoja = libro.Sheets.Indicadores, col = colDdhh(libro);
   catDdhh.indicadores.forEach((indicador, n) => {
     const valor = calificacion(indicador, n);
-    if (valor !== null) hoja['H' + (n + 2)] = { t: 'n', v: valor };
-    hoja['E' + (n + 2)] = { t: 's', v: 'Sí' };
+    if (valor !== null) hoja[col('Calificación (0 a 5)') + (n + 2)] = { t: 'n', v: valor };
+    hoja[col('Incorporado') + (n + 2)] = { t: 's', v: 'Sí' };
   });
   XLSX.utils.sheet_add_aoa(libro.Sheets.Hallazgos, [['Hallazgo inventado uno\nHallazgo inventado dos', 'Brecha inventada']], { origin: 'C2' });
   ajustar?.(libro);
@@ -326,7 +329,7 @@ test('Carga Excel Módulo II: una segunda carga del mismo mes reemplaza sin dupl
 test('Carga Excel Módulo II: con cualquier error no carga nada', () => {
   const casos = {
     'calificación fuera de escala': plantillaDdhh({ calificacion: (_, n) => n === 4 ? 7 : 3 }),
-    'fila borrada': plantillaDdhh({ ajustar: libro => { delete libro.Sheets.Indicadores.A10; ['B', 'C', 'D', 'E', 'H'].forEach(c => delete libro.Sheets.Indicadores[c + '10']); } }),
+    'fila borrada': plantillaDdhh({ ajustar: libro => { delete libro.Sheets.Indicadores.A10; const enc = XLSX.utils.sheet_to_json(libro.Sheets.Indicadores, { header: 1 })[0]; enc.forEach((_, i) => delete libro.Sheets.Indicadores[XLSX.utils.encode_col(i) + '10']); } }),
     'código repetido': plantillaDdhh({ ajustar: libro => { libro.Sheets.Indicadores.A11 = { t: 's', v: catDdhh.indicadores[0].id }; } }),
     'sin fecha': plantillaDdhh({ fecha: '' })
   };
@@ -349,5 +352,9 @@ test('Contrato Módulo II: la plantilla tiene cada columna de kit-carga-excel.js
   }
   const codigos = hoja => XLSX.utils.sheet_to_json(libro.Sheets[hoja], { header: 1 }).slice(1).map(fila => fila[0]);
   assert.deepEqual(codigos('Indicadores'), catDdhh.indicadores.map(i => i.id));
+  // E55: cada indicador lleva su etiqueta del catálogo en la columna Etiqueta.
+  const filas = XLSX.utils.sheet_to_json(libro.Sheets.Indicadores, { header: 1 }), iEt = filas[0].indexOf('Etiqueta');
+  assert.ok(iEt > 0 && cfg.hojas.find(h => h.hoja === 'Indicadores').informativas.includes('Etiqueta'));
+  assert.deepEqual(filas.slice(1).map(f => f[iEt]), catDdhh.indicadores.map(i => i.etiqueta));
   assert.deepEqual(codigos('Hallazgos'), [...catDdhh.dimensiones.grandes.map(d => d.id), ...catDdhh.ejes.map(e => e.id)]);
 });
