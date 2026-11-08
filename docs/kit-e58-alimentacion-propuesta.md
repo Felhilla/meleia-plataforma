@@ -1,6 +1,6 @@
 # Alimentación por secciones: propuesta (E58, 8-nov-2026)
 
-Estado: **decidida el 8-nov-2026. Módulo II construido (E60).** Los Módulos I, III y IV siguen.
+Estado: **decidida el 8-nov-2026. Construida en los cuatro módulos:** II (E60), I y IV (E61) y III (E62).
 
 ## 1. Qué resuelve
 
@@ -74,7 +74,19 @@ La propuesta: un formulario **por secciones**, como un formulario de Google, que
 - Cada evaluación nueva abre un ciclo. Lo que no se toca en el ciclo parte de la última evaluación publicada.
 - Al calcular se usa `KitEstudios.prepararDdhh`, el mismo camino del Excel y del cuestionario.
 
-## 9. Lo que sigue
+## 9. Módulos I, III y IV (E61 y E62)
 
-1. Módulos IV, I y III con el mismo motor de secciones (sus secciones están en la tabla de la sección 3).
-2. El Excel llena secciones con la misma validación.
+- **I y IV** (`kit-vista-alimentacion-registros.js`): las secciones califican registros que ya existen.
+  - I: una sección por categoría de actor.
+  - IV: Identificación, Calificación técnica, Validación y Plan de medidas.
+  - Cada registro se valida con las funciones del contrato (`KitActores.validar`, `KitRiesgos.preparar`). Las evidencias van en `<modulo>-evidencias` y el avance en `<modulo>-avance`.
+  - Como los registros se califican en el sitio, no hay una versión anterior que mostrar mientras dura el proceso.
+- **III** (`kit-vista-alimentacion-materialidad.js`): sobre las respuestas crudas, con el motor E38 (`KitMaterialidad.calcular`).
+  - Secciones: Grupos y participantes (con códigos, sin nombres), una por grupo y Comité financiero.
+  - Al calcular se escriben los aspectos (con `por_grupo`) y el resumen (con `grupos`), que son lo que leen los Resultados.
+  - Los campos fijos de colaboradores, clientes y proveedores se siguen llenando cuando el grupo tiene ese nombre, así que el caso de muestra no cambia.
+
+## 10. Lo que sigue
+
+1. El Excel llena secciones con la misma validación.
+2. Migrar el caso de muestra del Módulo III a grupos variables (plan E38, con `respaldo.sh`).

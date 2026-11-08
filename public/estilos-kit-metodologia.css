@@ -617,3 +617,4 @@ button.kit-cri-alimentacion { all: unset; box-sizing: border-box; cursor: help; 
 .kit-ali-inicio input { width: auto; margin: 0; }
 .kit-ali-inicio input[type="date"] { flex: 0 0 auto; }
 .kit-ali .kit-met-titulo { max-width: none; }
+.kit-ali-escala-rotulo { min-width: 9rem; } .kit-ali-pregunta.completo { border-color: color-mix(in srgb, #A9C48A 45%, var(--borde)); }

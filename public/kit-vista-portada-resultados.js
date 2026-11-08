@@ -86,15 +86,15 @@
   }
 
   // Pantalla "En proceso" con animación (decisión de Felipe, 8-nov): los Resultados se calculan al completar.
-  async function enProcesoVista(c, d, p, proc, verPublicada) {
+  async function enProcesoVista(c, d, p, proc, verPublicada, modulo = 'ddhh') {
     const el = root.App.el, s = el('section', null, 'kit-banda kit-banda-oscura kit-res-proceso');
     const anim = el('div', null, 'kit-res-proceso-anim'); anim.setAttribute('aria-hidden', 'true');
     for (let k = 0; k < 3; k++) anim.append(el('span'));
-    s.append(anim, el('p', 'Módulo II, resultados', 'kit-mono'), el('h2', 'En proceso', 'kit-met-titulo'),
-      el('p', `La evaluación "${proc.nombre}" se está llenando: ${proc.completas} de ${proc.total} secciones completas. Los Resultados se calculan cuando estén todas.`, 'kit-met-texto'));
+    s.append(anim, el('p', `Módulo ${ROMANO[modulo]}, resultados`, 'kit-mono'), el('h2', 'En proceso', 'kit-met-titulo'),
+      el('p', `"${proc.nombre}" se está llenando: ${proc.completas}${proc.total ? ' de ' + proc.total : ''} ${proc.completas === 1 && !proc.total ? 'sección completa' : 'secciones completas'}. Los Resultados se muestran cuando estén todas.`, 'kit-met-texto'));
     const acc = el('div', null, 'kit-ali-acciones');
-    if (p.puedeEditar) { const a = el('a', 'Ir a Alimentación', 'kit-met-pastilla'); a.href = `#/ddhh/${p.empresa}/alimentacion`; acc.append(a); }
-    const evs = await d.listar(p.empresa, 'ddhh-evaluaciones');
+    if (p.puedeEditar) { const a = el('a', 'Ir a Alimentación', 'kit-met-pastilla'); a.href = `#/${modulo}/${p.empresa}/alimentacion`; acc.append(a); }
+    const evs = verPublicada ? await d.listar(p.empresa, 'ddhh-evaluaciones') : [];
     if (evs.length) { const b = el('button', 'Ver la última evaluación publicada', 'kit-ali-secundario'); b.type = 'button'; b.onclick = () => verPublicada(); acc.append(b); }
     s.append(acc); c.append(s);
   }
@@ -109,6 +109,13 @@
           let proc = null; try { proc = await root.KitAlimentacionDdhh.enProceso(d, p.empresa); } catch (_) { proc = null; }
           if (p.vigente && !p.vigente()) return;
           if (proc) return enProcesoVista(c, d, p, proc, () => { c.replaceChildren(); return root.App.vista(VISTAS[modulo]).render(c, d, { ...p, verPublicada: true }); });
+        }
+        // E61: en I y IV los registros se califican en el sitio, así que no hay una versión anterior que mostrar.
+        const AR = modulo === 'materialidad' ? root.KitAlimentacionMaterialidad : root.KitAlimentacionRegistros;
+        if (['actores', 'riesgos', 'materialidad'].includes(modulo) && AR) {
+          let proc = null; try { proc = await AR.enProceso(d, p.empresa, modulo); } catch (_) { proc = null; }
+          if (p.vigente && !p.vigente()) return;
+          if (proc) return enProcesoVista(c, d, p, proc, null, modulo);
         }
         let cifras = null;
         try { cifras = await CIFRAS[modulo](d, p.empresa); } catch (_) { cifras = null; }

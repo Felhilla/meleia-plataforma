@@ -45,7 +45,7 @@ test('entrada del Kit no carga el relato, conserva SDK fijo y orden defer', () =
   assert.match(html, /<title>Meleia · Kit de sostenibilidad<\/title>/); assert.doesNotMatch(html, /GH Estudio|logo-gh/);
   assert.doesNotMatch(html, /src="vista-|caso\.json|src="app.js"|api-supabase.js/);
   const scripts = [...html.matchAll(/<script defer src="([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'vendor/xlsx.full.min.js', 'kit-riesgos.js', 'kit-cuestionario.js', 'kit-actores.js', 'kit-carga-excel.js', 'kit-armazon.js', 'kit-vista-credenciales.js', 'kit-vista-carga-excel.js', 'kit-vista-riesgos.js', 'kit-vista-actores.js', 'kit-vista-metodologia.js', 'kit-vista-ddhh-modelo.js', 'kit-vista-ddhh-motor.js', 'kit-vista-ddhh-comun.js', 'kit-vista-ddhh.js', 'kit-vista-ddhh-cuestionario.js', 'kit-vista-materialidad-motor.js', 'kit-vista-materialidad.js', 'kit-vista-portada-resultados.js', 'kit-vista-alimentacion-ddhh.js']);
+  assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'vendor/xlsx.full.min.js', 'kit-riesgos.js', 'kit-cuestionario.js', 'kit-actores.js', 'kit-carga-excel.js', 'kit-armazon.js', 'kit-vista-credenciales.js', 'kit-vista-carga-excel.js', 'kit-vista-riesgos.js', 'kit-vista-actores.js', 'kit-vista-metodologia.js', 'kit-vista-ddhh-modelo.js', 'kit-vista-ddhh-motor.js', 'kit-vista-ddhh-comun.js', 'kit-vista-ddhh.js', 'kit-vista-ddhh-cuestionario.js', 'kit-vista-materialidad-motor.js', 'kit-vista-materialidad.js', 'kit-vista-portada-resultados.js', 'kit-vista-alimentacion-ddhh.js', 'kit-vista-alimentacion-registros.js', 'kit-vista-alimentacion-materialidad.js']);
 });
 
 // DOM mínimo: prueba los flujos reales del armazón sin red ni dependencias de navegador.
@@ -461,4 +461,58 @@ test('E60: Alimentación del Módulo II por secciones (estado, avance, enlaces y
     assert.deepEqual(await A.enProceso(d, 'e'), { nombre: 'Prueba', completas: 1, total: 16 });
     assert.equal(await A.enProceso({ listar: async () => [{ ...meta, estado: 'publicada' }] }, 'e'), null);
   } finally { delete globalThis.KitCuestionarioDdhh; }
+});
+
+test('E61: Alimentación por secciones de los Módulos I y IV valida con las funciones del contrato', async () => {
+  const req = (await import('node:module')).createRequire(import.meta.url);
+  const leer = r => JSON.parse(readFileSync(new URL('../public/' + r, import.meta.url), 'utf8'));
+  globalThis.fetch = async r => ({ ok: true, json: async () => leer(r) });
+  globalThis.KitActores = req('../public/kit-actores.js'); globalThis.KitRiesgos = req('../public/kit-riesgos.js');
+  try {
+    const A = req('../public/kit-vista-alimentacion-registros.js'), guardados = [];
+    const d = { guardar: async (e, c, id, r) => { guardados.push([c, id, r]); return r; } };
+    // Módulo I: una sección por categoría con actores (datos inventados).
+    const I = await A.MODULOS.actores(d, { empresa: 'x' });
+    const actor = { id: 'act-1', categoria: 'Academia', institucion: 'Universidad inventada', posicion: 'Neutral', influencia: 3, impacto: 2, dependencia: 1, tension: 1, responsabilidad: 2 };
+    const secs = I.secciones({ actores: [actor, { ...actor, id: 'act-2', categoria: 'Medios de comunicación', influencia: undefined }] });
+    assert.deepEqual(secs.map(s => s.titulo), ['Academia', 'Medios de comunicación']);
+    assert.equal(secs[0].completo(secs[0].items[0]), true); assert.equal(secs[1].completo(secs[1].items[0]), false);
+    await I.guardar(secs[0].items[0]); assert.equal(guardados.at(-1)[0], 'actores');
+    await assert.rejects(I.guardar({ id: 'act-1', registro: { ...actor, influencia: 9 } }), /./, 'una escala fuera de rango no se guarda');
+    // Módulo IV: la calificación técnica pasa por KitRiesgos.preparar.
+    const IV = await A.MODULOS.riesgos(d, { empresa: 'x' });
+    const L = { riesgos: [{ id: 'r-01', codigo: 'R-01', nombre: 'Riesgo inventado', descripcion: 'x', derecho_humano: 'Agua' }], 'riesgos-calificacion': [], 'riesgos-validaciones': [], 'riesgos-medidas': [] };
+    const s4 = IV.secciones(L); assert.deepEqual(s4.map(s => s.id), ['identificacion', 'calificacion', 'validacion', 'medidas']);
+    const cal = s4[1].items[0]; Object.assign(cal.registro, { escala: 3, alcance: 2, irremediabilidad: 1, probabilidad: 'Alta', tipo_impacto: 'Potencial', vinculacion: 'Causa', justificacion: 'Inventada.' });
+    await IV.guardar(cal); assert.deepEqual(guardados.at(-1).slice(0, 2), ['riesgos-calificacion', 'r-01']);
+    cal.registro.escala = 4; await assert.rejects(IV.guardar(cal), /1 a 3/);
+    assert.ok(A.enlaceValido('https://a.co/x')); assert.ok(!A.enlaceValido('javascript:x'));
+    assert.deepEqual(await A.enProceso({ listar: async () => [{ id: 'evaluacion', ciclo: 1, estado: 'en-proceso', nombre: 'N' }, { id: 'sec-a', ciclo: 1, estado: 'completa' }] }, 'x', 'actores'), { nombre: 'N', completas: 1, total: null });
+  } finally { delete globalThis.fetch; delete globalThis.KitActores; delete globalThis.KitRiesgos; }
+});
+
+test('E62: Alimentación del Módulo III calcula con el motor E38 y escribe lo que leen los Resultados (datos inventados)', async () => {
+  const req = (await import('node:module')).createRequire(import.meta.url);
+  globalThis.KitMaterialidad = req('../public/kit-vista-materialidad-motor.js');
+  try {
+    const A = req('../public/kit-vista-alimentacion-materialidad.js');
+    const asp = (id, orden) => ({ id, orden, nombre: 'Aspecto ' + id, col_importancia: 1, col_probabilidad: 1, cli_importancia: 1, cli_probabilidad: 1, pro_importancia: 1, pro_probabilidad: 1 });
+    const L = { 'materialidad-aspectos': [asp('a1', 1), asp('a2', 2)], 'materialidad-resumen': [],
+      'materialidad-grupos': [{ id: 'colaboradores', orden: 1, nombre: 'Colaboradores' }, { id: 'vecinos', orden: 2, nombre: 'Vecinos' }],
+      'materialidad-participantes': [{ id: 'colaboradores-p01', grupo: 'colaboradores' }, { id: 'colaboradores-p02', grupo: 'colaboradores' }, { id: 'vecinos-p01', grupo: 'vecinos' }],
+      // p02 no respondió nada: cuenta con 0. Impacto negativo: promedio de escala, alcance e irremediabilidad.
+      'materialidad-consulta': [{ participante: 'colaboradores-p01', aspecto: 'a1', signo: 'Negativo', escala: 4, alcance: 4, irremediabilidad: 4, probabilidad: 4 },
+        { participante: 'vecinos-p01', aspecto: 'a1', signo: 'Positivo', escala: 2, alcance: 4, probabilidad: 2 }],
+      'materialidad-evaluadores': [{ id: 'e-finanzas', area: 'Finanzas' }], 'materialidad-taller': [{ evaluador: 'e-finanzas', aspecto: 'a2', rentabilidad: 4, gasto: 2 }] };
+    const R = A.calcularRegistros(L), a1 = R.aspectos.find(a => a.id === 'a1'), a2 = R.aspectos.find(a => a.id === 'a2');
+    assert.equal(a1.por_grupo.find(g => g.nombre === 'Colaboradores').importancia, 2, 'el participante sin respuesta cuenta con 0');
+    assert.equal(a1.por_grupo.find(g => g.nombre === 'Vecinos').importancia, 3, 'impacto positivo: promedio de escala y alcance');
+    assert.equal(a1.importancia, 2.5); assert.equal(a2.financiera, 3);
+    assert.equal(a1.col_importancia, 2, 'el grupo Colaboradores también llena el campo fijo de la vista anterior');
+    assert.equal(a1.pro_importancia, 1, 'un grupo que no existe conserva su valor anterior');
+    assert.deepEqual([a1.cuadrante, a2.cuadrante], ['Impacto', 'Financiera']);
+    assert.deepEqual(R.resumen.grupos, [{ nombre: 'Colaboradores', participantes: 2 }, { nombre: 'Vecinos', participantes: 1 }]);
+    assert.equal(R.resumen.participantes_taller, 1); assert.doesNotMatch(R.resumen.notas, /[;«»·]/);
+    assert.equal(await A.enProceso({ listar: async () => [] }, 'x'), null);
+  } finally { delete globalThis.KitMaterialidad; }
 });
