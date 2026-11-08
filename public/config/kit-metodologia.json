@@ -1,5 +1,346 @@
 {
-  "actores": { "secciones": [] },
+  "actores": {
+    "estado": "borrador",
+    "romano": "I",
+    "nombre": "Mapeo de actores",
+    "afirmacion": "Quiénes pueden afectar el proyecto o verse afectados por él, y cómo relacionarse con cada uno.",
+    "resumen": "El módulo identifica a los actores del territorio y del negocio, los caracteriza y los califica en cinco escalas. Influencia e impacto los ubican en una matriz de cuatro niveles de relacionamiento. Cada organización recibe el promedio de sus actores.",
+    "cuando": "Sirve antes de iniciar un proyecto, al preparar un plan de relacionamiento o una consulta, y para actualizar el mapa cuando cambia el entorno.",
+    "estandares": {
+      "titular": "Trabajamos sobre los hombros de otros.",
+      "intro": "Tres estándares respaldan el método. Toque una portada para ver qué pide cada uno y por qué lo usamos.",
+      "fichas": [
+        {
+          "id": "aa1000ses",
+          "sigla": "AA1000SES",
+          "nombre": "AA1000 Stakeholder Engagement Standard",
+          "emisor": "AccountAbility",
+          "anio": "2015",
+          "tipo": "Norma de relacionamiento",
+          "color": "#5E7A45",
+          "enlace": "https://www.accountability.org/standards/aa1000-stakeholder-engagement-standard/",
+          "enlace_texto": "Página oficial del estándar (AccountAbility)",
+          "que_es": "Norma de uso libre para planear, preparar, hacer y revisar el relacionamiento con los grupos de interés. Se apoya en los principios de inclusividad, materialidad y capacidad de respuesta.",
+          "por_que": "Da la estructura del método. Los cuatro pasos del módulo corresponden a su etapa de planeación, y de su práctica salen las cinco escalas con que se califica a cada actor.",
+          "cruces": [
+            {
+              "con": "ifc-nd1",
+              "texto": "La Norma de Desempeño 1 también pide identificar a los actores afectados y relacionarse con ellos en proporción a los riesgos del proyecto."
+            },
+            {
+              "con": "gri2",
+              "texto": "El contenido 2-29 de GRI 2 pide informar el enfoque de participación de los grupos de interés que este estándar ayuda a definir."
+            }
+          ]
+        },
+        {
+          "id": "ifc-nd1",
+          "sigla": "IFC ND1",
+          "nombre": "Norma de Desempeño 1: Evaluación y gestión de los riesgos e impactos ambientales y sociales",
+          "emisor": "Corporación Financiera Internacional (IFC), Grupo Banco Mundial",
+          "anio": "2012",
+          "tipo": "Norma de desempeño",
+          "color": "#3A4733",
+          "enlace": "https://www.ifc.org/content/dam/ifc/doc/2010/2012-ifc-performance-standard-1-es.pdf",
+          "enlace_texto": "Texto oficial en español (IFC, PDF)",
+          "que_es": "Primera de las ocho normas de desempeño de la IFC. Pide un sistema de gestión que identifique los riesgos e impactos ambientales y sociales de un proyecto y los gestione, con participación de los actores sociales, divulgación de información y un mecanismo de quejas.",
+          "por_que": "Pide identificar a los actores afectados por el proyecto y a otras partes interesadas, y relacionarse con ellos en proporción a los riesgos e impactos. El mapa de actores es la base de ese relacionamiento.",
+          "cruces": [
+            {
+              "con": "aa1000ses",
+              "texto": "AA1000SES detalla cómo planear, hacer y revisar ese relacionamiento."
+            }
+          ]
+        },
+        {
+          "id": "gri2",
+          "sigla": "GRI 2",
+          "nombre": "GRI 2: Contenidos Generales 2021",
+          "emisor": "Global Reporting Initiative",
+          "anio": "2021",
+          "tipo": "Estándar de reporte",
+          "color": "#B78D36",
+          "enlace": "https://www.globalreporting.org/how-to-use-the-gri-standards/gri-standards-spanish-translations/",
+          "enlace_texto": "Traducciones oficiales al español (GRI)",
+          "que_es": "Estándar universal de GRI con los contenidos sobre la organización, su gobernanza, su estrategia y sus prácticas.",
+          "por_que": "El contenido 2-29 pide describir el enfoque para la participación de los grupos de interés. El mapa de actores es la evidencia para reportarlo.",
+          "cruces": [
+            {
+              "con": "aa1000ses",
+              "texto": "AA1000SES ayuda a definir el enfoque de participación que GRI 2 pide informar."
+            }
+          ]
+        }
+      ]
+    },
+    "proceso": {
+      "rotulo": "Pasos",
+      "sub": "del método, según AA1000SES",
+      "ante": "El método",
+      "titular": "Cuatro pasos, del listado de actores al plan de relacionamiento.",
+      "intro": "El método sigue la etapa de planeación de AA1000SES: identificar a los actores, conocerlos, calificarlos y decidir cómo relacionarse con cada uno. Todos los pasos trabajan sobre el mismo registro, así que el mapa se actualiza sin empezar de cero.",
+      "nav": "Mapa de actores",
+      "centro": [
+        "AA1000SES",
+        "Mapa de\nactores"
+      ],
+      "pasos": [
+        {
+          "id": "identificar",
+          "icono": "lupa",
+          "titulo": "Identificar",
+          "oficial": "Identificar a los actores que pueden afectar el proyecto o verse afectados por él.",
+          "ref": {
+            "texto": "AA1000SES (2015), sección 4.1, planear",
+            "ficha": "aa1000ses"
+          },
+          "pide": "Definir quiénes son los grupos de interés del proyecto y ubicarlos por categoría, sin dejar por fuera a los grupos con menos voz.",
+          "documentos": [
+            {
+              "documento": "Línea base socioeconómica del estudio de impacto ambiental",
+              "esg": "S",
+              "fuente": "IFC, Norma de Desempeño 1"
+            },
+            {
+              "documento": "Listados oficiales de autoridades y entidades del territorio",
+              "esg": "G",
+              "fuente": "Práctica de Meleia"
+            },
+            {
+              "documento": "Registro de peticiones, quejas y reclamos",
+              "esg": "S",
+              "fuente": "IFC, Norma de Desempeño 1"
+            },
+            {
+              "documento": "Mapeos de actores anteriores",
+              "esg": "G",
+              "fuente": "Práctica de Meleia"
+            }
+          ],
+          "respaldo": [
+            {
+              "texto": "AA1000SES, sección 4.1",
+              "ficha": "aa1000ses"
+            },
+            {
+              "texto": "IFC, Norma de Desempeño 1",
+              "ficha": "ifc-nd1"
+            }
+          ],
+          "campos": [
+            {
+              "esquema": "actores",
+              "ids": [
+                "categoria",
+                "subgrupo",
+                "orden",
+                "institucion",
+                "dependencia_area",
+                "cargo",
+                "nombre_servidor"
+              ]
+            }
+          ],
+          "preguntasRotulo": "¿Qué registramos?",
+          "preguntasUnidad": "datos",
+          "preguntasIntro": "Lo que se registra de cada actor al identificarlo, en el mismo orden de la Alimentación."
+        },
+        {
+          "id": "caracterizar",
+          "icono": "ficha",
+          "titulo": "Caracterizar",
+          "oficial": "Conocer los intereses, la posición y el contexto de cada actor.",
+          "ref": {
+            "texto": "AA1000SES (2015), sección 4.1, planear",
+            "ficha": "aa1000ses"
+          },
+          "pide": "Perfilar a cada actor: qué le interesa, qué espera de la empresa y cuál es su postura frente al proyecto.",
+          "documentos": [
+            {
+              "documento": "Actas de reuniones y espacios de diálogo",
+              "esg": "S",
+              "fuente": "AA1000SES, sección 4.3"
+            },
+            {
+              "documento": "Informes de gestión social",
+              "esg": "S",
+              "fuente": "Práctica de Meleia"
+            },
+            {
+              "documento": "Información pública de medios y redes",
+              "esg": "G",
+              "fuente": "Práctica de Meleia"
+            }
+          ],
+          "respaldo": [
+            {
+              "texto": "AA1000SES, sección 4.1",
+              "ficha": "aa1000ses"
+            }
+          ],
+          "campos": [
+            {
+              "esquema": "actores",
+              "ids": [
+                "caracterizacion",
+                "posicion"
+              ]
+            },
+            {
+              "esquema": "organizaciones",
+              "ids": [
+                "nombre",
+                "categoria",
+                "posicion",
+                "caracterizacion"
+              ],
+              "grupo": "De la organización"
+            }
+          ],
+          "preguntasRotulo": "¿Qué registramos?",
+          "preguntasUnidad": "datos",
+          "preguntasIntro": "Lo que se registra para conocer a cada actor y a su organización."
+        },
+        {
+          "id": "calificar",
+          "icono": "balanza",
+          "titulo": "Calificar",
+          "oficial": "Calificar a cada actor en cinco escalas de 1 a 5.",
+          "ref": {
+            "texto": "AA1000SES (2015), sección 4.1, planear",
+            "ficha": "aa1000ses"
+          },
+          "pide": "Medir con criterios iguales para todos qué tanto puede incidir cada actor en el proyecto y qué tanto lo afecta el proyecto, junto con la dependencia, la tensión y la responsabilidad de la empresa con él.",
+          "documentos": [
+            {
+              "documento": "Registro de conflictos, reclamos y movilizaciones",
+              "esg": "S",
+              "fuente": "Práctica de Meleia"
+            },
+            {
+              "documento": "Obligaciones legales y contractuales con el actor",
+              "esg": "G",
+              "fuente": "Práctica de Meleia"
+            }
+          ],
+          "respaldo": [
+            {
+              "texto": "AA1000SES, sección 4.1",
+              "ficha": "aa1000ses"
+            }
+          ],
+          "campos": [
+            {
+              "esquema": "actores",
+              "ids": [
+                "influencia",
+                "impacto",
+                "dependencia",
+                "tension",
+                "responsabilidad"
+              ]
+            }
+          ],
+          "preguntasRotulo": "¿Qué calificamos?",
+          "preguntasUnidad": "escalas",
+          "preguntasIntro": "Cinco escalas de 1 a 5. Cada nivel tiene su descripción, para que dos personas califiquen igual al mismo actor."
+        },
+        {
+          "id": "priorizar",
+          "icono": "matriz",
+          "titulo": "Priorizar",
+          "oficial": "Ubicar a cada actor en un nivel de relacionamiento.",
+          "ref": {
+            "texto": "AA1000SES (2015), sección 4.1, planear",
+            "ficha": "aa1000ses"
+          },
+          "pide": "Decidir cómo relacionarse con cada actor según su influencia y el impacto que recibe, y revisar con criterio experto los casos que piden un ajuste.",
+          "documentos": [
+            {
+              "documento": "Plan de relacionamiento o de gestión social",
+              "esg": "S",
+              "fuente": "IFC, Norma de Desempeño 1"
+            },
+            {
+              "documento": "Mecanismo de quejas y reclamos",
+              "esg": "S",
+              "fuente": "IFC, Norma de Desempeño 1"
+            }
+          ],
+          "respaldo": [
+            {
+              "texto": "AA1000SES, sección 4.1",
+              "ficha": "aa1000ses"
+            },
+            {
+              "texto": "IFC, Norma de Desempeño 1",
+              "ficha": "ifc-nd1"
+            },
+            {
+              "texto": "GRI 2, contenido 2-29",
+              "ficha": "gri2"
+            }
+          ],
+          "campos": [
+            {
+              "esquema": "organizaciones",
+              "ids": [
+                "ajuste_influencia",
+                "ajuste_impacto",
+                "ajuste_justificacion",
+                "ajuste_autor"
+              ]
+            }
+          ],
+          "preguntasRotulo": "¿Qué registramos?",
+          "preguntasUnidad": "datos",
+          "preguntasIntro": "Un ajuste al resultado de una organización solo se guarda con influencia, impacto, justificación y el nombre de quien lo hace."
+        }
+      ]
+    },
+    "enfoques": {
+      "titular": "El resultado se lee con dos enfoques.",
+      "intro": "El primero mira a cada actor. El segundo agrupa a los actores por organización y promedia sus calificaciones.",
+      "items": [
+        {
+          "titulo": "Por actor",
+          "pregunta": "¿Dónde está cada actor en la matriz y qué relación pide?",
+          "entregables": [
+            "Matriz de relacionamiento",
+            "Ficha por actor",
+            "Alertas de conflicto"
+          ]
+        },
+        {
+          "titulo": "Por organización",
+          "pregunta": "¿Cómo se ubica cada organización cuando se promedian sus actores?",
+          "entregables": [
+            "Resumen por organización",
+            "Ajustes justificados",
+            "Listado por grupo de interés"
+          ]
+        }
+      ]
+    },
+    "criterios": {
+      "ante": "Cómo se califica",
+      "titular": "Cinco escalas iguales para todos los actores.",
+      "intro": "Cada escala va de 1 a 5 y cada nivel tiene una descripción. Influencia e impacto deciden el nivel de relacionamiento. Las otras tres explican el porqué y activan las alertas.",
+      "preguntas": {
+        "influencia": "¿Qué capacidad tiene el actor de incidir en la empresa y su proyecto?",
+        "impacto": "¿Cuánto cambia la situación del actor según lo que pase con el proyecto?",
+        "dependencia": "¿Qué tan fuerte es el vínculo operativo, estratégico o social entre el actor y la empresa?",
+        "tension": "¿Hay conflictos, reclamos o movilización en la relación?",
+        "responsabilidad": "¿Qué obligación tiene la empresa con el actor, por norma, contrato o compromiso público?"
+      },
+      "reglas": [
+        {
+          "titulo": "El resultado de la organización",
+          "texto": "Es el promedio de sus actores en cada escala. Se puede modificar solo con justificación escrita y el nombre de quien la modifica."
+        }
+      ]
+    }
+  },
   "ddhh": {
     "estado": "borrador",
     "romano": "II",
@@ -194,6 +535,685 @@
       ]
     }
   },
-  "materialidad": { "secciones": [] },
-  "riesgos": { "secciones": [] }
+  "materialidad": {
+    "estado": "borrador",
+    "romano": "III",
+    "nombre": "Doble materialidad",
+    "afirmacion": "Qué temas de sostenibilidad importan más, por el impacto de la empresa en las personas y el ambiente, y por su efecto en las finanzas.",
+    "resumen": "El módulo parte de una lista de temas ambientales, sociales y de gobernanza. Los grupos de interés califican el impacto de cada tema y las áreas de la empresa califican su efecto financiero. Un tema es material si supera el umbral en al menos una de las dos dimensiones.",
+    "cuando": "Sirve para preparar un informe de sostenibilidad, para definir la estrategia y para revisar las prioridades cuando cambia el negocio o el entorno.",
+    "estandares": {
+      "titular": "Trabajamos sobre los hombros de otros.",
+      "intro": "Dos estándares respaldan el método, uno por cada dimensión. Toque una portada para ver qué pide cada uno y por qué lo usamos.",
+      "fichas": [
+        {
+          "id": "gri3",
+          "portada": "img/estandares/gri3.jpg",
+          "sigla": "GRI 3",
+          "nombre": "GRI 3: Temas Materiales 2021",
+          "emisor": "Global Reporting Initiative",
+          "anio": "2021",
+          "tipo": "Estándar de reporte",
+          "color": "#B78D36",
+          "enlace": "https://www.globalreporting.org/how-to-use-the-gri-standards/gri-standards-spanish-translations/",
+          "enlace_texto": "Traducciones oficiales al español (GRI)",
+          "que_es": "Estándar universal de GRI que explica cómo determinar los temas materiales en cuatro pasos y qué informar sobre ellos y su gestión.",
+          "por_que": "Sus cuatro pasos son el proceso del módulo. La dimensión de impacto usa su criterio: la importancia de un impacto negativo depende de su gravedad (escala, alcance y carácter irremediable) y de su probabilidad.",
+          "cruces": [
+            {
+              "con": "sasb",
+              "texto": "GRI 3 mira el impacto de la empresa hacia afuera. SASB mira lo que puede afectar sus finanzas. Juntos dan las dos dimensiones."
+            }
+          ]
+        },
+        {
+          "id": "sasb",
+          "portada": "img/estandares/sasb.jpg",
+          "sigla": "SASB",
+          "nombre": "Normas SASB por industria",
+          "emisor": "ISSB, Fundación IFRS",
+          "anio": "2023",
+          "tipo": "Norma por industria",
+          "color": "#3A4733",
+          "enlace": "https://sasb.ifrs.org/standards/",
+          "enlace_texto": "Normas por industria (Fundación IFRS)",
+          "que_es": "Normas por industria, hoy a cargo del ISSB de la Fundación IFRS. Cada una lista los temas de sostenibilidad que pueden afectar el desempeño financiero de las empresas de esa industria, con sus métricas.",
+          "por_que": "Orienta la dimensión financiera: ayuda a escoger los temas que pueden mover la rentabilidad o el gasto operativo de la empresa y a explicar por qué.",
+          "cruces": [
+            {
+              "con": "gri3",
+              "texto": "GRI 3 aporta la dimensión de impacto, que SASB no cubre."
+            }
+          ]
+        }
+      ]
+    },
+    "proceso": {
+      "rotulo": "Pasos",
+      "sub": "para determinar los temas materiales, según GRI 3",
+      "ante": "El método",
+      "titular": "Cuatro pasos, los de GRI 3.",
+      "intro": "El proceso sigue los cuatro pasos de GRI 3 para determinar los temas materiales. A la evaluación de impacto se suma la financiera, con las áreas de la empresa que conocen el negocio. Así se ve qué temas importan por sus efectos en las personas y el ambiente, y cuáles por sus efectos en las finanzas.",
+      "nav": "Doble materialidad",
+      "centro": [
+        "GRI 3",
+        "Doble\nmaterialidad"
+      ],
+      "pasos": [
+        {
+          "id": "contexto",
+          "icono": "globo",
+          "titulo": "Entender el contexto",
+          "oficial": "Entender el contexto de la organización.",
+          "ref": {
+            "texto": "GRI 3, paso 1",
+            "ficha": "gri3"
+          },
+          "pide": "Conocer las actividades, las relaciones comerciales y el contexto de sostenibilidad de la organización, y quiénes son sus grupos de interés.",
+          "documentos": [
+            {
+              "documento": "Informe de gestión o de sostenibilidad anterior",
+              "esg": "G",
+              "fuente": "GRI 3, paso 1"
+            },
+            {
+              "documento": "Mapa de actores (Módulo I)",
+              "esg": "S",
+              "fuente": "GRI 3, paso 1"
+            },
+            {
+              "documento": "Norma SASB de la industria y estudios sectoriales",
+              "esg": "G",
+              "fuente": "SASB"
+            },
+            {
+              "documento": "Licencias y permisos ambientales",
+              "esg": "A",
+              "fuente": "Práctica de Meleia"
+            }
+          ],
+          "respaldo": [
+            {
+              "texto": "GRI 3, paso 1",
+              "ficha": "gri3"
+            }
+          ],
+          "campos": [
+            {
+              "esquema": "participacion",
+              "ids": [
+                "grupo",
+                "mecanismo",
+                "participantes",
+                "descripcion"
+              ]
+            }
+          ],
+          "preguntasRotulo": "¿Qué registramos?",
+          "preguntasUnidad": "datos",
+          "preguntasIntro": "Cómo participa cada grupo de interés en el proceso."
+        },
+        {
+          "id": "identificar",
+          "icono": "lupa",
+          "titulo": "Identificar impactos",
+          "oficial": "Identificar impactos reales y potenciales.",
+          "ref": {
+            "texto": "GRI 3, paso 2",
+            "ficha": "gri3"
+          },
+          "pide": "Listar los impactos negativos y positivos, reales y potenciales, en la economía, el ambiente y las personas, incluidos los derechos humanos.",
+          "buscamos": [
+            {
+              "nombre": "Lista de temas",
+              "descripcion": "Cada tema con su dimensión ESG, su tipo, su estándar GRI y su descripción."
+            }
+          ],
+          "documentos": [
+            {
+              "documento": "Resultados de la debida diligencia en DDHH (Módulo II)",
+              "esg": "S",
+              "fuente": "GRI 3, paso 2"
+            },
+            {
+              "documento": "Matriz de riesgos (Módulo IV)",
+              "esg": "G",
+              "fuente": "GRI 3, paso 2"
+            },
+            {
+              "documento": "Quejas y reclamos recibidos",
+              "esg": "S",
+              "fuente": "GRI 3, paso 2"
+            },
+            {
+              "documento": "Indicadores ambientales de la operación",
+              "esg": "A",
+              "fuente": "GRI 3, paso 2"
+            }
+          ],
+          "respaldo": [
+            {
+              "texto": "GRI 3, paso 2",
+              "ficha": "gri3"
+            }
+          ],
+          "campos": [
+            {
+              "esquema": "temas",
+              "ids": [
+                "nombre",
+                "dimension",
+                "tipo",
+                "estandar_gri",
+                "descripcion",
+                "indicadores"
+              ]
+            }
+          ],
+          "preguntasRotulo": "¿Qué registramos?",
+          "preguntasUnidad": "datos",
+          "preguntasIntro": "Lo que se registra de cada tema antes de calificarlo."
+        },
+        {
+          "id": "evaluar",
+          "icono": "balanza",
+          "titulo": "Evaluar la importancia",
+          "oficial": "Evaluar la importancia de los impactos.",
+          "ref": {
+            "texto": "GRI 3, paso 3",
+            "ficha": "gri3"
+          },
+          "pide": "Calificar la importancia de cada impacto. Para los negativos, su gravedad y su probabilidad. Para los positivos, su escala, su alcance y su probabilidad.",
+          "documentos": [
+            {
+              "documento": "Registros de los talleres con grupos de interés",
+              "esg": "S",
+              "fuente": "GRI 3, paso 3"
+            },
+            {
+              "documento": "Estados financieros y presupuesto",
+              "esg": "G",
+              "fuente": "SASB"
+            },
+            {
+              "documento": "Opinión de expertos internos y externos",
+              "esg": "G",
+              "fuente": "GRI 3, paso 3"
+            }
+          ],
+          "respaldo": [
+            {
+              "texto": "GRI 3, paso 3",
+              "ficha": "gri3"
+            },
+            {
+              "texto": "SASB, norma de la industria",
+              "ficha": "sasb"
+            }
+          ],
+          "campos": [
+            {
+              "esquema": "impacto",
+              "ids": [
+                "escala",
+                "alcance",
+                "irremediabilidad",
+                "probabilidad"
+              ],
+              "grupo": "Impacto: califica cada grupo de interés"
+            },
+            {
+              "esquema": "financiera",
+              "ids": [
+                "rentabilidad",
+                "gasto_operativo"
+              ],
+              "grupo": "Financiera: califica cada área de la empresa"
+            }
+          ],
+          "preguntasRotulo": "¿Qué calificamos?",
+          "preguntasUnidad": "variables",
+          "preguntasIntro": "Seis variables, todas de 0 a 5 con la misma escala."
+        },
+        {
+          "id": "priorizar",
+          "icono": "diana",
+          "titulo": "Priorizar",
+          "oficial": "Priorizar los impactos más significativos para el reporte.",
+          "ref": {
+            "texto": "GRI 3, paso 4",
+            "ficha": "gri3"
+          },
+          "pide": "Ordenar los temas por importancia y fijar un umbral para decidir cuáles son materiales.",
+          "documentos": [
+            {
+              "documento": "Acta del comité que valida los temas materiales",
+              "esg": "G",
+              "fuente": "GRI 3, paso 4"
+            }
+          ],
+          "respaldo": [
+            {
+              "texto": "GRI 3, paso 4",
+              "ficha": "gri3"
+            }
+          ]
+        }
+      ]
+    },
+    "enfoques": {
+      "titular": "El resultado se lee con dos enfoques.",
+      "intro": "El primero mira el impacto de la empresa en las personas y el ambiente. El segundo mira el efecto de cada tema en las finanzas. Un tema es material si supera el umbral en al menos uno.",
+      "items": [
+        {
+          "titulo": "Materialidad de impacto",
+          "pregunta": "¿Qué temas afectan más a las personas y al ambiente?",
+          "entregables": [
+            "Mapa de impacto",
+            "Ficha por tema",
+            "Temas materiales"
+          ]
+        },
+        {
+          "titulo": "Materialidad financiera",
+          "pregunta": "¿Qué temas pueden mover más las finanzas de la empresa?",
+          "entregables": [
+            "Mapa financiero",
+            "Mapa de doble materialidad",
+            "Temas materiales"
+          ]
+        }
+      ]
+    },
+    "criterios": {
+      "ante": "Cómo se califica",
+      "titular": "Una escala de 0 a 5 para todas las variables.",
+      "intro": "Las dos dimensiones usan la misma escala, así se pueden comparar. Los grupos de interés califican el impacto y las áreas de la empresa califican el efecto financiero.",
+      "preguntas": {
+        "escala": "¿Qué tan grave es el impacto?",
+        "alcance": "¿Cuántas personas o qué tanto del ambiente alcanza?",
+        "irremediabilidad": "¿Qué tan difícil es devolver las cosas a como estaban?",
+        "probabilidad": "¿Qué tan probable es que ocurra?",
+        "rentabilidad": "¿Cuánto puede afectar la rentabilidad?",
+        "gasto_operativo": "¿Cuánto puede afectar el gasto operativo?"
+      },
+      "reglas": [
+        {
+          "titulo": "La calificación en blanco",
+          "texto": "Una variable sin calificar cuenta como 0 en los promedios."
+        }
+      ]
+    }
+  },
+  "riesgos": {
+    "estado": "borrador",
+    "romano": "IV",
+    "nombre": "Identificación, calificación y gestión de riesgos",
+    "afirmacion": "Qué riesgos para los derechos humanos crea el proyecto, cuáles atender primero y con qué medidas.",
+    "resumen": "El módulo identifica los riesgos del proyecto sobre los derechos humanos, los califica por gravedad y probabilidad, los contrasta con los grupos de interés y organiza las medidas para gestionarlos, con responsables y plazos según su prioridad.",
+    "cuando": "Sirve al planear un proyecto o una expansión, antes de un diálogo con comunidades, y para hacer seguimiento al plan de medidas.",
+    "estandares": {
+      "titular": "Trabajamos sobre los hombros de otros.",
+      "intro": "Tres estándares respaldan el método. Toque una portada para ver qué pide cada uno y por qué lo usamos.",
+      "fichas": [
+        {
+          "id": "prnu",
+          "portada": "img/estandares/prnu.jpg",
+          "sigla": "PRNU",
+          "nombre": "Principios Rectores sobre las Empresas y los Derechos Humanos",
+          "emisor": "Naciones Unidas, Consejo de Derechos Humanos",
+          "anio": "2011",
+          "tipo": "Marco de referencia",
+          "color": "var(--principal)",
+          "columna": "PRNU",
+          "que_es": "Treinta y un principios que distribuyen los papeles: el Estado protege, la empresa respeta y las víctimas acceden a reparación. Para la empresa piden tres cosas: un compromiso político, un proceso de debida diligencia y procesos de reparación (Principio 15).",
+          "por_que": "El Principio 14 define la gravedad de un impacto por su escala, su alcance y su carácter irremediable, los tres criterios con que el módulo califica cada riesgo. Los Principios 17 a 19 piden identificar los riesgos consultando a los afectados y actuar sobre ellos, y el 24 pide atender primero los más graves.",
+          "cruces": [
+            {
+              "con": "ocde",
+              "texto": "La Guía de la OCDE convierte en pasos prácticos el proceso de debida diligencia de los Principios 17 a 21."
+            },
+            {
+              "con": "ifc-nd1",
+              "texto": "La Norma de Desempeño 1 lleva la gestión de riesgos e impactos al sistema de gestión del proyecto."
+            }
+          ],
+          "enlace": "https://www.ohchr.org/sites/default/files/documents/publications/guidingprinciplesbusinesshr_sp.pdf",
+          "enlace_texto": "Texto oficial en español (ACNUDH, PDF)"
+        },
+        {
+          "id": "ocde",
+          "portada": "img/estandares/ocde.jpg",
+          "sigla": "OCDE",
+          "nombre": "Guía de la OCDE de Debida Diligencia para una Conducta Empresarial Responsable",
+          "emisor": "Organización para la Cooperación y el Desarrollo Económicos",
+          "anio": "2018",
+          "tipo": "Guía de aplicación",
+          "color": "#5E7A45",
+          "columna": "Guía OCDE",
+          "que_es": "Explica en términos prácticos cómo hacer la debida diligencia que piden las Líneas Directrices de la OCDE para Empresas Multinacionales. Organiza el proceso en seis pasos y lo aplica a derechos humanos, trabajo, medio ambiente, corrupción y consumidores.",
+          "por_que": "Su paso 3 define la respuesta según la relación de la empresa con el impacto: si lo causa, si contribuye a él o si está directamente vinculada. El módulo usa esa relación para proponer el tipo de medida.",
+          "cruces": [
+            {
+              "con": "prnu",
+              "texto": "Desarrolla el proceso de debida diligencia de los Principios 17 a 21."
+            }
+          ],
+          "enlace": "https://www.oecd.org/es/publications/guia-de-la-ocde-de-debida-diligencia-para-una-conducta-empresarial-responsable_14922561-es",
+          "enlace_texto": "Publicación oficial en español (OCDE)"
+        },
+        {
+          "id": "ifc-nd1",
+          "sigla": "IFC ND1",
+          "nombre": "Norma de Desempeño 1: Evaluación y gestión de los riesgos e impactos ambientales y sociales",
+          "emisor": "Corporación Financiera Internacional (IFC), Grupo Banco Mundial",
+          "anio": "2012",
+          "tipo": "Norma de desempeño",
+          "color": "#3A4733",
+          "enlace": "https://www.ifc.org/content/dam/ifc/doc/2010/2012-ifc-performance-standard-1-es.pdf",
+          "enlace_texto": "Texto oficial en español (IFC, PDF)",
+          "que_es": "Primera de las ocho normas de desempeño de la IFC. Pide un sistema de gestión que identifique los riesgos e impactos ambientales y sociales de un proyecto y los gestione, con participación de los actores sociales, divulgación de información y un mecanismo de quejas.",
+          "por_que": "Pide un proceso para identificar los riesgos e impactos de un proyecto y una jerarquía de medidas: anticipar y evitar, minimizar y, cuando quedan impactos, compensar.",
+          "cruces": [
+            {
+              "con": "prnu",
+              "texto": "Los Principios Rectores agregan el criterio de gravedad para los riesgos sobre los derechos humanos."
+            }
+          ]
+        }
+      ]
+    },
+    "proceso": {
+      "rotulo": "Pasos",
+      "sub": "de la identificación al plan de medidas",
+      "ante": "El método",
+      "titular": "Cuatro pasos, de la identificación al plan de medidas.",
+      "intro": "El proceso aplica a los riesgos del proyecto lo que piden los Principios Rectores y la Guía de la OCDE: identificar los riesgos, calificarlos, contrastarlos con quienes pueden verse afectados y responder según la relación de la empresa con cada uno.",
+      "nav": "Gestión de riesgos",
+      "centro": [
+        "PRNU Y OCDE",
+        "Gestión de\nriesgos"
+      ],
+      "pasos": [
+        {
+          "id": "identificar",
+          "icono": "lupa",
+          "titulo": "Identificar",
+          "oficial": "Identificar los riesgos reales y potenciales sobre los derechos humanos.",
+          "ref": {
+            "texto": "PRNU, principio 18",
+            "ficha": "prnu"
+          },
+          "pide": "Identificar y evaluar los impactos negativos reales o potenciales en los que la empresa puede verse implicada, por sus actividades o por sus relaciones comerciales, con consulta a los grupos potencialmente afectados.",
+          "buscamos": [
+            {
+              "nombre": "El riesgo y el derecho afectado",
+              "descripcion": "Qué puede pasar y a qué derecho humano afecta."
+            },
+            {
+              "nombre": "Dónde y por qué ocurre",
+              "descripcion": "Ámbito, localización y actividades del proyecto que lo generan."
+            },
+            {
+              "nombre": "Controles existentes",
+              "descripcion": "Qué hace hoy la empresa y qué tan bien funciona."
+            }
+          ],
+          "documentos": [
+            {
+              "documento": "Estudio de impacto ambiental y social",
+              "esg": "A",
+              "fuente": "IFC, Norma de Desempeño 1"
+            },
+            {
+              "documento": "Matriz de riesgos corporativa",
+              "esg": "G",
+              "fuente": "Guía OCDE, paso 2"
+            },
+            {
+              "documento": "Registro de quejas e incidentes",
+              "esg": "S",
+              "fuente": "PRNU, principio 18"
+            },
+            {
+              "documento": "Mapa de actores (Módulo I)",
+              "esg": "S",
+              "fuente": "PRNU, principio 18"
+            }
+          ],
+          "respaldo": [
+            {
+              "texto": "PRNU, principio 18",
+              "ficha": "prnu"
+            },
+            {
+              "texto": "Guía OCDE, paso 2",
+              "ficha": "ocde"
+            },
+            {
+              "texto": "IFC, Norma de Desempeño 1",
+              "ficha": "ifc-nd1"
+            }
+          ],
+          "campos": [
+            {
+              "esquema": "riesgos",
+              "ids": [
+                "codigo",
+                "nombre",
+                "descripcion",
+                "derecho_humano",
+                "ambitos",
+                "localizacion",
+                "actividades",
+                "medidas_control",
+                "analisis_controles"
+              ]
+            }
+          ],
+          "preguntasRotulo": "¿Qué registramos?",
+          "preguntasUnidad": "datos",
+          "preguntasIntro": "Lo que se registra de cada riesgo, en el mismo orden de la Alimentación."
+        },
+        {
+          "id": "calificar",
+          "icono": "balanza",
+          "titulo": "Calificar",
+          "oficial": "Calificar la gravedad y la probabilidad de cada riesgo.",
+          "ref": {
+            "texto": "PRNU, principios 14 y 24",
+            "ficha": "prnu"
+          },
+          "pide": "Medir la gravedad por la escala, el alcance y el carácter irremediable del impacto, y sumar su probabilidad para decidir qué atender primero.",
+          "documentos": [
+            {
+              "documento": "Informes técnicos y de monitoreo ambiental",
+              "esg": "A",
+              "fuente": "IFC, Norma de Desempeño 1"
+            },
+            {
+              "documento": "Registro de incidentes y casos",
+              "esg": "S",
+              "fuente": "Práctica de Meleia"
+            }
+          ],
+          "respaldo": [
+            {
+              "texto": "PRNU, principios 14 y 24",
+              "ficha": "prnu"
+            },
+            {
+              "texto": "Guía OCDE, paso 2",
+              "ficha": "ocde"
+            }
+          ],
+          "campos": [
+            {
+              "esquema": "calificacion",
+              "ids": [
+                "escala",
+                "alcance",
+                "irremediabilidad",
+                "probabilidad",
+                "tipo_impacto",
+                "vinculacion",
+                "justificacion"
+              ]
+            }
+          ],
+          "preguntasRotulo": "¿Qué calificamos?",
+          "preguntasUnidad": "datos",
+          "preguntasIntro": "La calificación técnica de cada riesgo."
+        },
+        {
+          "id": "validar",
+          "icono": "personas",
+          "titulo": "Validar",
+          "oficial": "Contrastar la calificación con los grupos de interés.",
+          "ref": {
+            "texto": "PRNU, principio 18",
+            "ficha": "prnu"
+          },
+          "pide": "Consultar a los grupos potencialmente afectados y a otras partes interesadas para confirmar o ajustar la calificación.",
+          "documentos": [
+            {
+              "documento": "Actas y listas de asistencia de las sesiones",
+              "esg": "S",
+              "fuente": "PRNU, principio 18"
+            },
+            {
+              "documento": "Comentarios de los grupos",
+              "esg": "S",
+              "fuente": "PRNU, principio 18"
+            }
+          ],
+          "respaldo": [
+            {
+              "texto": "PRNU, principio 18",
+              "ficha": "prnu"
+            }
+          ],
+          "campos": [
+            {
+              "esquema": "validaciones",
+              "ids": [
+                "grupo",
+                "resultado",
+                "comentario"
+              ]
+            }
+          ],
+          "preguntasRotulo": "¿Qué registramos?",
+          "preguntasUnidad": "datos",
+          "preguntasIntro": "Lo que se registra de cada sesión de validación. Si el grupo propone un ajuste, también se registra su calificación propuesta."
+        },
+        {
+          "id": "responder",
+          "icono": "escudo",
+          "titulo": "Responder",
+          "oficial": "Definir las medidas, con responsables y plazos.",
+          "ref": {
+            "texto": "Guía OCDE, paso 3",
+            "ficha": "ocde"
+          },
+          "pide": "Cesar, prevenir y mitigar los impactos potenciales, y reparar los manifestados, según si la empresa los causa, contribuye a ellos o está directamente vinculada.",
+          "documentos": [
+            {
+              "documento": "Plan de medidas con responsables y plazos",
+              "esg": "G",
+              "fuente": "Guía OCDE, paso 3"
+            },
+            {
+              "documento": "Presupuesto asignado a las medidas",
+              "esg": "G",
+              "fuente": "Práctica de Meleia"
+            },
+            {
+              "documento": "Plan de manejo ambiental",
+              "esg": "A",
+              "fuente": "IFC, Norma de Desempeño 1"
+            },
+            {
+              "documento": "Registros de seguimiento",
+              "esg": "G",
+              "fuente": "Guía OCDE, paso 4"
+            }
+          ],
+          "respaldo": [
+            {
+              "texto": "Guía OCDE, paso 3",
+              "ficha": "ocde"
+            },
+            {
+              "texto": "PRNU, principio 19",
+              "ficha": "prnu"
+            },
+            {
+              "texto": "IFC, Norma de Desempeño 1",
+              "ficha": "ifc-nd1"
+            }
+          ],
+          "campos": [
+            {
+              "esquema": "medidas",
+              "ids": [
+                "codigo",
+                "titulo",
+                "descripcion",
+                "componente",
+                "riesgos",
+                "responsable",
+                "plazo",
+                "estado"
+              ]
+            }
+          ],
+          "preguntasRotulo": "¿Qué registramos?",
+          "preguntasUnidad": "datos",
+          "preguntasIntro": "Lo que se registra de cada medida. El responsable es un área o un cargo, nunca un nombre personal."
+        }
+      ]
+    },
+    "enfoques": {
+      "titular": "El resultado se lee con dos enfoques.",
+      "intro": "El primero ordena los riesgos por prioridad. El segundo organiza las medidas que los atienden, con responsables y plazos.",
+      "items": [
+        {
+          "titulo": "Riesgos priorizados",
+          "pregunta": "¿Qué riesgos atender primero?",
+          "entregables": [
+            "Matriz de riesgos",
+            "Ficha por riesgo",
+            "Validación con los grupos"
+          ]
+        },
+        {
+          "titulo": "Plan de medidas",
+          "pregunta": "¿Con qué medidas, quién responde y para cuándo?",
+          "entregables": [
+            "Plan de medidas",
+            "Medidas por componente",
+            "Seguimiento de plazos"
+          ]
+        }
+      ]
+    },
+    "criterios": {
+      "ante": "Cómo se califica",
+      "titular": "Gravedad y probabilidad deciden la prioridad.",
+      "intro": "Cada riesgo se califica en escala, alcance e irremediabilidad. La gravedad es su promedio. Con la probabilidad, una matriz fija la prioridad, y la prioridad fija el plazo de las medidas.",
+      "preguntas": {
+        "escala": "¿Qué tan grave es el impacto sobre el derecho?",
+        "alcance": "¿Cuántas personas se verían afectadas?",
+        "irremediabilidad": "¿Qué tan difícil es devolver a las personas a la situación anterior?",
+        "probabilidad": "¿Qué tan probable es que ocurra?"
+      },
+      "reglas": [
+        {
+          "titulo": "La validación con los grupos",
+          "texto": "Si un grupo propone un ajuste, se registra su calificación con su justificación. La calificación técnica y la propuesta quedan visibles en el resultado."
+        }
+      ]
+    }
+  }
 }

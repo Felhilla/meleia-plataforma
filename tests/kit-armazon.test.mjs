@@ -209,6 +209,50 @@ test('E30 y E40: rutas anteriores convergen y todos los módulos muestran sus pe
 });
 
 
+test('E54: la Metodología se replica en los Módulos I, III y IV con el mismo modelo y cifras de sus parámetros', async () => {
+  const { default: M } = await import('../public/kit-vista-metodologia.js');
+  const leer = r => JSON.parse(readFileSync(new URL('../public/' + r, import.meta.url), 'utf8'));
+  const cfg = leer('config/kit-metodologia.json');
+  globalThis.App = { el: (tag, texto, clase) => { const n = new Nodo(tag); if (texto) n.textContent = texto; if (clase) n.className = clase; return n; } };
+  globalThis.document = { createElementNS: (_, t) => new Nodo(t) };
+  globalThis.fetch = async r => ({ ok: true, json: async () => leer(r) });
+  try {
+    const esperado = { actores: leer('config/kit-actores-config.json'), materialidad: leer('config/kit-materialidad-catalogo.json'), riesgos: leer('config/kit-riesgos-config.json') };
+    const criterios = { actores: 5, materialidad: esperado.materialidad.impacto.severidad.length + 1 + esperado.materialidad.financiera.variables.length, riesgos: esperado.riesgos.gravedad.criterios.length + 1 };
+    for (const modulo of ['actores', 'materialidad', 'riesgos']) {
+      const m = cfg[modulo], d = await M.datos(modulo, m);
+      assert.ok(d, modulo + ': sin datos');
+      const n = new Nodo('div'); M.pintar(n, m, { datos: d, modulo, empresa: 'uno', puedeEditar: true });
+      const clase = c => n.todos().filter(x => (x.className || '').split(' ').includes(c));
+      const tiles = clase('kit-met-tile'), capa = clase('kit-ven-capa')[0], cima = () => capa.children[capa.children.length - 1];
+      assert.deepEqual(tiles.map(t => t.children[1].textContent), ['Estándares', 'Pasos', 'Enfoques', 'Criterios'], modulo);
+      assert.equal(tiles[3].children[0].textContent, String(criterios[modulo]), modulo + ': los criterios salen de los parámetros');
+      tiles[0].onclick(); assert.equal(cima().todos().filter(y => y.className === 'kit-est-tarjeta').length, m.estandares.fichas.length);
+      capa.onclick({ target: capa });
+      tiles[1].onclick(); const pasos = cima().todos().filter(y => y.className === 'kit-serv-titulo');
+      assert.equal(pasos.length, m.proceso.pasos.length, modulo + ': un paso por cada uno de la config');
+      pasos.forEach((b, i) => {
+        b.onclick(); assert.equal(capa.children.length, 2);
+        const pide = cima().todos().find(y => y.className === 'kit-pro-preguntar');
+        if (m.proceso.pasos[i].campos) { assert.ok(pide, modulo + ' paso ' + (i + 1) + ': sin preguntas'); pide.onclick(); assert.equal(capa.children.length, 3); capa.children[2] && cima().todos().find(y => y.className === 'kit-ven-x').onclick(); }
+        cima().todos().find(y => y.className === 'kit-ven-x').onclick();
+      });
+      capa.onclick({ target: capa }); assert.equal(capa.children.length, 0);
+      tiles[2].onclick(); cima().todos().find(y => y.className === 'kit-enf-metodo').onclick(); assert.equal(capa.children.length, 2, 'el enfoque lleva al proceso');
+      capa.onclick({ target: capa });
+      tiles[3].onclick(); assert.match(cima().textContent, /Reglas/); capa.onclick({ target: capa });
+      // Cada campo citado existe en su esquema: la Metodología no promete datos que la Alimentación no registra.
+      for (const p of m.proceso.pasos) for (const c of p.campos || []) assert.equal(d.partes.proceso.items.find(x => x.id === p.id).preguntas.filter(q => q.grupo === (c.grupo || null)).length, c.ids.length, `${modulo}/${p.id}: campo inexistente en ${c.esquema}`);
+      for (const f of m.estandares.fichas) {
+        assert.match(f.enlace, /^https:\/\//); for (const k of ['que_es', 'por_que', 'nombre', 'emisor', 'anio']) assert.ok(f[k], f.sigla + ' sin ' + k);
+        assert.ok((f.cruces || []).every(x => m.estandares.fichas.some(o => o.id === x.con)), f.sigla + ': cruce con un estándar que no está');
+      }
+      for (const p of m.proceso.pasos) { assert.ok(p.documentos.every(x => 'ASG'.includes(x.esg) && x.fuente)); assert.ok(!p.ref || m.estandares.fichas.some(f => f.id === p.ref.ficha)); }
+      assert.doesNotMatch(JSON.stringify(m), /[;«»·]/, modulo + ': protocolo de redacción');
+    }
+  } finally { delete globalThis.App; delete globalThis.document; delete globalThis.fetch; }
+});
+
 test('E40/E49: Metodología del Módulo II con cifras del catálogo, fichas de estándares y aviso en los demás', async () => {
   const { default: M } = await import('../public/kit-vista-metodologia.js');
   const leer = r => JSON.parse(readFileSync(new URL('../public/config/' + r, import.meta.url), 'utf8'));

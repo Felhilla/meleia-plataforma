@@ -418,3 +418,15 @@ a.kit-enf-entregable:hover { border-color: var(--tono); background: rgba(241,238
 .kit-enf-criterios { background: #A9C48A; color: #1B2216; border-color: #A9C48A; }
 @media (max-width: 860px) { .kit-enf, .kit-enf-cuerpo { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: reduce) { .kit-enf-metodo, .kit-enf-entregable { transition: none; } }
+
+/* E54 (8-nov). Réplica en los Módulos I, III y IV. Proceso de una sola parte: sin menú, a todo el ancho. */
+.kit-pro.kit-pro-una { grid-template-columns: minmax(0, 1fr); }
+/* Niveles de cada escala dentro de ¿Qué calificamos? */
+.kit-pro-niveles { list-style: none; margin: var(--e2) 0 0; padding: 0; display: grid; gap: 4px; }
+.kit-pro-preguntas .kit-pro-niveles li { display: grid; grid-template-columns: 1.6rem minmax(0, 1fr); gap: var(--e2); padding: 4px 0; border: 0; border-radius: 0; background: none; font-size: var(--t-chico); color: var(--texto-suave); }
+.kit-pro-niveles strong { color: var(--oro-texto); font-family: var(--fuente-mono); }
+/* Criterios provisional: bloques de escala y tabla de matriz */
+.kit-met-escala-bloque { margin-bottom: var(--e4); }
+.kit-met-tabla { width: 100%; border-collapse: separate; border-spacing: 6px; margin-bottom: var(--e4); font-size: var(--t-chico); }
+.kit-met-tabla th { text-align: left; font-family: var(--fuente-mono); font-size: var(--t-micro); letter-spacing: .1em; text-transform: uppercase; color: var(--texto-suave); padding: var(--e2); }
+.kit-met-tabla td { padding: var(--e3); border-radius: 10px; background: var(--superficie); border: 1px solid var(--borde); line-height: 1.45; }
