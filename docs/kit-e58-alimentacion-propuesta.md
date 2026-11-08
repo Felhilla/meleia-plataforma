@@ -1,6 +1,6 @@
 # Alimentación por secciones: propuesta (E58, 8-nov-2026)
 
-Estado: **propuesta para decisión de Felipe**. No hay código todavía.
+Estado: **decidida el 8-nov-2026. Módulo II construido (E60).** Los Módulos I, III y IV siguen.
 
 ## 1. Qué resuelve
 
@@ -60,16 +60,21 @@ La propuesta: un formulario **por secciones**, como un formulario de Google, que
 3. **Documentos confidenciales del cliente** quedan en la nube de Meleia. Eso exige decirlo en el acuerdo con el cliente y definir cuándo se borran.
 4. **Dos personas en la misma sección:** gana el último guardado. El historial permite ver y recuperar lo anterior. Bloquear la sección mientras alguien la edita es más seguro, pero más lento de construir.
 
-## 7. Decisiones de Felipe
+## 7. Decisiones de Felipe (8-nov-2026)
 
-1. **Dónde viven los archivos:** en el Storage de Meleia, solo enlaces a la nube del cliente, o los dos.
-2. **Quién llena y quién revisa:** si Meleia revisa cada sección (estado "revisada") o si la empresa la cierra sola.
-3. **Cuándo se calculan los Resultados:** cuando todas las secciones están completas, o con las que estén completas y un aviso.
-4. **Asignar secciones a personas:** si se necesita desde la primera versión.
+1. **Archivos:** solo enlaces a la nube del cliente. Si el cliente borra o mueve el archivo, es su responsabilidad. No hay Storage de Meleia, así que los riesgos 1 a 3 de la sección 6 no aplican.
+2. **Cierre de secciones:** la empresa las cierra sola. La auditoría de Meleia es un servicio aparte. La idea es que la empresa gestione la plataforma sin depender de Meleia.
+3. **Resultados:** se calculan al completar las 16 secciones. Mientras tanto, la pestaña Resultados muestra una animación y el letrero "En proceso".
+4. **Asignar secciones a personas:** no entra en la primera versión.
 
-## 8. Orden de construcción propuesto
+## 8. Lo construido en el Módulo II (E60)
 
-1. Módulo II (es el que tiene etiquetas y preguntas fijas): tablero, secciones, guardado en la base y evidencias tipo enlace y texto.
-2. Archivos en Storage (según la decisión 1) y revisión por Meleia.
-3. Módulos IV, I y III, con el mismo motor de secciones.
-4. El Excel llena secciones con la misma validación.
+- `public/kit-vista-alimentacion-ddhh.js` envuelve la Alimentación del Módulo II. El Excel y el cuestionario de una sola sentada quedan en "Otras formas de cargar".
+- Colecciones nuevas en la tabla `datos` (mismos permisos e historial): `ddhh-borrador` (una respuesta por pregunta, con su etiqueta como id, y los hallazgos por dimensión) y `ddhh-avance` (la evaluación en proceso, con su ciclo, y el estado de cada sección).
+- Cada evaluación nueva abre un ciclo. Lo que no se toca en el ciclo parte de la última evaluación publicada.
+- Al calcular se usa `KitEstudios.prepararDdhh`, el mismo camino del Excel y del cuestionario.
+
+## 9. Lo que sigue
+
+1. Módulos IV, I y III con el mismo motor de secciones (sus secciones están en la tabla de la sección 3).
+2. El Excel llena secciones con la misma validación.

@@ -85,12 +85,31 @@
     return { s, caso, destino };
   }
 
+  // Pantalla "En proceso" con animación (decisión de Felipe, 8-nov): los Resultados se calculan al completar.
+  async function enProcesoVista(c, d, p, proc, verPublicada) {
+    const el = root.App.el, s = el('section', null, 'kit-banda kit-banda-oscura kit-res-proceso');
+    const anim = el('div', null, 'kit-res-proceso-anim'); anim.setAttribute('aria-hidden', 'true');
+    for (let k = 0; k < 3; k++) anim.append(el('span'));
+    s.append(anim, el('p', 'Módulo II, resultados', 'kit-mono'), el('h2', 'En proceso', 'kit-met-titulo'),
+      el('p', `La evaluación "${proc.nombre}" se está llenando: ${proc.completas} de ${proc.total} secciones completas. Los Resultados se calculan cuando estén todas.`, 'kit-met-texto'));
+    const acc = el('div', null, 'kit-ali-acciones');
+    if (p.puedeEditar) { const a = el('a', 'Ir a Alimentación', 'kit-met-pastilla'); a.href = `#/ddhh/${p.empresa}/alimentacion`; acc.append(a); }
+    const evs = await d.listar(p.empresa, 'ddhh-evaluaciones');
+    if (evs.length) { const b = el('button', 'Ver la última evaluación publicada', 'kit-ali-secundario'); b.type = 'button'; b.onclick = () => verPublicada(); acc.append(b); }
+    s.append(acc); c.append(s);
+  }
   const VISTAS = { actores: 'actores/mapa', ddhh: 'ddhh/resultados', materialidad: 'materialidad/resultados', riesgos: 'riesgos/matriz' };
   function envolver(modulo) {
     const original = root.App.vista(VISTAS[modulo]);
     if (!original) return;
     root.App.registrarVista(VISTAS[modulo], {
       async render(c, d, p) {
+        // E60: si hay una evaluación en proceso, los Resultados todavía no se calculan y se dice "En proceso".
+        if (modulo === 'ddhh' && root.KitAlimentacionDdhh && !p.verPublicada) {
+          let proc = null; try { proc = await root.KitAlimentacionDdhh.enProceso(d, p.empresa); } catch (_) { proc = null; }
+          if (p.vigente && !p.vigente()) return;
+          if (proc) return enProcesoVista(c, d, p, proc, () => { c.replaceChildren(); return root.App.vista(VISTAS[modulo]).render(c, d, { ...p, verPublicada: true }); });
+        }
         let cifras = null;
         try { cifras = await CIFRAS[modulo](d, p.empresa); } catch (_) { cifras = null; }
         if (p.vigente && !p.vigente()) return;

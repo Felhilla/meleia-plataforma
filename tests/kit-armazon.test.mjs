@@ -45,7 +45,7 @@ test('entrada del Kit no carga el relato, conserva SDK fijo y orden defer', () =
   assert.match(html, /<title>Meleia · Kit de sostenibilidad<\/title>/); assert.doesNotMatch(html, /GH Estudio|logo-gh/);
   assert.doesNotMatch(html, /src="vista-|caso\.json|src="app.js"|api-supabase.js/);
   const scripts = [...html.matchAll(/<script defer src="([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'vendor/xlsx.full.min.js', 'kit-riesgos.js', 'kit-cuestionario.js', 'kit-actores.js', 'kit-carga-excel.js', 'kit-armazon.js', 'kit-vista-credenciales.js', 'kit-vista-carga-excel.js', 'kit-vista-riesgos.js', 'kit-vista-actores.js', 'kit-vista-metodologia.js', 'kit-vista-ddhh-modelo.js', 'kit-vista-ddhh-motor.js', 'kit-vista-ddhh-comun.js', 'kit-vista-ddhh.js', 'kit-vista-ddhh-cuestionario.js', 'kit-vista-materialidad-motor.js', 'kit-vista-materialidad.js', 'kit-vista-portada-resultados.js']);
+  assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'vendor/xlsx.full.min.js', 'kit-riesgos.js', 'kit-cuestionario.js', 'kit-actores.js', 'kit-carga-excel.js', 'kit-armazon.js', 'kit-vista-credenciales.js', 'kit-vista-carga-excel.js', 'kit-vista-riesgos.js', 'kit-vista-actores.js', 'kit-vista-metodologia.js', 'kit-vista-ddhh-modelo.js', 'kit-vista-ddhh-motor.js', 'kit-vista-ddhh-comun.js', 'kit-vista-ddhh.js', 'kit-vista-ddhh-cuestionario.js', 'kit-vista-materialidad-motor.js', 'kit-vista-materialidad.js', 'kit-vista-portada-resultados.js', 'kit-vista-alimentacion-ddhh.js']);
 });
 
 // DOM mínimo: prueba los flujos reales del armazón sin red ni dependencias de navegador.
@@ -437,4 +437,26 @@ test('E59: la tabla de contactos solo deja insertar y leer a los administradores
   assert.match(sql, /for select to authenticated using \(public\.es_admin\(\)\)/);
   assert.doesNotMatch(sql, /grant (update|delete)|for (update|delete)/i, 'nadie edita ni borra mensajes desde la plataforma');
   for (const c of ['nombre', 'correo', 'empresa', 'mensaje']) assert.match(sql, new RegExp(c + '\\s+text.*check'), c + ' con límite en la base');
+test('E60: Alimentación del Módulo II por secciones (estado, avance, enlaces y "En proceso")', async () => {
+  const req = (await import('node:module')).createRequire(import.meta.url);
+  globalThis.KitCuestionarioDdhh = req('../public/kit-vista-ddhh-cuestionario.js');
+  try {
+    const A = req('../public/kit-vista-alimentacion-ddhh.js');
+    const cat = JSON.parse(readFileSync(new URL('../public/config/kit-ddhh-catalogo.json', import.meta.url), 'utf8'));
+    const vacia = { 'ddhh-evaluaciones': [], 'ddhh-indicadores': [], 'ddhh-componentes': [], 'ddhh-dimensiones': [] };
+    const i0 = cat.indicadores[0], meta = { id: 'evaluacion', ciclo: 2, estado: 'en-proceso', nombre: 'Prueba', fecha: '2026-11-08' };
+    // Solo cuenta lo guardado en el ciclo vigente. Un borrador de un ciclo anterior no se mezcla.
+    const borrador = [{ id: i0.etiqueta.toLowerCase(), indicador: i0.id, ciclo: 2, calificacion: 4, enlaces: ['https://ejemplo.org/a'] }, { id: 'viejo', indicador: cat.indicadores[1].id, ciclo: 1, calificacion: 5 }];
+    const E = A.armar(cat, vacia, borrador, [meta, { id: i0.eje, ciclo: 2, estado: 'completa' }, { id: cat.ejes[1].id, ciclo: 1, estado: 'completa' }]);
+    assert.equal(E.enProceso, true); assert.equal(E.ind[i0.id].calificacion, '4'); assert.equal(E.ind[cat.indicadores[1].id].calificacion, '');
+    const C = A.cifras(cat, E);
+    assert.deepEqual([C.cal, C.enBlanco, C.completas, C.secciones, C.sinEvidencia], [1, cat.indicadores.length - 1, 1, cat.ejes.length, cat.indicadores.length - 1]);
+    // Cada borrador cabe en el límite de la base y su id es la etiqueta (formato válido para la tabla datos).
+    assert.ok(cat.indicadores.every(i => /^[a-z0-9-]{1,80}$/.test(i.etiqueta.toLowerCase())));
+    for (const u of ['https://drive.google.com/x', 'http://sitio.co/a']) assert.ok(A.enlaceValido(u), u);
+    for (const u of ['javascript:alert(1)', 'ftp://x.co', 'sin-esquema.com', 'https://' + 'a'.repeat(600) + '.co']) assert.ok(!A.enlaceValido(u), u);
+    const d = { listar: async () => [meta, { id: 'x', ciclo: 2, estado: 'completa' }, { id: 'y', ciclo: 1, estado: 'completa' }] };
+    assert.deepEqual(await A.enProceso(d, 'e'), { nombre: 'Prueba', completas: 1, total: 16 });
+    assert.equal(await A.enProceso({ listar: async () => [{ ...meta, estado: 'publicada' }] }, 'e'), null);
+  } finally { delete globalThis.KitCuestionarioDdhh; }
 });
