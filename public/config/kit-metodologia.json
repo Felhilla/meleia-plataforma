@@ -529,7 +529,7 @@
       "titular": "Qué recibe la empresa.",
       "items": [
         { "titulo": "Tablero de madurez", "texto": "El puntaje de las seis etapas y los diez temas en un solo gráfico, con el semáforo de la escala." },
-        { "titulo": "Ficha por etapa y por tema", "texto": "Puntaje, componentes, hallazgos clave y estándares que respaldan cada exigencia." },
+        { "titulo": "Ficha por etapa y por tema", "texto": "Puntaje, criterios, hallazgos clave y estándares que respaldan cada exigencia." },
         { "titulo": "Detalle de los indicadores", "texto": "Cada pregunta con su calificación, los documentos que la soportan y la brecha encontrada." },
         { "titulo": "Comparación en el tiempo", "texto": "Dos evaluaciones en el mismo gráfico para ver el avance con la misma escala." }
       ]

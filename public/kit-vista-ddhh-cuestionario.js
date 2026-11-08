@@ -60,7 +60,7 @@
           const caja = el('section', null, 'kq-indicador');
           const comp = eje.componentes.find(c => c.id === ind.componente);
           if (comp && (k === 0 || cat.indicadores.filter(i => i.eje === eje.id)[k - 1].componente !== ind.componente)) p.append(el('p', comp.nombre, 'kq-criterio'));
-          api.escala(caja, `ind.${ind.id}.calificacion`, { pregunta: `${ind.codigo || ''} ${ind.pregunta}`.trim(), opciones: niveles });
+          api.escala(caja, `ind.${ind.id}.calificacion`, { pregunta: `${ind.etiqueta || ind.codigo || ''} ${ind.pregunta}`.trim(), opciones: niveles });
           api.lista(caja, `ind.${ind.id}.incorporado`, { pregunta: '¿Está incorporado?', opciones: reglaInc.valores.map(v => ({ id: v, nombre: textoInc[v] || v })) });
           const mas = el('details', null, 'kq-mas'); mas.append(el('summary', 'Evidencia, hallazgo y brecha'));
           api.texto(mas, `ind.${ind.id}.documentos`, { pregunta: 'Documentos analizados' });

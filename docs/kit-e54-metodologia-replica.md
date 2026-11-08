@@ -58,6 +58,12 @@ Ya está en el Módulo II y es la base para los otros tres. El adaptador devuelv
 
 Para replicarla: escribir `criterios.enfoques` en el bloque del módulo y devolver `calificar` desde el adaptador. Los nombres y las descripciones de los niveles se adaptan a las variables de cada módulo y salen de sus parámetros, nunca del texto.
 
+## Reglas de contenido (8-nov)
+
+- **Verificar siempre el instrumento original** (la hoja principal, no las hojas resumen) antes de escribir o corregir nombres.
+- **Una sola palabra por concepto:** la que más unifica con lo que ya existe. En el Módulo II se dice "criterio" (el instrumento dice "Criterios mínimos").
+- **Etiqueta de cada pregunta:** vive en el catálogo (`indicadores[].etiqueta`), con el formato módulo, etapa (E) o derecho (D), criterio (C) y número de pregunta dentro de la etapa o el derecho (P). Por ejemplo, `II-E3-C2-P11`. La muestran la Metodología, la plantilla de Excel (columna Etiqueta, informativa), el cuestionario y los Resultados. Al replicar en otro módulo, se agrega la etiqueta en su catálogo con el mismo formato.
+
 ## Pendiente
 
 - **Criterios en los Módulos I, III y IV:** siguen con la ventana provisional hasta replicar la del Módulo II.

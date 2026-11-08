@@ -106,17 +106,18 @@
     const celda = (eje, col) => cruceOk ? (filas[ordenEjes.indexOf(eje)]?.celdas?.[col] || []) : [];
     const fichas = fichasDe(m);
     const respaldo = id => marcos(id).map(t => ({ texto: t, ficha: fichaDeMarco(fichas, t) }));
-    // Etiqueta de cada pregunta (8-nov): módulo, etapa (E) o derecho (D), componente (C) y número de la pregunta (P).
-    // Sale del catálogo, así que es estable: servirá para identificar cada pregunta en la Alimentación por secciones.
+    // Etiqueta de cada pregunta (8-nov): módulo, etapa (E) o derecho (D), criterio (C) y número de la pregunta (P).
+    // Vive en el catálogo (campo etiqueta) y la usan la Metodología, el Excel, el cuestionario y los Resultados.
+    // Este cálculo es el respaldo y la prueba verifica que coincida con el catálogo.
     const seccion = id => /^etapa-/.test(id) ? 'E' + id.split('-').pop() : 'D' + id.split('-').pop().padStart(2, '0');
     const etiqueta = (id, q, comps) => { const ci = comps.findIndex(c => c.id === q.componente);
       return ['II', seccion(id), ...(ci >= 0 ? ['C' + (ci + 1)] : []), 'P' + String(parseInt(q.codigo.replace(/\D/g, ''), 10)).padStart(2, '0')].join('-'); };
-    // Los componentes se agrupan por su id: dos componentes pueden tener el mismo nombre en el catálogo (etapa 3).
+    // Los criterios (componentes en el catálogo) se agrupan por su id, nunca por su nombre.
     const componentesDe = id => { const comps = ejes.get(id)?.componentes || [], repetido = n => comps.filter(c => c.nombre === n).length > 1;
       return comps.map((c, k) => ({ id: c.id, sigla: 'C' + (k + 1), nombre: c.nombre, detalle: repetido(c.nombre) && c.descripcion !== c.nombre ? c.descripcion : '', n: indicadores(id).filter(q => q.componente === c.id).length })); };
     const preguntasDe = id => {
       const comps = ejes.get(id)?.componentes || [];
-      return indicadores(id).map(q => ({ codigo: q.codigo, etiqueta: etiqueta(id, q, comps), pregunta: q.pregunta, componente: comps.some(c => c.id === q.componente) ? q.componente : null }));
+      return indicadores(id).map(q => ({ codigo: q.codigo, etiqueta: q.etiqueta || etiqueta(id, q, comps), pregunta: q.pregunta, componente: comps.some(c => c.id === q.componente) ? q.componente : null }));
     };
     const base = id => ({ id, icono: ICONOS[ICONO_EJE[id]], sub: `${indicadores(id).length} preguntas`, respaldo: respaldo(id), preguntas: preguntasDe(id), componentes: componentesDe(id) });
     const partes = {
@@ -191,7 +192,7 @@
         alimentacion: K.alimentacion, plantilla: 'plantillas/plantilla-modulo-ii.xlsx', reglas: m.calificacion.reglas, enfoques,
         // Grupos de lo que se llena. Los de preguntas y variables dependen del enfoque.
         grupos: E => [
-          { n: E.preguntas, rotulo: ['pregunta', 'preguntas'], items: [`${num(E.secciones)} ${E.parte === 'etapas' ? 'etapas' : 'derechos'}${E.componentes ? ` y ${num(E.componentes)} componentes` : ', sin componentes'}`, `Etiqueta: módulo, ${E.parte === 'etapas' ? 'etapa' : 'derecho'}${E.componentes ? ', componente' : ''} y número. Por ejemplo, ${E.ejemplo}`], texto: K.grupos.preguntas },
+          { n: E.preguntas, rotulo: ['pregunta', 'preguntas'], items: [`${num(E.secciones)} ${E.parte === 'etapas' ? 'etapas' : 'derechos'}${E.componentes ? ` y ${num(E.componentes)} criterios` : ', sin criterios'}`, `Etiqueta: módulo, ${E.parte === 'etapas' ? 'etapa' : 'derecho'}${E.componentes ? ', criterio' : ''} y número. Por ejemplo, ${E.ejemplo}`], texto: K.grupos.preguntas },
           { n: E.variables.length, rotulo: ['variable con escala', 'variables con escala'], items: E.variables.map(v => `${v.nombre}: columna ${v.columna}${v.promedia ? '' : ', no entra a los promedios'}`), texto: K.grupos.variables },
           { n: registros.length, rotulo: ['registro de evidencia', 'registros de evidencia'], items: registros, texto: K.grupos.registros },
           { n: criterios.calculo.length, rotulo: ['paso de cálculo', 'pasos de cálculo'], items: criterios.calculo.map(x => `${num(x.cifra)} ${x.rotulo}: ${x.texto}`), texto: K.grupos.calculo }] };
@@ -650,20 +651,20 @@
       const comps = it.componentes || [];
       const nodos = [mono(it.titulo, 'kit-ven-ante'), el('h2', it.preguntasRotulo || '¿Qué preguntamos?', 'kit-titular kit-ven-titular')];
       if (comps.length || todas.some(q => q.etiqueta)) {
-        // Cifras a la vista (8-nov): total de preguntas, total de componentes y preguntas por componente.
+        // Cifras a la vista (8-nov): total de preguntas, total de criterios y preguntas por criterio.
         const cifras = el('div', null, 'kit-pro-cifras');
         const cifra = (n, t) => { const c = el('div', null, 'kit-pro-cifra'); c.append(el('span', num(n), 'kit-pro-cifra-n'), el('span', t, 'kit-pro-cifra-t')); return c; };
         cifras.append(cifra(todas.length, todas.length === 1 ? 'pregunta' : 'preguntas'));
         if (comps.length) {
-          cifras.append(cifra(comps.length, comps.length === 1 ? 'componente' : 'componentes'));
+          cifras.append(cifra(comps.length, comps.length === 1 ? 'criterio' : 'criterios'));
           const reparto = el('div', null, 'kit-pro-reparto');
           comps.forEach(c => { const x = el('span', null, 'kit-pro-reparto-item'); x.style?.setProperty?.('flex-grow', String(c.n)); x.title = c.nombre;
             x.append(el('strong', c.sigla), el('span', `${num(c.n)} ${c.n === 1 ? 'pregunta' : 'preguntas'}`)); reparto.append(x); });
           cifras.append(reparto);
-        } else cifras.append(el('p', 'Este derecho no tiene componentes: su puntaje es el promedio de sus preguntas.', 'kit-met-nota kit-pro-cifras-nota'));
+        } else cifras.append(el('p', 'Este derecho no tiene criterios: su puntaje es el promedio de sus preguntas.', 'kit-met-nota kit-pro-cifras-nota'));
         nodos.push(cifras);
         const ej = todas[0]?.etiqueta;
-        nodos.push(el('p', `Cada pregunta se califica de 0 a 5 con su evidencia y lleva una etiqueta que la identifica: módulo, ${/-D\d/.test(ej || '') ? 'derecho' : 'etapa'}${comps.length ? ', componente' : ''} y número de pregunta${ej ? ` (por ejemplo, ${ej})` : ''}.`, 'kit-met-intro'));
+        nodos.push(el('p', `Cada pregunta se califica de 0 a 5 con su evidencia y lleva una etiqueta que la identifica: módulo, ${/-D\d/.test(ej || '') ? 'derecho' : 'etapa'}${comps.length ? ', criterio' : ''} y número de pregunta${ej ? ` (por ejemplo, ${ej})` : ''}.`, 'kit-met-intro'));
         const enGrupos = comps.length ? comps : [{ id: null }];
         enGrupos.forEach(c => {
           const s = el('section'), ol = el('ol');
