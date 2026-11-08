@@ -338,7 +338,72 @@
           "titulo": "El resultado de la organización",
           "texto": "Es el promedio de sus actores en cada escala. Se puede modificar solo con justificación escrita y el nombre de quien la modifica."
         }
-      ]
+      ],
+      "calificar": {
+        "ante": "Cómo se califica",
+        "titular": "Criterios de calificación",
+        "escala_titular": "Una escala para evaluarlos a todos.",
+        "escala_nota": "Elija la variable y pase el cursor o toque un nivel para ver qué significa. En este módulo un nivel más alto significa más intensidad, por eso el color va del azul al rojo.",
+        "temas_nota": "Cada botón lleva a lo que se registra o se califica en ese paso.",
+        "alimentacion": "Se llena en la pestaña Alimentación, con el formulario o con la plantilla de Excel.",
+        "enfoques": [
+          {
+            "corto": "Por actor",
+            "metodologia": "Cada actor se califica en cinco escalas de 1 a 5. Influencia e impacto lo ubican en la matriz y definen su nivel de relacionamiento. Dependencia, tensión y responsabilidad explican el porqué y activan las alertas.",
+            "variables": [
+              "influencia",
+              "impacto",
+              "dependencia",
+              "tension",
+              "responsabilidad"
+            ]
+          },
+          {
+            "corto": "Por organización",
+            "metodologia": "Los actores de una misma organización se agrupan y la organización recibe el promedio de sus actores en cada escala. Así se ve cómo se relaciona la empresa con cada entidad y no solo con cada persona.",
+            "variables": [
+              "influencia",
+              "impacto",
+              "dependencia",
+              "tension",
+              "responsabilidad"
+            ]
+          }
+        ],
+        "variables": {
+          "influencia": {
+            "que_es": "La capacidad del actor de incidir en la empresa y su proyecto, con recursos, convocatoria o acceso a quienes deciden.",
+            "que_no_es": "No es una opinión sobre el actor ni sobre si su posición es favorable o desfavorable.",
+            "que_evalua": "Los recursos y la capacidad que el actor ya ha mostrado, por ejemplo para movilizar personas o llegar a los medios."
+          },
+          "impacto": {
+            "que_es": "Cuánto cambia la situación del actor según lo que pase con el proyecto.",
+            "que_no_es": "No mide el impacto de la empresa en general, sino el efecto del proyecto sobre este actor.",
+            "que_evalua": "Los recursos, las condiciones de vida y las necesidades e intereses del actor que dependen del proyecto."
+          },
+          "dependencia": {
+            "que_es": "La fuerza del vínculo operativo, estratégico o social entre el actor y la empresa.",
+            "que_no_es": "No es la cercanía personal ni la frecuencia del contacto.",
+            "que_evalua": "Si una parte necesita a la otra para operar, por empleo, contratación, permisos o servicios."
+          },
+          "tension": {
+            "que_es": "El grado de conflicto en la relación entre el actor y la empresa.",
+            "que_no_es": "No es la posición del actor frente al proyecto. Un actor desfavorable puede tener una relación sin conflicto abierto.",
+            "que_evalua": "Los antecedentes de reclamos, la desinformación, la movilización y las acciones que afectan la operación."
+          },
+          "responsabilidad": {
+            "que_es": "La obligación que tiene la empresa con el actor, por norma, contrato o compromiso público.",
+            "que_no_es": "No es lo que el actor espera de la empresa si no hay una obligación que lo respalde.",
+            "que_evalua": "Las normas, los contratos, las políticas y los compromisos públicos que vinculan a la empresa con el actor."
+          }
+        },
+        "grupos": {
+          "datos": "Son los datos que se registran de cada actor en la Alimentación.",
+          "variables": "Son las que se eligen en el botón Variable.",
+          "calculo": "Nadie escribe promedios ni niveles. La plataforma los calcula en este orden.",
+          "extra": "Cada cuadrante de la matriz de influencia e impacto es un nivel de relacionamiento."
+        }
+      }
     }
   },
   "ddhh": {
@@ -891,7 +956,73 @@
           "titulo": "La calificación en blanco",
           "texto": "Una variable sin calificar cuenta como 0 en los promedios."
         }
-      ]
+      ],
+      "calificar": {
+        "ante": "Cómo se califica",
+        "titular": "Criterios de calificación",
+        "escala_titular": "Una escala para evaluarlos a todos.",
+        "escala_nota": "Elija la variable y pase el cursor o toque un nivel para ver qué significa. En este módulo un nivel más alto significa más intensidad, por eso el color va del azul al rojo. Las descripciones de los niveles son ilustrativas y están en validación.",
+        "temas_nota": "Cada botón lleva a lo que se registra o se califica en ese paso.",
+        "alimentacion": "Se llena en la pestaña Alimentación, con los formularios de los grupos de interés y del comité financiero.",
+        "enfoques": [
+          {
+            "corto": "Impacto",
+            "metodologia": "Siguiendo GRI 3, la importancia de un impacto sale de su gravedad y su probabilidad. La gravedad es el promedio de escala, alcance e irremediabilidad. Los grupos de interés califican cada tema y la plataforma promedia sus respuestas.",
+            "variables": [
+              "escala",
+              "alcance",
+              "irremediabilidad",
+              "probabilidad"
+            ]
+          },
+          {
+            "corto": "Financiera",
+            "metodologia": "Las áreas de la empresa califican cuánto puede afectar cada tema su rentabilidad y su gasto operativo. El efecto financiero es el promedio de las dos variables y de las áreas que califican.",
+            "variables": [
+              "rentabilidad",
+              "gasto_operativo"
+            ]
+          }
+        ],
+        "variables": {
+          "escala": {
+            "que_es": "Qué tan grave es el impacto sobre las personas o el ambiente. GRI 3 la llama escala.",
+            "que_no_es": "No es cuántas personas alcanza. Eso es el alcance.",
+            "que_evalua": "La magnitud del daño o del beneficio que el tema puede causar."
+          },
+          "alcance": {
+            "que_es": "Qué tan extendido es el impacto: cuántas personas o qué parte del ambiente alcanza.",
+            "que_no_es": "No es qué tan grave es para cada persona. Eso es la escala.",
+            "que_evalua": "El número de personas, el área o la parte de la cadena de valor que el impacto alcanza."
+          },
+          "irremediabilidad": {
+            "que_es": "Qué tan difícil es contrarrestar el impacto o devolver las cosas a como estaban. GRI 3 la llama carácter irremediable.",
+            "que_no_es": "No es el costo de la remediación para la empresa.",
+            "que_evalua": "Si el daño se puede reparar, en cuánto tiempo y con qué dificultad."
+          },
+          "probabilidad": {
+            "que_es": "Qué tan probable es que el impacto ocurra.",
+            "que_no_es": "No suma gravedad. Un impacto poco probable puede ser muy grave.",
+            "que_evalua": "La posibilidad de que el impacto ocurra, con lo que sabe cada grupo de interés."
+          },
+          "rentabilidad": {
+            "que_es": "Cuánto puede afectar el tema los ingresos y la rentabilidad de la empresa.",
+            "que_no_es": "No es el impacto sobre las personas o el ambiente. Eso se mide en la materialidad de impacto.",
+            "que_evalua": "El efecto que el tema puede tener en ventas, márgenes o acceso a mercados, según el área que califica."
+          },
+          "gasto_operativo": {
+            "que_es": "Cuánto puede afectar el tema los costos de operar.",
+            "que_no_es": "No incluye las inversiones de largo plazo que no cambian el gasto de operación.",
+            "que_evalua": "Los costos que el tema puede subir o bajar: multas, sobrecostos, seguros o eficiencias."
+          }
+        },
+        "grupos": {
+          "datos": "Son los datos que se registran en la Alimentación.",
+          "variables": "Son las que se eligen en el botón Variable.",
+          "calculo": "Nadie escribe promedios ni umbrales. La plataforma los calcula en este orden.",
+          "extra": "Un tema es material si supera el umbral en al menos una de las dos dimensiones."
+        }
+      }
     }
   },
   "riesgos": {
@@ -1262,7 +1393,78 @@
           "titulo": "La validación con los grupos",
           "texto": "Si un grupo propone un ajuste, se registra su calificación con su justificación. La calificación técnica y la propuesta quedan visibles en el resultado."
         }
-      ]
+      ],
+      "calificar": {
+        "ante": "Cómo se califica",
+        "titular": "Criterios de calificación",
+        "escala_titular": "Una escala para evaluarlos a todos.",
+        "escala_nota": "Elija la variable y pase el cursor o toque un nivel para ver qué significa. En este módulo un nivel más alto significa más intensidad, por eso el color va del azul al rojo.",
+        "temas_nota": "Cada botón lleva a lo que se registra o se califica en ese paso.",
+        "alimentacion": "Se llena en la pestaña Alimentación, con el formulario o con la plantilla de Excel.",
+        "enfoques": [
+          {
+            "corto": "Riesgos priorizados",
+            "metodologia": "Cada riesgo se califica en escala, alcance e irremediabilidad, de 1 a 3. La gravedad es su promedio. Con la probabilidad, una matriz fija la prioridad del riesgo.",
+            "variables": [
+              "escala",
+              "alcance",
+              "irremediabilidad",
+              "probabilidad"
+            ]
+          },
+          {
+            "corto": "Plan de medidas",
+            "metodologia": "La prioridad del riesgo fija el plazo de las medidas, y la relación de la empresa con el impacto fija el tipo de medida, como pide la Guía de la OCDE.",
+            "variables": [
+              "prioridad",
+              "vinculacion"
+            ]
+          }
+        ],
+        "variables": {
+          "escala": {
+            "que_es": "Qué tan grave sería el daño sobre el derecho afectado.",
+            "que_no_es": "No es cuántas personas afectaría. Eso es el alcance.",
+            "que_evalua": "Si el daño afecta la vida, la salud, las necesidades básicas o bienes de alto valor para las personas."
+          },
+          "alcance": {
+            "que_es": "Cuántas personas se verían afectadas, en proporción a la población del área o a un grupo identificable.",
+            "que_no_es": "No es qué tan grave sería para cada persona. Eso es la escala.",
+            "que_evalua": "El porcentaje de la población del área de impacto o de un grupo identificable que se vería afectado."
+          },
+          "irremediabilidad": {
+            "que_es": "Qué tan difícil sería devolver a las personas a la situación anterior.",
+            "que_no_es": "No es el costo de la reparación para la empresa.",
+            "que_evalua": "Los requerimientos técnicos, la aceptación de los grupos y la capacidad de quien repara."
+          },
+          "probabilidad": {
+            "que_es": "Qué tan probable es que el riesgo ocurra.",
+            "que_no_es": "No cambia la gravedad. Se cruza con ella en la matriz de prioridad.",
+            "que_evalua": "Los antecedentes, el contexto y los controles que ya existen.",
+            "niveles": {
+              "Baja": "Es poco probable que ocurra con los controles que existen hoy.",
+              "Media": "Puede ocurrir en algún momento si no se refuerzan los controles.",
+              "Alta": "Es probable que ocurra o ya hay señales de que está ocurriendo."
+            }
+          },
+          "prioridad": {
+            "que_es": "El orden en que se atienden los riesgos. Sale de cruzar la gravedad con la probabilidad.",
+            "que_no_es": "No se escribe a mano. La calcula la plataforma con la matriz.",
+            "que_evalua": "Cuánto tiempo hay para que las medidas del riesgo estén en marcha."
+          },
+          "vinculacion": {
+            "que_es": "La relación de la empresa con el impacto: si lo causa, contribuye a él o está directamente vinculada por sus relaciones comerciales.",
+            "que_no_es": "No es la gravedad del riesgo. Un riesgo grave puede estar solo vinculado a la empresa.",
+            "que_evalua": "Qué tipo de medida le corresponde a la empresa, según la Guía de la OCDE."
+          }
+        },
+        "grupos": {
+          "datos": "Son los datos que se registran de cada riesgo y de cada medida en la Alimentación.",
+          "variables": "Son las que se eligen en el botón Variable.",
+          "calculo": "Nadie escribe la gravedad ni la prioridad. La plataforma las calcula en este orden.",
+          "extra": "La matriz de gravedad y probabilidad fija la prioridad, y la prioridad fija el plazo."
+        }
+      }
     }
   }
 }

@@ -13,10 +13,10 @@
   const E = n => 'config/esquemas/' + n + '.json';
   // Fuentes de cada módulo: sus parámetros y los esquemas de su Alimentación. La Metodología no copia cifras.
   const FUENTES = {
-    actores: ['config/kit-actores-config.json', E('actores'), E('actores-organizaciones')],
+    actores: ['config/kit-actores-config.json', E('actores'), E('actores-organizaciones'), 'config/kit-carga-excel.json'],
     ddhh: ['config/kit-ddhh-catalogo.json', 'config/kit-ddhh-cruce.json', 'config/kit-carga-excel.json', E('ddhh-indicadores')],
     materialidad: ['config/kit-materialidad-catalogo.json', E('materialidad-temas'), E('materialidad-impacto'), E('materialidad-financiera'), E('materialidad-participacion')],
-    riesgos: ['config/kit-riesgos-config.json', E('riesgos'), E('riesgos-calificacion'), E('riesgos-validaciones'), E('riesgos-medidas')]
+    riesgos: ['config/kit-riesgos-config.json', E('riesgos'), E('riesgos-calificacion'), E('riesgos-validaciones'), E('riesgos-medidas'), 'config/criticidad-config.json', 'config/kit-carga-excel.json']
   };
   const cache = new Map();
   function cargar(ruta) {
@@ -86,7 +86,38 @@
     { n: fichasDe(m).length, rotulo: 'Estándares', sub: 'que respaldan el método', abre: 'estandares' },
     { n: Object.values(partes)[0].items.length, rotulo: m.proceso.rotulo || 'Pasos', sub: m.proceso.sub, abre: 'proceso' },
     { n: enf.items.length, rotulo: 'Enfoques', sub: 'con los que se lee el resultado', abre: 'enfoques' },
-    { n: nCrit, rotulo: 'Criterios', sub: subCrit, abre: 'criterios' }];
+    { n: nCrit, icono: m.criterios?.calificar ? 'balanza' : null, rotulo: 'Criterios', sub: m.criterios?.calificar ? 'de calificación: qué se califica, cómo y por qué' : subCrit, abre: 'criterios' }];
+
+  // ---------- Ventana Criterios de calificación, común a los Módulos I, III y IV (réplica del Módulo II) ----------
+  // Color por posición en la escala. En estos módulos un nivel más alto es más intenso (más influencia, más gravedad),
+  // por eso va del azul (nivel-5) al rojo (nivel-0). En el Módulo II, donde más alto es mejor, va al revés.
+  const colorPosicion = (i, n) => `var(--nivel-${5 - Math.round((n > 1 ? i / (n - 1) : 1) * 5)})`;
+  function columnaExcel(excel, modulo, campo) {
+    const x = excel?.[modulo]; if (!x) return null;
+    const c = [...(x.columnas || []), ...(x.hojas || []).flatMap(h => h.columnas || [])].find(y => y.campo === campo);
+    return c ? (c.encabezado || c.encabezados?.[0] || null) : null;
+  }
+  // variables: { id: { nombre, escala: [{ valor, nombre, descripcion }], fuente?, promedia? } }. El texto (qué es, qué no es,
+  // qué evalúa y descripciones que falten) sale de criterios.calificar en kit-metodologia.json.
+  function calificarDe({ m, partes, criterios, variables, excel, modulo, plantilla, extra }) {
+    const T = m.criterios?.calificar; if (!T) return null;
+    const fuente = id => { if (variables[id].fuente) return variables[id].fuente; const c = columnaExcel(excel, modulo, id);
+      return c ? 'Columna del Excel: ' + c : 'Campo del formulario: ' + variables[id].nombre; };
+    const variable = id => { const v = variables[id], t = T.variables?.[id] || {};
+      return { id, nombre: v.nombre, fuente: fuente(id), promedia: v.promedia !== false, nota: v.nota, que_es: t.que_es, que_no_es: t.que_no_es, que_evalua: t.que_evalua,
+        escala: v.escala.map((x, i) => ({ valor: x.valor, nombre: x.nombre || '', descripcion: x.descripcion || t.niveles?.[x.valor] || '', color: colorPosicion(i, v.escala.length) })) }; };
+    const enfoques = T.enfoques.map((e, k) => ({ id: 'enfoque-' + (k + 1), nombre: m.enfoques.items[k]?.titulo || e.corto, corto: e.corto, metodologia: e.metodologia,
+      parte: 'proceso', variables: e.variables.filter(id => variables[id]).map(variable) }));
+    const pasos = partes.proceso.items.filter(p => p.preguntas?.length), nDatos = pasos.reduce((t, p) => t + p.preguntas.length, 0);
+    const minus = x => x.charAt(0).toLowerCase() + x.slice(1);
+    return { ante: T.ante, titular: T.titular, escalaTitular: T.escala_titular, escalaNota: T.escala_nota, temasNota: T.temas_nota,
+      alimentacion: T.alimentacion, plantilla, reglas: criterios.reglas, enfoques,
+      grupos: E => [
+        { n: nDatos, rotulo: ['dato que se registra', 'datos que se registran'], items: pasos.map(p => `${p.titulo}: ${num(p.preguntas.length)}`), texto: T.grupos.datos },
+        { n: E.variables.length, rotulo: ['variable con escala', 'variables con escala'], items: E.variables.map(v => `${v.nombre}: ${minus(v.fuente)}`), texto: T.grupos.variables },
+        { n: criterios.calculo.length, rotulo: ['paso de cálculo', 'pasos de cálculo'], items: criterios.calculo.map(x => `${num(x.cifra)} ${x.rotulo}: ${x.texto}`), texto: T.grupos.calculo },
+        { ...extra, texto: T.grupos.extra }] };
+  }
 
   // Lo que la Metodología necesita del catálogo del Módulo II, calculado y no copiado.
   function datosDdhh(cat, cruce, m, excel, esqInd) {
@@ -200,7 +231,7 @@
   }
 
   // ---------- Módulo I: Mapeo de actores ----------
-  function datosActores(cfg, esqActores, esqOrg, m) {
+  function datosActores(cfg, esqActores, esqOrg, m, excel) {
     const ejes = ['influencia', 'impacto', 'dependencia', 'tension', 'responsabilidad'];
     const nombre = k => esqActores?.campos?.[k]?.etiqueta || k;
     const niveles = Object.fromEntries(ejes.map(k => [k, listaNiveles(cfg.escalas[k] || [])]));
@@ -226,7 +257,10 @@
         { titulo: 'Alerta de conflicto', texto: `El actor se marca en alerta si su posición es ${String(cfg.alerta.posicion).toLowerCase()} o si su tensión es de ${cfg.alerta.tensionMinima} o más.` },
         { titulo: 'Cuándo se puede ajustar el nivel', texto: 'Solo con uno de estos motivos: ' + cfg.motivosAjuste.map(x => x.charAt(0).toLowerCase() + x.slice(1)).join(', ') + '.' }] };
     const fichas = fichasDe(m);
-    return { fichas, partes, enfoques, criterios, tiles: tilesBase(m, partes, enfoques, ejes.length, 'escalas de 1 a 5 para calificar a cada actor') };
+    const calificar = calificarDe({ m, partes, criterios, excel, modulo: 'actores', plantilla: 'plantillas/plantilla-modulo-i.xlsx',
+      variables: Object.fromEntries(ejes.map(k => [k, { nombre: nombre(k), escala: niveles[k].map(n => ({ valor: n.valor, descripcion: n.descripcion })) }])),
+      extra: { n: cfg.niveles.length, rotulo: ['nivel de relacionamiento', 'niveles de relacionamiento'], items: cfg.niveles.map(n => `${n.nombre}: influencia ${n.influencia.toLowerCase?.() ?? n.influencia} e impacto ${n.impacto.toLowerCase?.() ?? n.impacto}`) } });
+    return { fichas, partes, enfoques, criterios, calificar, tiles: tilesBase(m, partes, enfoques, ejes.length, 'escalas de 1 a 5 para calificar a cada actor') };
   }
 
   // ---------- Módulo III: Doble materialidad ----------
@@ -255,11 +289,14 @@
       notas: ilustrativa ? ['Las descripciones de la escala son ilustrativas y están en validación con el equipo técnico.'] : [],
       reglas: [...m.criterios.reglas, { titulo: 'Cuándo un tema es material', texto: cat.umbral.nota }] };
     const fichas = fichasDe(m);
-    return { fichas, partes, enfoques, criterios, tiles: tilesBase(m, partes, enfoques, vars.length, 'variables calificadas de 0 a 5') };
+    const calificar = calificarDe({ m, partes, criterios, modulo: 'materialidad', plantilla: null,
+      variables: Object.fromEntries(vars.map(k => [k, { nombre: etiqueta(k), escala }])),
+      extra: { n: 2, rotulo: ['umbral', 'umbrales'], items: ['Umbral de impacto: promedio de la importancia de todos los temas evaluados', 'Umbral financiero: promedio del efecto financiero de todos los temas evaluados'] } });
+    return { fichas, partes, enfoques, criterios, calificar, tiles: tilesBase(m, partes, enfoques, vars.length, 'variables calificadas de 0 a 5') };
   }
 
   // ---------- Módulo IV: Riesgos ----------
-  function datosRiesgos(cfg, esq, m) {
+  function datosRiesgos(cfg, esq, m, criticidad, excel) {
     const g = cfg.gravedad, crit = g.criterios;
     const etiqueta = k => esq.calificacion?.campos?.[k]?.etiqueta || k;
     const niveles = Object.fromEntries([...crit.map(k => [k, Array.from({ length: g.maximo - g.minimo + 1 }, (_, i) => ({ valor: g.minimo + i, descripcion: '' }))]),
@@ -288,7 +325,21 @@
         { titulo: 'Plazos según la prioridad', texto: cfg.niveles.map(n => `Prioridad ${n.toLowerCase()}: ${cfg.plazos[n]} meses`).join('. ') + '.' },
         ...tipos] };
     const fichas = fichasDe(m);
-    return { fichas, partes, enfoques, criterios, tiles: tilesBase(m, partes, enfoques, crit.length + 1, 'de gravedad y probabilidad que fijan la prioridad') };
+    // Descripciones de los niveles de gravedad: las del instrumento (criticidad-config.json, Demo A).
+    const limpio = t => String(t || '').replace(/\s*\/\/\s*/g, '. ').replace(/\s+/g, ' ').replace(/\.\s*\./g, '.').trim();
+    const P = criticidad?.gravedad?.parametros || {}, ALIAS = { irremediabilidad: 'irreparable' };
+    const deGravedad = k => (P[k] || P[ALIAS[k]] || []).map(n => ({ valor: n.valor, descripcion: limpio(n.descripcion) })).sort((a, b) => a.valor - b.valor);
+    const orden = ['Baja', 'Media', 'Alta'], porOrden = xs => [...xs].sort((a, b) => orden.indexOf(a) - orden.indexOf(b));
+    const vinc = esq.calificacion?.campos?.vinculacion?.valores || Object.keys(cfg.tiposMedida);
+    const ordenVinc = ['Directamente vinculada', 'Contribuye', 'Causa'];
+    const medidas = v => Object.entries(cfg.tiposMedida[v] || {}).map(([tipo, ms]) => `Riesgo ${tipo.toLowerCase()}: ${ms.join(', ').toLowerCase()}`).join('. ') + '.';
+    const calificar = calificarDe({ m, partes, criterios, excel, modulo: 'riesgos', plantilla: 'plantillas/plantilla-modulo-iv.xlsx',
+      variables: { ...Object.fromEntries(g.criterios.map(k => [k, { nombre: etiqueta(k), escala: deGravedad(k) }])),
+        probabilidad: { nombre: etiqueta('probabilidad'), escala: porOrden(cfg.probabilidades).map(v => ({ valor: v })) },
+        prioridad: { nombre: 'Prioridad', fuente: 'La calcula la plataforma con la matriz', promedia: false, nota: 'Pase el cursor o toque un nivel para ver qué significa. La prioridad no se escribe: la calcula la plataforma con la matriz de gravedad y probabilidad.', escala: porOrden(cfg.niveles).map(v => ({ valor: v, descripcion: `Las medidas del riesgo tienen un plazo de ${cfg.plazos[v]} meses.` })) },
+        vinculacion: { nombre: etiqueta('vinculacion'), promedia: false, nota: 'Pase el cursor o toque un valor para ver qué medidas le corresponden. La vinculación no cambia la gravedad: define el tipo de medida.', escala: [...vinc].sort((a, b) => ordenVinc.indexOf(a) - ordenVinc.indexOf(b)).map(v => ({ valor: v, descripcion: medidas(v) })) } },
+      extra: { n: cfg.niveles.length, rotulo: ['prioridad', 'prioridades'], items: porOrden(cfg.niveles).reverse().map(v => `${v}: plazo de ${cfg.plazos[v]} meses`) } });
+    return { fichas, partes, enfoques, criterios, calificar, tiles: tilesBase(m, partes, enfoques, crit.length + 1, 'de gravedad y probabilidad que fijan la prioridad') };
   }
 
   function pintar(c, m, extra = {}) {
@@ -762,14 +813,14 @@
         const E = C.enfoques[k], V = E.variables[kv];
         nombreVar.textContent = V.nombre;
         bVar.setAttribute('aria-label', `Variable: ${V.nombre}. Elegir otra variable`);
-        menu.replaceChildren(...E.variables.map((x, j) => { const o = boton('kit-cri-varsel-op' + (j === kv ? ' actual' : ''), el('span', x.nombre), el('span', 'Columna del Excel: ' + x.columna, 'kit-cri-varsel-col'));
+        menu.replaceChildren(...E.variables.map((x, j) => { const o = boton('kit-cri-varsel-op' + (j === kv ? ' actual' : ''), el('span', x.nombre), el('span', x.fuente || 'Columna del Excel: ' + x.columna, 'kit-cri-varsel-col'));
           o.setAttribute('role', 'option'); o.setAttribute('aria-selected', String(j === kv)); o.onclick = () => { kv = j; abreMenu(false); pintarVariable(); bVar.focus?.({ preventScroll: true }); };
           const li = el('li'); li.append(o); return li; }));
         // Una escala para todos. El Vistazo de cada nivel explica qué significa para la variable elegida.
         const escala = el('ol', null, 'kit-cri-escala' + (V.escala.length < 6 ? ' kit-cri-escala-corta' : ''));
         V.escala.forEach(nv => {
           const textual = typeof nv.valor !== 'number';
-          const b = boton('kit-cri-nivel' + (textual ? ' kit-cri-nivel-texto' : ''), el('span', null, 'kit-cri-nivel-barra'), el('span', String(nv.valor), 'kit-cri-nivel-num'), el('span', nv.nombre || '', 'kit-cri-nivel-nombre'));
+          const b = boton('kit-cri-nivel' + (textual ? ' kit-cri-nivel-texto' : '') + (V.escala.some(x => String(x.valor).length > 8) ? ' kit-cri-nivel-largo' : ''), el('span', null, 'kit-cri-nivel-barra'), el('span', String(nv.valor), 'kit-cri-nivel-num'), el('span', nv.nombre || '', 'kit-cri-nivel-nombre'));
           b.style?.setProperty?.('--color', nv.color);
           b.setAttribute('aria-label', [nv.valor, nv.nombre].filter(Boolean).join(', '));
           const tit = el('p', null, 'kit-vz-titulo kit-vz-nivel'); tit.append(el('strong', String(nv.valor)), el('span', nv.nombre || ''));
@@ -779,7 +830,7 @@
         });
         const caja = el('dl', null, 'kit-cri-variable-caja');
         [['¿Qué es?', V.que_es], ['¿Qué no es?', V.que_no_es], ['¿Qué evalúa?', V.que_evalua]].filter(x => x[1]).forEach(([t, x]) => { const g = el('div'); g.append(el('dt', t), el('dd', x)); caja.append(g); });
-        bloqueEscala.replaceChildren(escala, el('p', V.promedia ? C.escalaNota : `Pase el cursor o toque un valor para ver qué significa. ${V.nombre} se registra en cada pregunta, pero no entra a los promedios.`, 'kit-met-nota'), caja);
+        bloqueEscala.replaceChildren(escala, el('p', V.nota || (V.promedia ? C.escalaNota : `Pase el cursor o toque un valor para ver qué significa. ${V.nombre} se registra en cada pregunta, pero no entra a los promedios.`), 'kit-met-nota'), caja);
       }
       function pintarEnfoque() {
         const E = C.enfoques[k], parte = partes[E.parte], otro = C.enfoques[(k + 1) % C.enfoques.length];
@@ -792,7 +843,8 @@
         parte.items.forEach((it, i) => {
           const b = boton('kit-cri-tema' + (i % 2 ? ' kit-cri-claro' : ''), icono(it, 'kit-cri-tema-icono'), el('span', dos(i), 'kit-mono'), el('span', it.titulo, 'kit-cri-tema-titulo'), el('span', it.sub, 'kit-cri-tema-sub'));
           b.setAttribute('aria-label', `${parte.unidad} ${i + 1}: ${it.titulo}. Ver qué se califica`); b.setAttribute('aria-haspopup', 'dialog');
-          b.onclick = () => ventanaPreguntas({ ...it, preguntasRotulo: '¿Qué calificamos?' }, b);
+          // Si el paso no registra datos (por ejemplo, Priorizar en el Módulo III), lleva a su ficha.
+          b.onclick = () => it.preguntas?.length ? ventanaPreguntas({ ...it, preguntasRotulo: it.preguntasRotulo || '¿Qué calificamos?' }, b) : fichaProceso(E.parte, i, b);
           const li = el('li'); li.style?.setProperty?.('--i', i); li.append(b); pista.append(li);
         });
         const mover = sgn => () => pista.scrollBy?.({ left: sgn * (pista.clientWidth || 600) * .8, behavior: sinMovimiento() ? 'auto' : 'smooth' });
@@ -809,14 +861,16 @@
           const li = el('li'); li.append(vz.caja); grupos.append(li);
         });
         const destino = extra.empresa && extra.puedeEditar ? `#/${extra.modulo}/${extra.empresa}/alimentacion` : C.plantilla;
-        const a = el('a', null, 'kit-cri-alimentacion'); a.href = destino;
-        if (destino === C.plantilla) a.setAttribute('download', '');
-        a.append(el('span', 'Alimentación', 'kit-cri-alimentacion-titulo'), el('span', destino === C.plantilla ? 'Descargar la plantilla de Excel' : 'Ir a Alimentación', 'kit-cri-alimentacion-sub'));
+        // Sin permiso de edición y sin plantilla (Módulo III), la tarjeta solo muestra las reglas.
+        const a = destino ? el('a', null, 'kit-cri-alimentacion') : boton('kit-cri-alimentacion');
+        if (destino) a.href = destino;
+        if (destino && destino === C.plantilla) a.setAttribute('download', '');
+        a.append(el('span', 'Alimentación', 'kit-cri-alimentacion-titulo'), el('span', !destino ? 'Ver cómo se llena' : destino === C.plantilla ? 'Descargar la plantilla de Excel' : 'Ir a Alimentación', 'kit-cri-alimentacion-sub'));
         const reglas = el('ol', null, 'kit-vz-lista kit-vz-reglas');
         (C.reglas || []).forEach(r => { const li = el('li'); li.append(el('strong', r.titulo + '. '), el('span', r.texto)); reglas.append(li); });
         const vzA = vistazo(a, [el('p', C.alimentacion, 'kit-vz-titulo'), reglas], 'kit-cri-alimentacion-vz');
         // Sin cursor, el primer toque muestra las reglas y el segundo lleva a Alimentación.
-        a.onclick = ev => { if (sinCursor() && !vzA.abierto()) { ev.preventDefault?.(); vzA.abre(true); } };
+        a.onclick = ev => { if (!destino) { vzA.abre(!vzA.abierto()); return; } if (sinCursor() && !vzA.abierto()) { ev.preventDefault?.(); vzA.abre(true); } };
         const liA = el('li', null, 'kit-cri-grupos-alimentacion'); liA.append(vzA.caja); grupos.append(liA);
 
         pintarVariable();
@@ -885,9 +939,9 @@
     if (!FUENTES[modulo] || (!m?.proceso && !m?.metodo)) return null;
     const f = await Promise.all(FUENTES[modulo].map(cargar));
     if (modulo === 'ddhh') return datosDdhh(f[0], f[1], m, f[2], f[3]);
-    if (modulo === 'actores') return datosActores(f[0], f[1], f[2], m);
+    if (modulo === 'actores') return datosActores(f[0], f[1], f[2], m, f[3]);
     if (modulo === 'materialidad') return datosMaterialidad(f[0], { temas: f[1], impacto: f[2], financiera: f[3], participacion: f[4] }, m);
-    return datosRiesgos(f[0], { riesgos: f[1], calificacion: f[2], validaciones: f[3], medidas: f[4] }, m);
+    return datosRiesgos(f[0], { riesgos: f[1], calificacion: f[2], validaciones: f[3], medidas: f[4] }, m, f[5], f[6]);
   }
   const vista = modulo => ({
     async render(c, _, p) {

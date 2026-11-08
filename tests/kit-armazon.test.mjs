@@ -226,7 +226,17 @@ test('E54: la Metodología se replica en los Módulos I, III y IV con el mismo m
       const clase = c => n.todos().filter(x => (x.className || '').split(' ').includes(c));
       const tiles = clase('kit-met-tile'), capa = clase('kit-ven-capa')[0], cima = () => capa.children[capa.children.length - 1];
       assert.deepEqual(tiles.map(t => t.children[1].textContent), ['Estándares', 'Pasos', 'Enfoques', 'Criterios'], modulo);
-      assert.equal(tiles[3].children[0].textContent, String(criterios[modulo]), modulo + ': los criterios salen de los parámetros');
+      assert.equal(tiles[3].children[0].attrs.class, 'kit-met-tile-icono', modulo + ': Criterios con ícono');
+      // E55: las variables de la ventana Criterios salen de los parámetros del módulo.
+      const C = d.calificar, unicas = new Set(C.enfoques.flatMap(E => E.variables.map(v => v.id)));
+      assert.equal(C.enfoques[0].variables.filter(v => v.promedia).length, criterios[modulo] - (modulo === 'materialidad' ? esperado.materialidad.financiera.variables.length : 0), modulo + ': variables del primer enfoque');
+      assert.ok(unicas.size >= criterios[modulo] - (modulo === 'riesgos' ? 0 : 0), modulo);
+      for (const E of C.enfoques) {
+        const g = C.grupos(E);
+        assert.deepEqual(g[1].items.map(x => x.split(':')[0]), E.variables.map(v => v.nombre), modulo + ': el Vistazo nombra las variables del botón');
+        for (const v of E.variables) { assert.ok(v.escala.length >= 2, v.id); assert.ok(v.que_es && v.que_no_es && v.que_evalua, modulo + '/' + v.id + ': sin qué es, qué no es o qué evalúa'); }
+        if (modulo !== 'materialidad') for (const v of E.variables) assert.ok(v.escala.every(x => x.descripcion), modulo + '/' + v.id + ': nivel sin descripción');
+      }
       tiles[0].onclick(); assert.equal(cima().todos().filter(y => y.className === 'kit-est-tarjeta').length, m.estandares.fichas.length);
       capa.onclick({ target: capa });
       tiles[1].onclick(); const pasos = cima().todos().filter(y => y.className === 'kit-serv-titulo');
@@ -240,7 +250,13 @@ test('E54: la Metodología se replica en los Módulos I, III y IV con el mismo m
       capa.onclick({ target: capa }); assert.equal(capa.children.length, 0);
       tiles[2].onclick(); cima().todos().find(y => y.className === 'kit-enf-metodo').onclick(); assert.equal(capa.children.length, 2, 'el enfoque lleva al proceso');
       capa.onclick({ target: capa });
-      tiles[3].onclick(); assert.match(cima().textContent, /Reglas/); capa.onclick({ target: capa });
+      tiles[3].onclick(); assert.match(cima().textContent, /Criterios de calificación/);
+      const deC = c => cima().todos().filter(y => (y.className || '').split(' ').includes(c));
+      assert.equal(deC('kit-cri-tema').length, m.proceso.pasos.length, modulo + ': un botón por paso');
+      assert.equal(deC('kit-cri-varsel-op').length, C.enfoques[0].variables.length);
+      deC('kit-cri-varsel-op').at(-1).onclick(); assert.equal(deC('kit-cri-variable-nombre')[0].textContent, C.enfoques[0].variables.at(-1).nombre);
+      deC('kit-cri-chip')[0].onclick(); assert.equal(deC('kit-cri-enfoque-nombre')[0].textContent, C.enfoques[1].nombre, modulo + ': la pastilla cambia de enfoque');
+      capa.onclick({ target: capa });
       // Cada campo citado existe en su esquema: la Metodología no promete datos que la Alimentación no registra.
       for (const p of m.proceso.pasos) for (const c of p.campos || []) assert.equal(d.partes.proceso.items.find(x => x.id === p.id).preguntas.filter(q => q.grupo === (c.grupo || null)).length, c.ids.length, `${modulo}/${p.id}: campo inexistente en ${c.esquema}`);
       for (const f of m.estandares.fichas) {

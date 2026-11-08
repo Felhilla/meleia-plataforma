@@ -546,3 +546,5 @@ button.kit-cri-chip:focus-visible { outline: 2px solid var(--oro); outline-offse
 .kit-pro-etiqueta { white-space: nowrap; padding: 3px 8px; border-radius: 6px; border: 1px solid currentColor; align-self: start; font-size: .72rem; letter-spacing: .06em; }
 .kit-pro-preguntas li:has(> .kit-pro-etiqueta) { grid-template-columns: 8.2rem minmax(0, 1fr); }
 @media (max-width: 600px) { .kit-pro-preguntas li:has(> .kit-pro-etiqueta) { grid-template-columns: minmax(0, 1fr); gap: var(--e2); } .kit-pro-etiqueta { justify-self: start; } }
+.kit-cri-nivel-largo .kit-cri-nivel-num { font-size: clamp(1.3rem, 2.4vw, 1.8rem); line-height: 1.15; text-align: center; }
+button.kit-cri-alimentacion { all: unset; box-sizing: border-box; cursor: help; display: grid; align-content: end; gap: 4px; width: 100%; min-height: 128px; padding: var(--e3) var(--e4); border: 2px solid #A9C48A; border-radius: 14px; color: var(--texto); }
