@@ -251,6 +251,19 @@ test('E40/E49: Metodología del Módulo II con cifras del catálogo, fichas de e
     tiles[2].onclick(); cima().todos().find(y => y.className === 'kit-met-dimension').onclick(); assert.equal(abiertas(), 2);
     cima().todos().find(y => y.className === 'kit-serv-titulo').onclick(); assert.equal(abiertas(), 3, 'dimensión, etapas y ficha de la etapa');
     x().onclick(); x().onclick(); x().onclick(); assert.equal(abiertas(), 0);
+    // E52: Proceso con dos partes (Incorporación y Gestión). Ficha y ventana de preguntas apiladas.
+    tiles[1].onclick(); assert.equal(abiertas(), 1);
+    const navs = () => cima().todos().filter(y => y.className?.startsWith('kit-pro-nav-boton')), titulosArco = () => cima().todos().filter(y => y.className === 'kit-serv-titulo');
+    assert.equal(titulosArco().length, m.metodo.etapas.length);
+    navs()[1].onclick(); assert.equal(titulosArco().length, m.temas.items.length, 'Gestión de DDHH muestra los diez derechos');
+    assert.equal(navs()[1].attrs['aria-pressed'], 'true');
+    navs()[0].onclick(); titulosArco()[0].onclick(); assert.equal(abiertas(), 2);
+    assert.match(cima().textContent, /¿Qué pide el estándar\?/); assert.match(cima().textContent, /Evidencias/);
+    const pide = cima().todos().find(y => y.className === 'kit-pro-preguntar'); pide.onclick(); assert.equal(abiertas(), 3);
+    assert.equal(cima().todos().filter(y => y.tag === 'li').length, d.indicadores(m.metodo.etapas[0].eje).length, 'todas las preguntas de la etapa');
+    x().onclick(); x().onclick(); assert.equal(abiertas(), 1);
+    navs()[1].onclick(); titulosArco()[0].onclick(); assert.match(cima().textContent, /¿Qué protege\?/);
+    x().onclick(); x().onclick(); assert.equal(abiertas(), 0);
     tiles[3].onclick(); assert.match(cima().textContent, /Reglas/); x().onclick();
     for (const f of m.estandares.fichas) {
       assert.match(f.enlace, /^https:\/\//, f.sigla + ' necesita enlace oficial');

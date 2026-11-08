@@ -78,25 +78,10 @@
       const paso = t => { const p = Math.min(1, (t - t0) / dur); span.textContent = num(Math.round(valor * (1 - Math.pow(1 - p, 3)))); if (p < 1) root.requestAnimationFrame(paso); };
       span.textContent = '0'; root.requestAnimationFrame(paso);
     }
-    const cabeza = (sello, color, antetitulo, titulo) => {
-      const h = el('header', null, 'kit-ficha-cabeza'), s = el('div', null, 'kit-ficha-sello kit-met-sello');
-      s.style?.setProperty?.('--sello', color);
-      s.append(el('span', sello, 'kit-met-sello-texto'));
-      const barra = el('div', null, 'kit-ficha-barra'); barra.append(mono(antetitulo), el('h3', titulo));
-      h.append(s, barra); return h;
-    };
     const bloque = (rotulo, ...hijos) => { const s = el('section', null, 'kit-met-bloque'); s.append(mono(rotulo, 'kit-ficha-sub'), ...hijos); return s; };
     const parrafo = t => el('p', t, 'kit-met-texto');
     const lista = (items, clase = 'kit-met-lista') => { const ul = el('ul', null, clase); items.forEach(t => ul.append(typeof t === 'string' ? el('li', t) : t)); return ul; };
     const encabezado = (ante, titular, intro) => [mono(ante, 'kit-ven-ante'), el('h2', titular, 'kit-titular kit-ven-titular'), ...(intro ? [el('p', intro, 'kit-met-intro')] : [])];
-    const preguntas = (id, n) => {
-      const todas = d.indicadores(id), ol = el('ol', null, 'kit-met-preguntas');
-      todas.slice(0, n).forEach(i => ol.append(el('li', i.pregunta)));
-      if (todas.length <= n) return ol;
-      const resto = el('ol', null, 'kit-met-preguntas'); resto.start = n + 1; resto.setAttribute('start', String(n + 1));
-      todas.slice(n).forEach(i => resto.append(el('li', i.pregunta)));
-      const caja = el('div'); caja.append(ol, desplegable(`Ver las ${num(todas.length - n)} preguntas restantes`, resto, 'kit-met-despliega-chico')); return caja;
-    };
     // Portada del documento original. Si no tenemos la imagen, una portada tipográfica con la sigla (no se inventa una).
     const portadaDe = (f, clase = 'kit-est-portada') => {
       if (f.portada) {
@@ -161,7 +146,7 @@
 
     const tiles = el('ul', null, 'kit-met-tiles');
     [[fichas.length, 'Estándares', 'internacionales que respaldan el método', ventanaEstandares],
-      [etapas.length, 'Etapas', 'del proceso de debida diligencia de la OCDE', ventanaEtapas],
+      [etapas.length, 'Etapas', 'del proceso de debida diligencia de la OCDE', b => ventanaProceso(b, 'etapas')],
       [d.dimensiones.length, 'Dimensiones', 'en las que se lee el resultado', ventanaDimensiones],
       [d.totalCriterios, 'Criterios', `que agrupan ${num(d.totalIndicadores)} preguntas calificadas de 0 a 5`, ventanaCriterios]]
       .forEach(([n, rotulo, sub, fn], k) => {
@@ -303,61 +288,155 @@
       abrir('Cruce de estándares', [...encabezado(m.estandares.cruce_titulo, m.estandares.cruce_titular, m.estandares.cruce_intro), caja, el('p', m.estandares.cruce_nota, 'kit-met-nota')], desde, 'kit-ven-cruce');
     }
 
-    // ---------- Ventana: Etapas (arco de la OCDE) ----------
-    function arcoEtapas() {
-      const diagrama = el('div', null, 'kit-serv-diagrama kit-met-diagrama'), angosta = root.matchMedia?.('(max-width: 860px)');
-      const C = [260, 330], R0 = 175, R1 = 285, RN = 290, n = etapas.length, paso = 180 / n;
+    // ---------- Ventana: Proceso (boceto 261108_Metodologicos_Proceso) ----------
+    // Dos partes en la misma ventana: Incorporación de la debida diligencia (6 etapas OCDE) y Gestión de DDHH (10 derechos).
+    // Cada etapa o derecho abre su ficha, y la ficha abre la ventana de preguntas.
+    const CIRC = (cx, cy, r) => `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0`;
+    const ICONOS = {
+      'etapa-ocde-1': 'M6 3h8l4 4v14H6zM14 3v4h4M9 13l2 2 4-4',
+      'etapa-ocde-2': CIRC(10, 10, 6) + 'M14.5 14.5L20 20',
+      'etapa-ocde-3': 'M12 3l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6zM9 12l2 2 4-4',
+      'etapa-ocde-4': 'M4 4v16h16M7 15l4-4 3 3 5-6',
+      'etapa-ocde-5': 'M4 5h16v11H10l-5 4v-4H4zM8 9h8M8 12h5',
+      'etapa-ocde-6': 'M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z',
+      'tema-ddhh-1': 'M10 14a4 4 0 0 1 0-5.6l2.4-2.4a4 4 0 0 1 5.6 5.6l-1.2 1.2M14 10a4 4 0 0 1 0 5.6l-2.4 2.4a4 4 0 0 1-5.6-5.6l1.2-1.2',
+      'tema-ddhh-2': CIRC(12, 5, 2) + 'M12 8v6M8 11h8M10 21l2-7 2 7',
+      'tema-ddhh-3': CIRC(12, 12, 8) + 'M8.5 10h7M8.5 14h7',
+      'tema-ddhh-4': 'M12 4v16M8 20h8M5 7h14M5 7l-2.5 6h5zM19 7l-2.5 6h5z',
+      'tema-ddhh-5': CIRC(8, 8, 2.5) + CIRC(16, 8, 2.5) + 'M3 19c0-3 2-5 5-5s5 2 5 5M11 19c0-3 2-5 5-5s5 2 5 5',
+      'tema-ddhh-6': 'M3 17h18M5 17a7 7 0 0 1 14 0M10 10V6.5h4V10',
+      'tema-ddhh-7': CIRC(12, 12, 8) + 'M14.5 9.5c-.5-1-1.5-1.5-2.5-1.5-1.4 0-2.5.8-2.5 2s1.1 1.6 2.5 2 2.5.8 2.5 2-1.1 2-2.5 2c-1 0-2-.5-2.5-1.5M12 6.5v11',
+      'tema-ddhh-8': CIRC(12, 12, 8) + 'M12 8v4l3 2',
+      'tema-ddhh-9': 'M4 8h16v11H4zM9 8V5h6v3M4 13h16',
+      'tema-ddhh-10': 'M5 19c0-8 5-13 14-14 0 9-5 14-13 14zM5 19l8-8'
+    };
+    const icono = (eje, clase = 'kit-pro-icono') => {
+      const s = svg('svg', { class: clase, viewBox: '0 0 24 24', 'aria-hidden': 'true', focusable: 'false' });
+      s.append(svg('path', { d: ICONOS[eje] || CIRC(12, 12, 6) })); return s;
+    };
+    // Las dos partes del proceso, armadas con el texto de la config y las cifras del catálogo.
+    const partes = {
+      etapas: {
+        nav: 'Incorporación de la DD', ante: 'Incorporación de la debida diligencia', titular: m.metodo.titular, intro: m.metodo.intro,
+        centro: ['GUÍA OCDE', m.metodo.frase], unidad: 'Etapa',
+        items: etapas.map(e => ({ eje: e.eje, titulo: e.titulo, fuente: e }))
+      },
+      derechos: {
+        nav: 'Gestión de DDHH', ante: 'Gestión de derechos humanos', titular: m.temas.titular, intro: m.temas.intro,
+        centro: ['DERECHOS', 'Gestión\nde DDHH'], unidad: 'Derecho',
+        items: m.temas.items.map(t => ({ eje: t.eje, titulo: d.corto(t.eje), fuente: t }))
+      }
+    };
+    // Estándar que respalda: cada marco del catálogo se enlaza al documento de su ficha. Si no hay ficha, queda como texto.
+    const fichaDeMarco = t => fichas.find(f => [f.sigla, f.columna, f.catalogo].filter(Boolean).some(s => t.startsWith(s))) || (/OIT|Protocolo de 2014/.test(t) ? porId.get('oit') : null);
+
+    function arcoProceso(parte, cual) {
+      const items = parte.items, n = items.length, denso = n > 6;
+      const diagrama = el('div', null, 'kit-serv-diagrama kit-met-diagrama' + (denso ? ' kit-pro-denso' : '')), angosta = root.matchMedia?.('(max-width: 860px)');
+      const C = [260, 330], R0 = 175, R1 = 285, RN = 290, paso = 180 / n;
       const punto = (r, g) => [C[0] + r * Math.cos(g * Math.PI / 180), C[1] + r * Math.sin(g * Math.PI / 180)];
-      const caja = angosta?.matches ? '92 0 545 660' : '0 0 1000 660';
-      const dibujo = svg('svg', { class: 'kit-serv-svg', 'aria-hidden': 'true', focusable: 'false', viewBox: caja });
+      const dibujo = svg('svg', { class: 'kit-serv-svg', 'aria-hidden': 'true', focusable: 'false', viewBox: angosta?.matches ? '92 0 545 660' : '0 0 1000 660' });
       dibujo.append(svg('path', { d: `M${C[0]} ${C[1] - 318}a318 318 0 0 1 0 636`, class: 'kit-serv-marco' }));
       const titulos = el('div', null, 'kit-serv-titulos');
-      etapas.forEach((e, i) => {
+      items.forEach((it, i) => {
         const a0 = -90 + i * paso + 1, a1 = -90 + (i + 1) * paso - 1, medio = -90 + (i + .5) * paso, col = COLORES[i % 4];
         const [x0, y0] = punto(R1, a0), [x1, y1] = punto(R1, a1), [x2, y2] = punto(R0, a1), [x3, y3] = punto(R0, a0);
         const g = svg('g', { class: 'kit-serv-seg', style: `--i:${i}` });
         g.append(svg('path', { d: `M${x0} ${y0}A${R1} ${R1} 0 0 1 ${x1} ${y1}L${x2} ${y2}A${R0} ${R0} 0 0 0 ${x3} ${y3}Z`, fill: col }));
-        const [cx, cy] = punto(RN, medio);
-        g.append(svg('line', { x1: cx + 40, y1: cy, x2: 702, y2: cy, class: 'kit-serv-guia' }), svg('circle', { cx: 714, cy, r: 8, class: 'kit-serv-anillo' }));
+        const [cx, cy] = punto(RN, medio), rn = denso ? 26 : 38;
+        // Los rótulos se reparten parejo a la derecha, para que no se monten (sobre todo con los 10 derechos).
+        const ty = n > 1 ? (denso ? 36 : 60) + i * ((denso ? 588 : 540) / (n - 1)) : cy;
+        g.append(svg('line', { x1: cx + rn + 2, y1: cy, x2: 702, y2: ty, class: 'kit-serv-guia' }), svg('circle', { cx: 714, cy: ty, r: 8, class: 'kit-serv-anillo' }));
         const nodo = svg('g', { class: 'kit-serv-nodo', transform: `translate(${cx} ${cy})` });
-        const t = svg('text', { class: 'kit-serv-sigla kit-met-nodo-num', 'text-anchor': 'middle', 'dominant-baseline': 'central' }); t.textContent = String(i + 1);
-        nodo.append(svg('circle', { r: 38, class: 'kit-serv-nodo-fondo' }), svg('circle', { r: 33, class: 'kit-serv-nodo-aro', stroke: col }), t);
+        const ic = svg('g', { class: 'kit-pro-nodo-icono', transform: `translate(${-rn * .55} ${-rn * .55}) scale(${rn * 1.1 / 24})`, stroke: col });
+        ic.append(svg('path', { d: ICONOS[it.eje] || CIRC(12, 12, 6) }));
+        nodo.append(svg('circle', { r: rn, class: 'kit-serv-nodo-fondo' }), svg('circle', { r: rn - 5, class: 'kit-serv-nodo-aro', stroke: col }), ic);
         g.append(nodo); dibujo.append(g);
-        const b = boton('kit-serv-titulo', el('span', dos(i), 'kit-mono'), el('span', e.titulo, 'kit-serv-titulo-texto'), el('span', `${num(d.indicadores(e.eje).length)} preguntas`, 'kit-serv-ver'));
-        if (b.style) { b.style.top = (cy / 660 * 100) + '%'; b.style.setProperty?.('--i', i); }
-        b.setAttribute('aria-label', `Etapa ${i + 1}: ${e.titulo}. Abrir la ficha`); b.setAttribute('aria-haspopup', 'dialog');
-        b.onclick = () => fichaEtapa(i, b); g.addEventListener?.('click', () => fichaEtapa(i, b));
+        const b = boton('kit-serv-titulo', el('span', dos(i), 'kit-mono'), el('span', it.titulo, 'kit-serv-titulo-texto'), el('span', `${num(d.indicadores(it.eje).length)} preguntas`, 'kit-serv-ver'));
+        if (b.style) { b.style.top = (ty / 660 * 100) + '%'; b.style.setProperty?.('--i', i); }
+        b.setAttribute('aria-label', `${parte.unidad} ${i + 1}: ${it.titulo}. Abrir la ficha`); b.setAttribute('aria-haspopup', 'dialog');
+        b.onclick = () => fichaProceso(cual, i, b); g.addEventListener?.('click', () => fichaProceso(cual, i, b));
         titulos.append(b);
       });
       const centro = svg('g', { class: 'kit-serv-centro' });
       centro.append(svg('circle', { cx: C[0], cy: C[1], r: 158 }));
-      const t0 = svg('text', { x: C[0], y: C[1] - 52, 'text-anchor': 'middle', class: 'kit-serv-centro-ante' }); t0.textContent = 'GUÍA OCDE'; centro.append(t0);
-      m.metodo.frase.split('\n').slice(0, 2).forEach((linea, k) => { const t = svg('text', { x: C[0], y: C[1] + 4 + k * 38, 'text-anchor': 'middle', class: 'kit-serv-centro-frase' }); t.textContent = linea; centro.append(t); });
+      const t0 = svg('text', { x: C[0], y: C[1] - 52, 'text-anchor': 'middle', class: 'kit-serv-centro-ante' }); t0.textContent = parte.centro[0]; centro.append(t0);
+      parte.centro[1].split('\n').slice(0, 2).forEach((linea, k) => { const t = svg('text', { x: C[0], y: C[1] + 4 + k * 38, 'text-anchor': 'middle', class: 'kit-serv-centro-frase' }); t.textContent = linea; centro.append(t); });
       centro.append(svg('circle', { cx: C[0], cy: C[1] + 90, r: 6, class: 'kit-hero-punto' }));
       dibujo.append(centro);
-      diagrama.append(dibujo, el('p', 'Las seis etapas del proceso de debida diligencia.', 'solo-lectores'), titulos);
+      diagrama.append(dibujo, el('p', `${parte.unidad === 'Etapa' ? 'Las seis etapas del proceso de debida diligencia' : 'Los diez derechos que se gestionan'}.`, 'solo-lectores'), titulos);
       diagrama.classList?.add('recarga');
       return diagrama;
     }
-    function ventanaEtapas(desde) {
-      abrir('Etapas', [...encabezado('El método', m.metodo.titular, m.metodo.intro), arcoEtapas()], desde, 'kit-ven-etapas');
+    function ventanaProceso(desde, cual = 'etapas') {
+      const cuerpo = el('div', null, 'kit-pro'), nav = el('nav', null, 'kit-pro-nav'), zona = el('div', null, 'kit-pro-zona');
+      nav.setAttribute('aria-label', 'Partes del proceso');
+      const botones = Object.entries(partes).map(([k, p]) => {
+        const b = boton('kit-pro-nav-boton', el('span', p.nav)); b.dataset && (b.dataset.parte = k);
+        b.onclick = () => mostrar(k); return [k, b];
+      });
+      function mostrar(k) {
+        cual = k; const p = partes[k];
+        botones.forEach(([kk, b]) => { b.setAttribute('aria-pressed', String(kk === k)); b.classList?.toggle('actual', kk === k); });
+        zona.replaceChildren(...encabezado(p.ante, p.titular, p.intro), arcoProceso(p, k));
+      }
+      nav.append(...botones.map(x => x[1])); cuerpo.append(nav, zona); mostrar(cual);
+      abrir('Proceso', [cuerpo], desde, 'kit-ven-proceso');
     }
-    function fichaEtapa(i, desde) {
-      const e = etapas[i], eje = d.ejes.get(e.eje), crit = (eje?.componentes || []).map(x => x.nombre);
-      const unicos = crit.filter((x, k) => crit.indexOf(x) === k);
-      const rej = el('div', null, 'kit-met-rejilla');
-      rej.append(
-        bloque('Lo que pide el estándar', parrafo(e.pide)),
-        bloque('Evidencia que buscamos', parrafo(e.evidencia)),
-        bloque(`Qué evaluamos: ${num(d.indicadores(e.eje).length)} preguntas`, lista(unicos)),
-        bloque('La respaldan', lista(d.marcos(e.eje), 'kit-met-chips')),
-        bloque('Así se pregunta', preguntas(e.eje, 2))
-      );
-      abrir('Etapa ' + (i + 1), [cabeza(String(i + 1), COLORES[i % 4], `Etapa ${dos(i)} de ${etapas.length}`, e.titulo),
-        el('p', `${e.oficial}. Guía OCDE, paso ${i + 1}, ${e.pagina}.`, 'kit-met-oficial'), rej], desde, 'kit-ven-ficha');
+    function fichaProceso(cual, i, desde) {
+      const p = partes[cual], it = p.items[i], eje = d.ejes.get(it.eje), f = it.fuente, esEtapa = cual === 'etapas';
+      const total = d.indicadores(it.eje).length;
+      const cab = el('header', null, 'kit-pro-cabeza'), sello = el('span', null, 'kit-pro-sello');
+      sello.style?.setProperty?.('--color', COLORES[i % 4]); sello.append(icono(it.eje));
+      const tit = el('div'); tit.append(mono(`${p.unidad} ${dos(i)} de ${p.items.length}`), el('h3', it.titulo, 'kit-pro-titulo'));
+      cab.append(sello, tit);
+      // Referencia: el nombre oficial y dónde está en el estándar, con enlace al documento.
+      const ref = el('div', null, 'kit-pro-ref');
+      if (esEtapa) {
+        const ocde = porId.get('ocde');
+        ref.append(el('p', f.oficial + '.', 'kit-met-oficial'));
+        if (ocde) ref.append(aDocumento(ocde, 'kit-pro-enlace', el('span', `Guía OCDE, paso ${i + 1}, ${f.pagina}`), el('span', ' ↗')));
+      } else ref.append(el('p', (eje?.nombre || it.titulo) + '.', 'kit-met-oficial'));
+      // Estándares que la respaldan, cada uno con enlace a su documento en línea.
+      const respaldo = el('ul', null, 'kit-pro-respaldo');
+      d.marcos(it.eje).forEach(t => {
+        const fi = fichaDeMarco(t), li = el('li');
+        li.append(fi ? aDocumento(fi, 'kit-pro-enlace', el('span', t), el('span', ' ↗')) : el('span', t)); respaldo.append(li);
+      });
+      const caja = (clase, rotulo, ...hijos) => { const s = el('section', null, 'kit-pro-caja ' + clase); s.append(mono(rotulo, 'kit-pro-rotulo'), ...hijos); return s; };
+      const derecha = el('div', null, 'kit-pro-derecha');
+      if (esEtapa && f.evidencia) derecha.append(caja('kit-pro-evidencias', 'Evidencias', parrafo(f.evidencia)));
+      derecha.append(caja('kit-pro-estandar', esEtapa ? 'Estándares que la respaldan' : 'Estándares que lo respaldan', respaldo));
+      const bp = boton('kit-pro-preguntar', el('span', '¿Qué preguntamos?', 'kit-pro-preguntar-texto'), el('span', `${num(total)} preguntas`, 'kit-mono'));
+      bp.setAttribute('aria-haspopup', 'dialog'); bp.onclick = () => ventanaPreguntas(it, eje, bp);
+      derecha.append(bp);
+      const analiza = el('div', null, 'kit-pro-analiza');
+      const crit = (eje?.componentes || []);
+      if (crit.length) {
+        const ul = el('ul', null, 'kit-pro-busca');
+        crit.forEach(c => { const li = el('li'); li.append(el('strong', c.nombre), el('span', c.descripcion || '')); ul.append(li); });
+        analiza.append(caja('kit-pro-izq', 'Qué buscamos', ul));
+      } else analiza.classList?.add('kit-pro-solo');
+      analiza.append(derecha);
+      abrir(it.titulo, [cab, el('p', 'Referencia', 'kit-mono kit-pro-sub'), ref,
+        el('h4', esEtapa ? '¿Qué pide el estándar?' : '¿Qué protege?', 'kit-pro-pregunta'), parrafo(esEtapa ? f.pide : f.protege),
+        el('h4', '¿Qué analizamos?', 'kit-pro-pregunta'), analiza], desde, 'kit-ven-ficha kit-ven-pro-ficha');
+    }
+    function ventanaPreguntas(it, eje, desde) {
+      const todas = d.indicadores(it.eje), grupos = el('div', null, 'kit-pro-preguntas');
+      const fila = q => { const li = el('li'); li.append(el('span', q.codigo, 'kit-mono'), el('span', q.pregunta)); return li; };
+      const crit = eje?.componentes || [];
+      if (crit.length > 1) crit.forEach(c => {
+        const qs = todas.filter(q => q.componente === c.id); if (!qs.length) return;
+        const s = el('section'); const ol = el('ol'); qs.forEach(q => ol.append(fila(q)));
+        s.append(el('h4', c.nombre, 'kit-pro-grupo'), ol); grupos.append(s);
+      });
+      else { const ol = el('ol'); todas.forEach(q => ol.append(fila(q))); grupos.append(ol); }
+      abrir('Preguntas', [mono(it.titulo, 'kit-ven-ante'), el('h2', '¿Qué preguntamos?', 'kit-titular kit-ven-titular'),
+        el('p', `${num(todas.length)} preguntas, tal como se le formulan a la empresa. Cada una se califica de 0 a 5 con su evidencia.`, 'kit-met-intro'), grupos], desde, 'kit-ven-preguntas');
     }
 
-    // ---------- Ventana: Dimensiones y Derechos ----------
+    // ---------- Ventana: Dimensiones ----------
     function ventanaDimensiones(desde) {
       const ul = el('ul', null, 'kit-met-dimensiones');
       d.dimensiones.forEach((g, k) => {
@@ -366,27 +445,10 @@
         const b = boton('kit-met-dimension', mono('Dimensión ' + dos(k)), el('span', g.titulo, 'kit-met-dimension-titulo'), el('span', g.pregunta, 'kit-met-dimension-pregunta'),
           el('span', `${num(n)} ${esEtapas ? 'etapas' : 'derechos'}`, 'kit-met-dimension-cifra'), chips, el('span', esEtapas ? 'Ver las etapas' : 'Ver los derechos', 'kit-met-dimension-ver'));
         b.setAttribute('aria-haspopup', 'dialog');
-        b.onclick = () => esEtapas ? ventanaEtapas(b) : ventanaDerechos(b);
+        b.onclick = () => ventanaProceso(b, esEtapas ? 'etapas' : 'derechos');
         const li = el('li'); li.append(b); ul.append(li);
       });
       abrir('Dimensiones', [...encabezado('Dimensiones', m.dimensiones?.titular || 'Dimensiones', m.dimensiones?.intro), ul], desde, 'kit-ven-dimensiones');
-    }
-    function ventanaDerechos(desde) {
-      const rejilla = el('div', null, 'kit-met-celdas');
-      m.temas.items.forEach((t, i) => {
-        const nombre = d.ejes.get(t.eje)?.nombre || '';
-        const b = boton('kit-met-celda', el('span', dos(i), 'kit-mono'), el('span', d.corto(t.eje), 'kit-met-celda-titulo'), el('span', `${num(d.indicadores(t.eje).length)} preguntas`, 'kit-met-celda-sub'));
-        b.style?.setProperty?.('--color', COLORES[i % 4]); b.style?.setProperty?.('--i', i);
-        b.setAttribute('aria-label', `Derecho ${i + 1}: ${nombre}. Abrir la ficha`); b.setAttribute('aria-haspopup', 'dialog');
-        b.onclick = () => abrir(d.corto(t.eje), [
-          cabeza(dos(i), COLORES[i % 4], `Derecho ${dos(i)} de ${m.temas.items.length}`, nombre),
-          bloque('Qué protege', parrafo(t.protege)),
-          bloque('Marco de referencia', lista(d.marcos(t.eje), 'kit-met-chips')),
-          bloque(`Así se pregunta: ${num(d.indicadores(t.eje).length)} preguntas en total`, preguntas(t.eje, 3))
-        ], b, 'kit-ven-ficha');
-        rejilla.append(b);
-      });
-      abrir('Derechos', [...encabezado('Los derechos', m.temas.titular, m.temas.intro), rejilla], desde, 'kit-ven-derechos');
     }
 
     // ---------- Ventana: Criterios (cómo se califica) ----------

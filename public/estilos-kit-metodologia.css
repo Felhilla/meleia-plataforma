@@ -164,7 +164,7 @@ body:has(.kit-met) { overflow-x: clip; }
 /* Cifras doradas: cada una abre su ventana. */
 .kit-met-tiles { list-style: none; margin: var(--e4) 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--e3); }
 .kit-met-tile { all: unset; box-sizing: border-box; cursor: pointer; position: relative; display: grid; align-content: start; gap: 4px; width: 100%; height: 100%; min-height: 170px; padding: var(--e4) var(--e4) var(--e5);
-  border-radius: 16px; background: #B78D36; color: #1B2216; transition: transform .25s var(--ease-out), box-shadow .25s ease, background .2s ease; animation: kit-sube .6s var(--ease-out) both; animation-delay: calc(.25s + var(--i, 0) * 80ms); }
+  border-radius: 16px; background: #B78D36; color: #FFFFFF; transition: transform .25s var(--ease-out), box-shadow .25s ease, background .2s ease; animation: kit-sube .6s var(--ease-out) both; animation-delay: calc(.25s + var(--i, 0) * 80ms); }
 .kit-met-tile:hover { transform: translateY(-4px); background: #C39A44; box-shadow: 0 18px 40px rgba(0,0,0,.3); }
 .kit-met-tile:focus-visible { outline: 3px solid #F1EEE6; outline-offset: 3px; }
 .kit-met-tile-num { font-family: var(--fuente-titulos); font-size: clamp(3rem, 6vw, 4.6rem); font-weight: 600; line-height: .95; font-variant-numeric: tabular-nums; }
@@ -314,3 +314,68 @@ button.kit-cruce-col:focus-visible { outline: 2px solid var(--oro); }
 }
 .kit-cruce-sector .kit-mono { white-space: nowrap; }
 .kit-met-despliega-linea + .kit-ven-pie { border-top: 0; margin-top: var(--e3); }
+
+/* E52 (8-nov, boceto 261108_Metodologicos_Proceso). Regla nueva de Felipe: si un bloque de texto no comparte el espacio
+   con otro elemento, usa todo el ancho disponible. */
+.kit-met-tile-sub { font-weight: 500; }
+.kit-ven .kit-met-intro, .kit-ven .kit-ven-titular { max-width: none; }
+
+/* Ventana Proceso: navegación a la izquierda (Incorporación y Gestión) y el arco a la derecha. */
+.kit-pro { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: var(--e5); align-items: start; }
+.kit-pro-nav { position: sticky; top: calc(var(--e6) + 24px); display: grid; gap: var(--e2); }
+.kit-pro-nav-boton { all: unset; box-sizing: border-box; cursor: pointer; padding: var(--e3); border-radius: 12px; border: 1px solid var(--borde); font-size: var(--t-chico); font-weight: 600; line-height: 1.3; color: var(--texto-suave); transition: background .2s ease, color .2s ease, border-color .2s ease; }
+.kit-pro-nav-boton:hover { color: var(--texto); border-color: var(--oro-texto); }
+.kit-pro-nav-boton.actual { background: #A9C48A; border-color: #A9C48A; color: #1B2216; }
+.kit-pro-nav-boton:focus-visible { outline: 2px solid var(--oro); outline-offset: 3px; }
+.kit-pro-zona { min-width: 0; }
+.kit-pro-nodo-icono { fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.kit-pro-denso .kit-serv-titulo { padding: 2px 0; gap: 0; }
+.kit-pro-denso .kit-serv-titulo > .kit-mono { display: none; }
+.kit-pro-denso .kit-serv-titulo-texto { font-size: clamp(1rem, 1.5vw, 1.2rem); }
+
+/* Ficha de etapa o derecho: panel verde con preguntas en dorado, como en el boceto. */
+.kit-ven-pro-ficha, .kit-ven-preguntas { --fondo: #34412E; --superficie: #3D4B36; --texto: #F1EEE6; --texto-suave: #D3D5C6; --borde: #56664C; --linea: #56664C; --oro-texto: #E0C27C;
+  background: linear-gradient(160deg, #3A4733, #2B3626); }
+.kit-pro-cabeza { display: flex; align-items: center; gap: var(--e4); margin-bottom: var(--e4); }
+.kit-pro-sello { flex: none; width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; border: 2px solid #F1EEE6; color: #F1EEE6; }
+.kit-pro-icono { width: 40px; height: 40px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.kit-pro-titulo { margin: 4px 0 0; font-family: var(--fuente-titulos); font-size: clamp(2rem, 4vw, 3rem); font-weight: 500; line-height: 1.05; }
+.kit-pro-sub { margin-top: var(--e3); }
+.kit-pro-ref { padding-bottom: var(--e3); border-bottom: 1px solid var(--linea); }
+.kit-pro-ref .kit-met-oficial { margin-bottom: var(--e2); }
+.kit-pro-enlace { color: var(--oro-texto); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.kit-pro-enlace:hover { color: var(--texto); }
+.kit-pro-pregunta { margin: var(--e5) 0 var(--e2); font-family: var(--fuente-titulos); font-size: 1.5rem; font-weight: 500; color: var(--oro-texto); }
+.kit-pro-analiza { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: var(--e4); align-items: start; }
+.kit-pro-analiza.kit-pro-solo { grid-template-columns: minmax(0, 1fr); }
+.kit-pro-solo .kit-pro-derecha { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.kit-pro-derecha { display: grid; gap: var(--e3); align-items: start; }
+.kit-pro-caja { padding: var(--e4); border-radius: 14px; background: rgba(241,238,230,.07); border: 1px solid var(--borde); }
+.kit-pro-izq { background: rgba(241,238,230,.11); height: 100%; box-sizing: border-box; }
+.kit-pro-rotulo { margin-bottom: var(--e2); }
+.kit-pro-caja .kit-met-texto { margin: 0; }
+.kit-pro-busca { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e3); }
+.kit-pro-busca li { display: grid; gap: 4px; line-height: 1.5; }
+.kit-pro-busca span { color: var(--texto-suave); font-size: var(--t-chico); }
+.kit-pro-respaldo { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e2); }
+.kit-pro-preguntar { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: baseline; justify-content: space-between; gap: var(--e3); padding: var(--e4); border-radius: 14px; border: 2px solid #F1EEE6; transition: background .2s ease, color .2s ease, transform .2s var(--ease-out); }
+.kit-pro-preguntar-texto { font-family: var(--fuente-titulos); font-size: 1.35rem; }
+.kit-pro-preguntar:hover { background: #F1EEE6; color: #1B2216; transform: translateY(-2px); }
+.kit-pro-preguntar:hover .kit-mono { color: #7A5B1E; }
+.kit-pro-preguntar:focus-visible { outline: 2px solid var(--oro); outline-offset: 3px; }
+
+/* ¿Qué preguntamos?: filas alternas, como en el boceto. */
+.kit-pro-preguntas ol { list-style: none; margin: 0 0 var(--e5); padding: 0; display: grid; gap: var(--e2); }
+.kit-pro-preguntas li { display: grid; grid-template-columns: 3.2rem minmax(0, 1fr); gap: var(--e3); align-items: baseline; padding: var(--e3) var(--e4); border-radius: 10px; background: rgba(241,238,230,.1); line-height: 1.5; }
+.kit-pro-preguntas li:nth-child(even) { background: transparent; border: 1px solid #B78D36; }
+.kit-pro-grupo { margin: 0 0 var(--e3); font-family: var(--fuente-titulos); font-size: 1.25rem; font-weight: 500; color: var(--oro-texto); }
+
+@media (max-width: 860px) {
+  .kit-pro { grid-template-columns: minmax(0, 1fr); gap: var(--e4); }
+  .kit-pro-nav { position: static; grid-template-columns: 1fr 1fr; }
+  .kit-pro-analiza { grid-template-columns: minmax(0, 1fr); }
+  .kit-pro-denso .kit-serv-titulo { padding: var(--e3) 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kit-pro-nav-boton, .kit-pro-preguntar { transition: none; }
+}

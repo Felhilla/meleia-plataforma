@@ -34,7 +34,7 @@
     },
     "temas": {
       "titular": "Diez derechos, en la operación y en la cadena.",
-      "intro": "La segunda dimensión mira la gestión de cada derecho. Los temas salen de los principios fundamentales de la OIT y de los temas sectoriales de GRI. Cada uno se evalúa con preguntas propias. En cada ficha se muestran algunas, tal como se le formulan a la empresa.",
+      "intro": "La segunda dimensión mira la gestión de cada derecho. Los temas salen de los principios fundamentales de la OIT y de los temas sectoriales de GRI. Cada uno se evalúa con preguntas propias. En la ficha de cada derecho están todas, tal como se le formulan a la empresa.",
       "items": [
         { "eje": "tema-ddhh-1", "protege": "Que nadie trabaje bajo amenaza, por deudas, con sus documentos retenidos o sin libertad para renunciar." },
         { "eje": "tema-ddhh-2", "protege": "Que ningún menor de la edad mínima trabaje en la operación o en la cadena, y ningún menor de 18 años en trabajos peligrosos." },
