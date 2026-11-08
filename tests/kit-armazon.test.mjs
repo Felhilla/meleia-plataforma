@@ -345,7 +345,32 @@ test('E40/E49: Metodología del Módulo II con cifras del catálogo, fichas de e
     // Con la tabla de columnas del Excel, los grupos nombran las columnas reales de la plantilla.
     const conExcel = M.datosDdhh(cat, cruce, m, leer('kit-carga-excel.json'), leer('esquemas/ddhh-indicadores.json'));
     const columnas = leer('kit-carga-excel.json').ddhh.hojas.find(h => h.coleccion === 'ddhh-indicadores').columnas.map(c => c.encabezado);
-    for (const it of conExcel.calificar.grupos.slice(0, 3).flatMap(g => g.items)) assert.ok(columnas.some(c => it.startsWith(c)), it + ' no es una columna de la plantilla');
+    for (const E of conExcel.calificar.enfoques) {
+      const grupos = conExcel.calificar.grupos(E), vars = grupos[1];
+      // El Vistazo de variables nombra exactamente las que se eligen en el botón Variable, con su columna real.
+      assert.deepEqual(vars.items.map(x => x.split(':')[0]), E.variables.map(v => v.nombre));
+      assert.ok(E.variables.every(v => columnas.includes(v.columna)), 'cada variable tiene su columna en la plantilla');
+      assert.ok(grupos[2].items.every(x => columnas.includes(x)));
+      assert.equal(grupos[0].n, E.variables.length && cat.indicadores.filter(i => cat.ejes.find(e => e.id === i.eje).grafico === E.id).length);
+    }
+    // Ventana con el botón Variable: cambia la escala y sus Vistazos.
+    const n2 = new Nodo('div'); M.pintar(n2, m, { datos: conExcel, modulo: 'ddhh', empresa: 'uno', puedeEditar: true });
+    const de2 = c => n2.todos().filter(y => (y.className || '').split(' ').includes(c));
+    de2('kit-met-tile')[3].onclick();
+    assert.equal(de2('kit-cri-varsel-op').length, 2);
+    assert.equal(de2('kit-cri-variable-nombre')[0].textContent, cfg.ddhh.criterios.enfoques['etapas-ocde'].variable.nombre);
+    de2('kit-cri-varsel-op')[1].onclick();
+    assert.equal(de2('kit-cri-variable-nombre')[0].textContent, 'Incorporado');
+    assert.deepEqual(de2('kit-cri-nivel').map(b => b.children[1].textContent), ['No', 'Parcial', 'Sí'], 'la escala cambia con la variable');
+    // Etiquetas de las preguntas y cifras por componente. En la etapa 3 los dos componentes tienen el mismo nombre y no se mezclan.
+    const e3 = conExcel.partes.etapas.items[2];
+    assert.deepEqual(e3.componentes.map(c => c.n), [10, 6]);
+    assert.equal(new Set(conExcel.partes.etapas.items.concat(conExcel.partes.derechos.items).flatMap(x => x.preguntas.map(q => q.etiqueta))).size, cat.indicadores.length, 'etiquetas únicas');
+    assert.equal(e3.preguntas[0].etiqueta, 'II-E3-C1-P01'); assert.match(conExcel.partes.derechos.items[3].preguntas[0].etiqueta, /^II-D04-P01$/);
+    de2('kit-cri-tema')[2].onclick();
+    const ven = n2.todos().filter(y => y.className === 'kit-ven kit-ven-preguntas').pop();
+    assert.equal(ven.todos().filter(y => y.className === 'kit-pro-grupo').length, 2);
+    assert.deepEqual(ven.todos().filter(y => y.className === 'kit-pro-cifra-n').map(y => y.textContent), ['16', '2']);
     for (const f of m.estandares.fichas) {
       assert.match(f.enlace, /^https:\/\//, f.sigla + ' necesita enlace oficial');
       for (const k of ['que_es', 'por_que', 'nombre', 'emisor', 'anio']) assert.ok(f[k], f.sigla + ' sin ' + k);

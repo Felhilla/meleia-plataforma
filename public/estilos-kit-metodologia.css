@@ -466,7 +466,6 @@ button.kit-cri-chip:focus-visible { outline: 2px solid var(--oro); outline-offse
 .kit-cri-nivel-barra { width: 64%; height: 8px; border-radius: 3px; border: 2px solid var(--color); }
 .kit-cri-nivel-num { font-family: var(--fuente-titulos); font-size: clamp(3rem, 7vw, 5rem); font-weight: 500; line-height: 1; color: var(--color); font-variant-numeric: tabular-nums; }
 .kit-cri-nivel-nombre { font-size: var(--t-chico); font-weight: 600; text-align: center; }
-.kit-cri-variable { margin-top: var(--e6); }
 .kit-cri-variable-cab { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e3); margin-bottom: var(--e3); }
 .kit-cri-chip-fijo { font-size: var(--t-chico); }
 .kit-cri-variable-nombre { margin: 0; font-family: var(--fuente-titulos); font-weight: 500; font-size: 1.35rem; }
@@ -516,3 +515,34 @@ button.kit-cri-chip:focus-visible { outline: 2px solid var(--oro); outline-offse
 @media (prefers-reduced-motion: reduce) { .kit-cri-zona.recarga > *, .kit-vz-panel { animation: none; transition: none; } }
 /* El bloque que tiene un Vistazo abierto pasa por encima de sus vecinos (cada bloque animado crea su propia capa). */
 .kit-cri-zona > *:has(.kit-vz.abierto), .kit-cri-zona > * > li:has(.kit-vz.abierto) { position: relative; z-index: 6; }
+
+/* E55b (8-nov): botón Variable sobre la escala, cifras de la ventana de preguntas y etiqueta de cada pregunta. */
+.kit-cri-varsel { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: var(--e3); margin: 0 0 var(--e4); }
+.kit-cri-varsel-boton { font-size: var(--t-chico); }
+.kit-cri-varsel-menu { position: absolute; z-index: 7; top: calc(100% + 6px); left: 0; min-width: min(380px, 90vw); margin: 0; padding: var(--e2); list-style: none; border-radius: 12px; background: var(--superficie); border: 1px solid var(--borde-fuerte); box-shadow: 0 18px 44px rgba(0,0,0,.35); }
+.kit-cri-varsel-menu[hidden] { display: none; }
+.kit-cri-varsel-op { all: unset; box-sizing: border-box; cursor: pointer; display: grid; gap: 2px; width: 100%; padding: 10px 14px; border-radius: 8px; }
+.kit-cri-varsel-op:hover, .kit-cri-varsel-op:focus-visible { background: var(--suave); }
+.kit-cri-varsel-op.actual { box-shadow: inset 3px 0 0 #A9C48A; }
+.kit-cri-varsel-op > span:first-child { font-family: var(--fuente-titulos); font-size: 1.05rem; }
+.kit-cri-varsel-col { font-size: var(--t-micro); color: var(--texto-suave); }
+.kit-cri-zona > .kit-cri-varsel { z-index: 7; }
+.kit-cri-bloque-escala .kit-cri-variable-caja { margin-top: var(--e5); }
+.kit-cri-escala-corta { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+.kit-cri-nivel-texto .kit-cri-nivel-num { font-size: clamp(2rem, 4.5vw, 3.2rem); padding-block: .2em; }
+.kit-pro-cifras { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e3) var(--e5); margin: var(--e2) 0 var(--e3); padding: var(--e3) var(--e4); border-radius: 14px; background: var(--fondo-alterno); border: 1px solid var(--borde); }
+.kit-pro-cifra { display: grid; }
+.kit-pro-cifra-n { font-family: var(--fuente-titulos); font-size: clamp(2.4rem, 4.5vw, 3.4rem); line-height: 1; color: #C9A04E; font-variant-numeric: tabular-nums; }
+.kit-pro-cifra-t { font-family: var(--fuente-mono); font-size: var(--t-micro); letter-spacing: .12em; text-transform: uppercase; color: var(--texto-suave); }
+.kit-pro-reparto { flex: 1 1 280px; display: flex; gap: 4px; min-width: 0; }
+.kit-pro-reparto-item { flex-basis: 0; min-width: 64px; display: grid; gap: 2px; padding: 8px 10px; border-radius: 8px; background: color-mix(in srgb, #B78D36 22%, transparent); border-top: 3px solid #B78D36; font-size: var(--t-micro); }
+.kit-pro-reparto-item:nth-child(even) { background: color-mix(in srgb, #A9C48A 18%, transparent); border-top-color: #A9C48A; }
+.kit-pro-reparto-item strong { font-family: var(--fuente-mono); letter-spacing: .08em; }
+.kit-pro-cifras-nota { margin: 0; flex: 1 1 260px; }
+.kit-pro-grupo { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px var(--e2); }
+.kit-pro-grupo-sigla { flex: none; }
+.kit-pro-grupo > span:nth-child(2) { flex: 1 1 260px; }
+.kit-pro-grupo-n { flex: none; font-family: var(--fuente-mono); font-size: var(--t-micro); letter-spacing: .1em; text-transform: uppercase; color: var(--texto-suave); padding: 2px 10px; border: 1px solid var(--borde-fuerte); border-radius: 999px; }
+.kit-pro-etiqueta { white-space: nowrap; padding: 3px 8px; border-radius: 6px; border: 1px solid currentColor; align-self: start; font-size: .72rem; letter-spacing: .06em; }
+.kit-pro-preguntas li:has(> .kit-pro-etiqueta) { grid-template-columns: 8.2rem minmax(0, 1fr); }
+@media (max-width: 600px) { .kit-pro-preguntas li:has(> .kit-pro-etiqueta) { grid-template-columns: minmax(0, 1fr); gap: var(--e2); } .kit-pro-etiqueta { justify-self: start; } }

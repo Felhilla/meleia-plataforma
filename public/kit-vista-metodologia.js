@@ -106,11 +106,19 @@
     const celda = (eje, col) => cruceOk ? (filas[ordenEjes.indexOf(eje)]?.celdas?.[col] || []) : [];
     const fichas = fichasDe(m);
     const respaldo = id => marcos(id).map(t => ({ texto: t, ficha: fichaDeMarco(fichas, t) }));
+    // Etiqueta de cada pregunta (8-nov): módulo, etapa (E) o derecho (D), componente (C) y número de la pregunta (P).
+    // Sale del catálogo, así que es estable: servirá para identificar cada pregunta en la Alimentación por secciones.
+    const seccion = id => /^etapa-/.test(id) ? 'E' + id.split('-').pop() : 'D' + id.split('-').pop().padStart(2, '0');
+    const etiqueta = (id, q, comps) => { const ci = comps.findIndex(c => c.id === q.componente);
+      return ['II', seccion(id), ...(ci >= 0 ? ['C' + (ci + 1)] : []), 'P' + String(parseInt(q.codigo.replace(/\D/g, ''), 10)).padStart(2, '0')].join('-'); };
+    // Los componentes se agrupan por su id: dos componentes pueden tener el mismo nombre en el catálogo (etapa 3).
+    const componentesDe = id => { const comps = ejes.get(id)?.componentes || [], repetido = n => comps.filter(c => c.nombre === n).length > 1;
+      return comps.map((c, k) => ({ id: c.id, sigla: 'C' + (k + 1), nombre: c.nombre, detalle: repetido(c.nombre) && c.descripcion !== c.nombre ? c.descripcion : '', n: indicadores(id).filter(q => q.componente === c.id).length })); };
     const preguntasDe = id => {
       const comps = ejes.get(id)?.componentes || [];
-      return indicadores(id).map(q => ({ codigo: q.codigo, pregunta: q.pregunta, grupo: comps.length > 1 ? comps.find(c => c.id === q.componente)?.nombre : null }));
+      return indicadores(id).map(q => ({ codigo: q.codigo, etiqueta: etiqueta(id, q, comps), pregunta: q.pregunta, componente: comps.some(c => c.id === q.componente) ? q.componente : null }));
     };
-    const base = id => ({ id, icono: ICONOS[ICONO_EJE[id]], sub: `${indicadores(id).length} preguntas`, respaldo: respaldo(id), preguntas: preguntasDe(id) });
+    const base = id => ({ id, icono: ICONOS[ICONO_EJE[id]], sub: `${indicadores(id).length} preguntas`, respaldo: respaldo(id), preguntas: preguntasDe(id), componentes: componentesDe(id) });
     const partes = {
       etapas: { nav: 'Incorporación de la DD', ante: 'Incorporación de la debida diligencia', titular: m.metodo.titular, intro: m.metodo.intro,
         centro: ['GUÍA OCDE', m.metodo.frase], unidad: 'Etapa',
@@ -166,16 +174,25 @@
         .sort((a, b) => a.valor - b.valor);
       const columnas = (excel?.ddhh?.hojas || []).find(h => h.coleccion === 'ddhh-indicadores')?.columnas || [];
       const col = campo => columnas.find(c => c.campo === campo)?.encabezado || esqInd?.campos?.[campo]?.etiqueta || campo;
-      const VALOR = { si: 'Sí', no: 'No', parcial: 'Parcial' };
-      const valores = (esqInd?.campos?.incorporado?.valores || []).map(v => VALOR[v] || v);
+      const VALOR = { si: 'Sí', no: 'No', parcial: 'Parcial' }, ORDEN = ['no', 'parcial', 'si'], COLOR_INC = { no: 'var(--nivel-0)', parcial: 'var(--nivel-2)', si: 'var(--nivel-4)' };
       const registros = ['documentos', 'descripcion', 'brecha'].map(col);
+      // Variables con escala que se registran en cada pregunta. Son las mismas que se eligen en el botón Variable
+      // y las que nombra el Vistazo de la tarjeta de variables.
+      const KI = K.variables?.incorporado;
+      const incorporado = KI && esqInd?.campos?.incorporado ? { id: 'incorporado', nombre: KI.nombre, columna: col('incorporado'), promedia: false,
+        que_es: KI.que_es, que_no_es: KI.que_no_es, que_evalua: KI.que_evalua,
+        escala: [...esqInd.campos.incorporado.valores].sort((a, b) => ORDEN.indexOf(a) - ORDEN.indexOf(b)).map(v => ({ valor: VALOR[v] || v, nombre: '', descripcion: KI.niveles?.[v] || '', color: COLOR_INC[v] || 'var(--borde-fuerte)' })) } : null;
+      const enfoques = dimensiones.map(g => { const t = K.enfoques[g.id] || {};
+        const madurez = { id: 'calificacion', nombre: t.variable?.nombre || 'Calificación', columna: col('calificacion'), promedia: true, ...t.variable, escala: escalaDe(g.id) };
+        return { id: g.id, nombre: g.titulo, corto: t.corto || g.titulo, metodologia: t.metodologia, parte: g.id === 'etapas-ocde' ? 'etapas' : 'derechos',
+          preguntas: g.ejes.reduce((n, id) => n + indicadores(id).length, 0), secciones: g.ejes.length, componentes: g.ejes.reduce((n, id) => n + (ejes.get(id)?.componentes?.length || 0), 0),
+          ejemplo: preguntasDe(g.ejes[0])[0]?.etiqueta, variables: [madurez, ...(incorporado ? [incorporado] : [])] }; });
       return { ante: K.ante, titular: K.titular, escalaTitular: K.escala_titular, escalaNota: K.escala_nota, temasNota: K.temas_nota,
-        alimentacion: K.alimentacion, plantilla: 'plantillas/plantilla-modulo-ii.xlsx', reglas: m.calificacion.reglas,
-        enfoques: dimensiones.map(g => { const t = K.enfoques[g.id] || {};
-          return { id: g.id, nombre: g.titulo, corto: t.corto || g.titulo, metodologia: t.metodologia, variable: t.variable, parte: g.id === 'etapas-ocde' ? 'etapas' : 'derechos', escala: escalaDe(g.id) }; }),
-        grupos: [
-          { n: 1, rotulo: ['variable calificada', 'variables calificadas'], items: [col('calificacion')], texto: K.grupos.calificada },
-          { n: 1, rotulo: ['verificación', 'verificaciones'], items: [`${col('incorporado')}: ${valores.join(', ')}`], texto: K.grupos.verificacion },
+        alimentacion: K.alimentacion, plantilla: 'plantillas/plantilla-modulo-ii.xlsx', reglas: m.calificacion.reglas, enfoques,
+        // Grupos de lo que se llena. Los de preguntas y variables dependen del enfoque.
+        grupos: E => [
+          { n: E.preguntas, rotulo: ['pregunta', 'preguntas'], items: [`${num(E.secciones)} ${E.parte === 'etapas' ? 'etapas' : 'derechos'}${E.componentes ? ` y ${num(E.componentes)} componentes` : ', sin componentes'}`, `Etiqueta: módulo, ${E.parte === 'etapas' ? 'etapa' : 'derecho'}${E.componentes ? ', componente' : ''} y número. Por ejemplo, ${E.ejemplo}`], texto: K.grupos.preguntas },
+          { n: E.variables.length, rotulo: ['variable con escala', 'variables con escala'], items: E.variables.map(v => `${v.nombre}: columna ${v.columna}${v.promedia ? '' : ', no entra a los promedios'}`), texto: K.grupos.variables },
           { n: registros.length, rotulo: ['registro de evidencia', 'registros de evidencia'], items: registros, texto: K.grupos.registros },
           { n: criterios.calculo.length, rotulo: ['paso de cálculo', 'pasos de cálculo'], items: criterios.calculo.map(x => `${num(x.cifra)} ${x.rotulo}: ${x.texto}`), texto: K.grupos.calculo }] };
     }
@@ -626,13 +643,42 @@
         const li = el('li'), texto = el('div'); texto.append(el('span', q.pregunta));
         if (q.niveles?.length) { const nv = el('ol', null, 'kit-pro-niveles');
           q.niveles.forEach(x => { const l = el('li'); l.append(el('strong', String(x.valor)), el('span', [x.nombre, x.descripcion].filter(Boolean).join(': '))); nv.append(l); }); texto.append(nv); }
-        li.append(el('span', q.codigo, 'kit-mono'), texto); return li;
+        const cod = el('span', q.etiqueta || q.codigo, 'kit-mono' + (q.etiqueta ? ' kit-pro-etiqueta' : ''));
+        if (q.etiqueta) cod.title = 'Etiqueta de la pregunta';
+        li.append(cod, texto); return li;
       };
-      const nombres = [...new Set(todas.map(q => q.grupo).filter(Boolean))];
-      if (nombres.length) nombres.forEach(nm => { const s = el('section'), ol = el('ol'); todas.filter(q => q.grupo === nm).forEach(q => ol.append(fila(q))); s.append(el('h4', nm, 'kit-pro-grupo'), ol); grupos.append(s); });
-      else { const ol = el('ol'); todas.forEach(q => ol.append(fila(q))); grupos.append(ol); }
-      abrir('Preguntas', [mono(it.titulo, 'kit-ven-ante'), el('h2', it.preguntasRotulo || '¿Qué preguntamos?', 'kit-titular kit-ven-titular'),
-        el('p', it.preguntasIntro || `${num(todas.length)} preguntas, tal como se le formulan a la empresa. Cada una se califica de 0 a 5 con su evidencia.`, 'kit-met-intro'), grupos], desde, 'kit-ven-preguntas');
+      const comps = it.componentes || [];
+      const nodos = [mono(it.titulo, 'kit-ven-ante'), el('h2', it.preguntasRotulo || '¿Qué preguntamos?', 'kit-titular kit-ven-titular')];
+      if (comps.length || todas.some(q => q.etiqueta)) {
+        // Cifras a la vista (8-nov): total de preguntas, total de componentes y preguntas por componente.
+        const cifras = el('div', null, 'kit-pro-cifras');
+        const cifra = (n, t) => { const c = el('div', null, 'kit-pro-cifra'); c.append(el('span', num(n), 'kit-pro-cifra-n'), el('span', t, 'kit-pro-cifra-t')); return c; };
+        cifras.append(cifra(todas.length, todas.length === 1 ? 'pregunta' : 'preguntas'));
+        if (comps.length) {
+          cifras.append(cifra(comps.length, comps.length === 1 ? 'componente' : 'componentes'));
+          const reparto = el('div', null, 'kit-pro-reparto');
+          comps.forEach(c => { const x = el('span', null, 'kit-pro-reparto-item'); x.style?.setProperty?.('flex-grow', String(c.n)); x.title = c.nombre;
+            x.append(el('strong', c.sigla), el('span', `${num(c.n)} ${c.n === 1 ? 'pregunta' : 'preguntas'}`)); reparto.append(x); });
+          cifras.append(reparto);
+        } else cifras.append(el('p', 'Este derecho no tiene componentes: su puntaje es el promedio de sus preguntas.', 'kit-met-nota kit-pro-cifras-nota'));
+        nodos.push(cifras);
+        const ej = todas[0]?.etiqueta;
+        nodos.push(el('p', `Cada pregunta se califica de 0 a 5 con su evidencia y lleva una etiqueta que la identifica: módulo, ${/-D\d/.test(ej || '') ? 'derecho' : 'etapa'}${comps.length ? ', componente' : ''} y número de pregunta${ej ? ` (por ejemplo, ${ej})` : ''}.`, 'kit-met-intro'));
+        const enGrupos = comps.length ? comps : [{ id: null }];
+        enGrupos.forEach(c => {
+          const s = el('section'), ol = el('ol');
+          todas.filter(q => q.componente === c.id).forEach(q => ol.append(fila(q)));
+          if (c.id) { const h = el('h4', null, 'kit-pro-grupo'); h.append(el('span', c.sigla, 'kit-mono kit-pro-grupo-sigla'), el('span', c.nombre + (c.detalle ? ': ' + c.detalle.charAt(0).toLowerCase() + c.detalle.slice(1) : '')), el('span', `${num(c.n)} ${c.n === 1 ? 'pregunta' : 'preguntas'}`, 'kit-pro-grupo-n')); s.append(h); }
+          s.append(ol); grupos.append(s);
+        });
+      } else {
+        nodos.push(el('p', it.preguntasIntro || `${num(todas.length)} preguntas, tal como se le formulan a la empresa. Cada una se califica de 0 a 5 con su evidencia.`, 'kit-met-intro'));
+        const nombres = [...new Set(todas.map(q => q.grupo).filter(Boolean))];
+        if (nombres.length) nombres.forEach(nm => { const s = el('section'), ol = el('ol'); todas.filter(q => q.grupo === nm).forEach(q => ol.append(fila(q))); s.append(el('h4', nm, 'kit-pro-grupo'), ol); grupos.append(s); });
+        else { const ol = el('ol'); todas.forEach(q => ol.append(fila(q))); grupos.append(ol); }
+      }
+      nodos.push(grupos);
+      abrir('Preguntas', nodos, desde, 'kit-ven-preguntas');
     }
 
     // ---------- Ventana: Enfoques (boceto 261108_Metodologicos_Ejes) ----------
@@ -695,18 +741,50 @@
     // (qué es, qué no es, qué evalúa), los grupos de datos que se llenan y Alimentación.
     function ventanaCalificacion(desde) {
       const C = d.calificar, zona = el('div', null, 'kit-cri-zona');
-      let k = 0;
+      let k = 0, kv = 0;
       const chip = boton('kit-cri-chip', el('span', 'Enfoque'), el('span', '⇄', 'kit-cri-chip-flecha'));
       const nombre = el('h3', null, 'kit-cri-enfoque-nombre');
       const cabeza = el('div', null, 'kit-cri-enfoque'); cabeza.append(chip, nombre);
-      chip.onclick = () => { k = (k + 1) % C.enfoques.length; pintarEnfoque(); chip.focus?.({ preventScroll: true }); };
-      const plural = (g) => g.rotulo[g.n === 1 ? 0 : 1];
+      chip.onclick = () => { k = (k + 1) % C.enfoques.length; kv = 0; pintarEnfoque(); chip.focus?.({ preventScroll: true }); };
+      const plural = g => g.rotulo[g.n === 1 ? 0 : 1];
+      // Botón Variable (8-nov): elige la variable o escala que se explica. Cambia los Vistazos de la escala
+      // y la caja de qué es, qué no es y qué evalúa.
+      const bVar = boton('kit-cri-chip kit-cri-varsel-boton', el('span', 'Variable'), el('span', '▾', 'kit-cri-chip-flecha'));
+      const nombreVar = el('h4', null, 'kit-cri-variable-nombre'), menu = el('ul', null, 'kit-cri-varsel-menu');
+      menu.setAttribute('role', 'listbox'); menu.setAttribute('aria-label', 'Variables con escala'); menu.hidden = true;
+      bVar.setAttribute('aria-haspopup', 'listbox'); bVar.setAttribute('aria-expanded', 'false');
+      const abreMenu = v => { menu.hidden = !v; bVar.setAttribute('aria-expanded', String(v)); };
+      bVar.onclick = () => abreMenu(menu.hidden);
+      const selector = el('div', null, 'kit-cri-varsel'); selector.append(bVar, nombreVar, menu);
+      const bloqueEscala = el('div', null, 'kit-cri-bloque-escala');
+      function pintarVariable() {
+        const E = C.enfoques[k], V = E.variables[kv];
+        nombreVar.textContent = V.nombre;
+        bVar.setAttribute('aria-label', `Variable: ${V.nombre}. Elegir otra variable`);
+        menu.replaceChildren(...E.variables.map((x, j) => { const o = boton('kit-cri-varsel-op' + (j === kv ? ' actual' : ''), el('span', x.nombre), el('span', 'Columna del Excel: ' + x.columna, 'kit-cri-varsel-col'));
+          o.setAttribute('role', 'option'); o.setAttribute('aria-selected', String(j === kv)); o.onclick = () => { kv = j; abreMenu(false); pintarVariable(); bVar.focus?.({ preventScroll: true }); };
+          const li = el('li'); li.append(o); return li; }));
+        // Una escala para todos. El Vistazo de cada nivel explica qué significa para la variable elegida.
+        const escala = el('ol', null, 'kit-cri-escala' + (V.escala.length < 6 ? ' kit-cri-escala-corta' : ''));
+        V.escala.forEach(nv => {
+          const textual = typeof nv.valor !== 'number';
+          const b = boton('kit-cri-nivel' + (textual ? ' kit-cri-nivel-texto' : ''), el('span', null, 'kit-cri-nivel-barra'), el('span', String(nv.valor), 'kit-cri-nivel-num'), el('span', nv.nombre || '', 'kit-cri-nivel-nombre'));
+          b.style?.setProperty?.('--color', nv.color);
+          b.setAttribute('aria-label', [nv.valor, nv.nombre].filter(Boolean).join(', '));
+          const tit = el('p', null, 'kit-vz-titulo kit-vz-nivel'); tit.append(el('strong', String(nv.valor)), el('span', nv.nombre || ''));
+          const vz = vistazo(b, [tit, el('p', nv.descripcion, 'kit-vz-texto'), mono('Variable: ' + V.nombre, 'kit-vz-pie')], 'kit-cri-nivel-vz'); vz.caja.style?.setProperty?.('--color', nv.color);
+          b.onclick = () => vz.abre(!vz.abierto());
+          const li = el('li'); li.append(vz.caja); escala.append(li);
+        });
+        const caja = el('dl', null, 'kit-cri-variable-caja');
+        [['¿Qué es?', V.que_es], ['¿Qué no es?', V.que_no_es], ['¿Qué evalúa?', V.que_evalua]].filter(x => x[1]).forEach(([t, x]) => { const g = el('div'); g.append(el('dt', t), el('dd', x)); caja.append(g); });
+        bloqueEscala.replaceChildren(escala, el('p', V.promedia ? C.escalaNota : `Pase el cursor o toque un valor para ver qué significa. ${V.nombre} se registra en cada pregunta, pero no entra a los promedios.`, 'kit-met-nota'), caja);
+      }
       function pintarEnfoque() {
         const E = C.enfoques[k], parte = partes[E.parte], otro = C.enfoques[(k + 1) % C.enfoques.length];
         nombre.textContent = E.nombre;
         chip.setAttribute('aria-label', `Enfoque: ${E.nombre}. Cambiar al enfoque ${otro.nombre}`);
         chip.title = 'Cambiar a ' + otro.corto;
-        // Metodología del enfoque.
         const metodo = el('p', null, 'kit-cri-metodo'); metodo.append(el('strong', 'Metodología: '), el('span', E.metodologia || parte.intro));
         // Temas: cada botón lleva a lo que se califica en esa etapa o derecho (la ventana de preguntas que ya existe).
         const pista = el('ul', null, 'kit-est-pista kit-cri-pista');
@@ -720,28 +798,9 @@
         const ant = boton('kit-est-flecha', el('span', '←')), sig = boton('kit-est-flecha', el('span', '→'));
         ant.setAttribute('aria-label', 'Ver los anteriores'); sig.setAttribute('aria-label', 'Ver más'); ant.onclick = mover(-1); sig.onclick = mover(1);
         const carrusel = el('div', null, 'kit-est-carrusel kit-cri-carrusel'); carrusel.append(ant, pista, sig);
-        // Una escala para todos. El Vistazo de cada número explica el nivel para la variable del enfoque.
-        const escala = el('ol', null, 'kit-cri-escala');
-        E.escala.forEach(nv => {
-          const b = boton('kit-cri-nivel', el('span', null, 'kit-cri-nivel-barra'), el('span', String(nv.valor), 'kit-cri-nivel-num'), el('span', nv.nombre, 'kit-cri-nivel-nombre'));
-          b.style?.setProperty?.('--color', nv.color);
-          b.setAttribute('aria-label', `${nv.valor}, ${nv.nombre}`);
-          const tit = el('p', null, 'kit-vz-titulo kit-vz-nivel'); tit.append(el('strong', String(nv.valor)), el('span', nv.nombre));
-          const contenido = [tit, el('p', nv.descripcion, 'kit-vz-texto'), mono('Variable: ' + (E.variable?.nombre || ''), 'kit-vz-pie')];
-          const vz = vistazo(b, contenido, 'kit-cri-nivel-vz'); vz.caja.style?.setProperty?.('--color', nv.color);
-          b.onclick = () => vz.abre(!vz.abierto());
-          const li = el('li'); li.append(vz.caja); escala.append(li);
-        });
-        // Variable: qué es, qué no es y qué evalúa.
-        const V = E.variable || {};
-        const variable = el('section', null, 'kit-cri-variable');
-        const vcab = el('div', null, 'kit-cri-variable-cab'); vcab.append(el('span', 'Variable', 'kit-cri-chip kit-cri-chip-fijo'), el('h4', V.nombre || '', 'kit-cri-variable-nombre'));
-        const vcaja = el('dl', null, 'kit-cri-variable-caja');
-        [['¿Qué es?', V.que_es], ['¿Qué no es?', V.que_no_es], ['¿Qué evalúa?', V.que_evalua]].filter(x => x[1]).forEach(([t, x]) => { const g = el('div'); g.append(el('dt', t), el('dd', x)); vcaja.append(g); });
-        variable.append(vcab, vcaja);
         // Lo que se llena: grupos de datos con Vistazo, y Alimentación (laberinto inteligente).
         const grupos = el('ul', null, 'kit-cri-grupos');
-        C.grupos.forEach((g, i) => {
+        C.grupos(E).forEach((g, i) => {
           const b = boton('kit-cri-grupo' + (i % 2 ? ' kit-cri-oro' : ''), el('span', num(g.n), 'kit-cri-grupo-n'), el('span', plural(g), 'kit-cri-grupo-rotulo'));
           b.setAttribute('aria-label', `${num(g.n)} ${plural(g)}`);
           const vz = vistazo(b, [el('p', `${num(g.n)} ${plural(g)}`, 'kit-vz-titulo'), lista(g.items, 'kit-vz-lista'), el('p', g.texto, 'kit-vz-texto')]);
@@ -759,15 +818,18 @@
         a.onclick = ev => { if (sinCursor() && !vzA.abierto()) { ev.preventDefault?.(); vzA.abre(true); } };
         const liA = el('li', null, 'kit-cri-grupos-alimentacion'); liA.append(vzA.caja); grupos.append(liA);
 
+        pintarVariable();
         zona.replaceChildren(metodo, carrusel, el('p', C.temasNota, 'kit-met-nota'),
-          el('h3', C.escalaTitular, 'kit-cri-escala-titulo'), escala, el('p', C.escalaNota, 'kit-met-nota'),
-          variable, grupos);
+          el('h3', C.escalaTitular, 'kit-cri-escala-titulo'), selector, bloqueEscala, grupos);
         zona.classList?.remove('recarga'); void zona.offsetWidth; zona.classList?.add('recarga');
       }
       pintarEnfoque();
       const v = abrir('Criterios', [mono(C.ante, 'kit-ven-ante'), el('h2', C.titular, 'kit-titular kit-ven-titular'), cabeza, zona], desde, 'kit-ven-criterios kit-ven-calificacion');
-      // Un toque fuera de un Vistazo lo cierra (pantallas táctiles).
-      v.addEventListener?.('click', ev => { if (vzAbierto && !ev.target?.closest?.('.kit-vz')) vzAbierto(false); });
+      // Un toque fuera de un Vistazo o del menú de variables los cierra.
+      v.addEventListener?.('click', ev => {
+        if (vzAbierto && !ev.target?.closest?.('.kit-vz')) vzAbierto(false);
+        if (!menu.hidden && !ev.target?.closest?.('.kit-cri-varsel')) abreMenu(false);
+      });
       return v;
     }
 

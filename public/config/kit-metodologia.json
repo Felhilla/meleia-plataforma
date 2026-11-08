@@ -538,7 +538,7 @@
       "ante": "Cómo se califica",
       "titular": "Criterios de calificación",
       "escala_titular": "Una escala para evaluarlos a todos.",
-      "escala_nota": "Pase el cursor o toque un número para ver qué significa. Los Resultados usan estos mismos colores, y un promedio toma el color del nivel que alcanza completo: un 3,8 es En gestión.",
+      "escala_nota": "Elija la variable y pase el cursor o toque un número para ver qué significa ese nivel. Los Resultados usan estos mismos colores, y un promedio toma el color del nivel que alcanza completo: un 3,8 es En gestión.",
       "temas_nota": "Cada botón lleva a lo que se califica en esa parte.",
       "enfoques": {
         "etapas-ocde": {
@@ -563,12 +563,25 @@
         }
       },
       "grupos": {
-        "calificada": "Es la única cifra que entra a los promedios. Cada pregunta se califica de 0 a 5 con su evidencia.",
-        "verificacion": "Dice si la práctica existe en la empresa. Acompaña la calificación, pero no entra a los promedios.",
+        "preguntas": "Son las preguntas del enfoque. Cada una lleva una etiqueta que la identifica.",
+        "variables": "Son las que se eligen en el botón Variable. Solo la madurez entra a los promedios.",
         "registros": "Sustentan la calificación y son el texto que se lee en las fichas de los Resultados.",
         "calculo": "Nadie escribe promedios. La plataforma los calcula en este orden."
       },
-      "alimentacion": "Se llena en la pestaña Alimentación, con el cuestionario o con la plantilla de Excel."
+      "alimentacion": "Se llena en la pestaña Alimentación, con el cuestionario o con la plantilla de Excel.",
+      "variables": {
+        "incorporado": {
+          "nombre": "Incorporado",
+          "niveles": {
+            "no": "La práctica que describe la pregunta no existe en la empresa.",
+            "parcial": "La práctica existe, pero no cubre todo lo que pide la pregunta: por ejemplo, solo en una parte de la operación o sin documento que la respalde.",
+            "si": "La práctica existe y cubre lo que pide la pregunta."
+          },
+          "que_es": "Una verificación rápida de si la práctica existe. Se registra en cada pregunta junto con la calificación.",
+          "que_no_es": "No es la calificación ni entra a los promedios. Una práctica puede estar incorporada y tener un nivel bajo de madurez.",
+          "que_evalua": "La existencia de la práctica, con la misma evidencia que sustenta la calificación de la pregunta."
+        }
+      }
     }
   },
   "materialidad": {
