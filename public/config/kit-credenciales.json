@@ -245,7 +245,7 @@
     "nota": "Correo provisional mientras Meleia habilita su dominio (decisión de Felipe del 5-nov).",
     "invitacion": "Déjanos tus datos y te contactamos para agendar una reunión.",
     "formulario": {
-      "nota": "E50 (7-nov): solo diseño. El envío se resuelve después (opción a: base propia y aviso por correo). Roles y países por aprobar.",
+      "nota": "E59 (8-nov): envía a la tabla contactos (solo inserción, lectura solo para administradores). El aviso por correo queda pendiente. Roles y países por aprobar.",
       "boton": "Agendar una reunión",
       "campos": [
         {

@@ -116,10 +116,11 @@
         // E46 (boceto Aliados, 6-nov): en Equipo la foto y en Aliados el logo crecen y se integran al gráfico.
         const [ancho, alto] = item.nodo.tarjeta === 'foto' ? (n > 3 ? [132, 132] : [150, 150]) : item.nodo.tarjeta === 'logo' ? [184, 104] : [100, 100];
         g.append(svg('line', { x1: cx + ancho / 2, y1: cy, x2: 702, y2: cy, class: 'kit-serv-guia' }), svg('circle', { cx: 714, cy, r: 8, class: 'kit-serv-anillo' }));
-        const nodo = svg('g', { class: 'kit-serv-nodo' + (item.nodo.tarjeta ? ' kit-serv-tarjeta' : ''), transform: `translate(${cx} ${cy})` });
+        // 8-nov (correcciones de Felipe): en Experiencia el nodo es un círculo blanco con el ícono del sector, nunca el logo.
+        const nodo = svg('g', { class: 'kit-serv-nodo' + (item.nodo.tarjeta ? ' kit-serv-tarjeta' : '') + (tema.id === 'experiencia' ? ' kit-serv-nodo-blanco' : ''), transform: `translate(${cx} ${cy})` });
         if (item.nodo.tarjeta) {
           const clip = 'kit-clip-' + tema.id + '-' + i, def = svg('clipPath', { id: clip }), forma = { x: -ancho / 2, y: -alto / 2, width: ancho, height: alto, rx: 14 };
-          def.append(svg('rect', forma)); nodo.append(def, svg('rect', { ...forma, class: 'kit-serv-tarjeta-fondo' + (item.nodo.fondo === 'oscuro' ? ' oscuro' : '') }));
+          def.append(svg('rect', forma)); nodo.append(def, svg('rect', { ...forma, class: 'kit-serv-tarjeta-fondo' + (item.nodo.fondo === 'oscuro' ? ' oscuro' : item.nodo.logo ? ' blanco' : '') }));
           if (item.nodo.foto || item.nodo.logo) {
             const m = item.nodo.foto ? 0 : 16;
             nodo.append(svg('image', { href: item.nodo.foto || item.nodo.logo, x: -ancho / 2 + m, y: -alto / 2 + m, width: ancho - 2 * m, height: alto - 2 * m, 'clip-path': `url(#${clip})`, preserveAspectRatio: item.nodo.foto ? 'xMidYMid slice' : 'xMidYMid meet' }));
@@ -144,6 +145,13 @@
         if (item.sub) b.append(el('span', item.sub, 'kit-serv-ver'));
         b.setAttribute('aria-label', `${tema.nombre} ${i + 1}: ${item.titulo}. Abrir la ficha`); b.onclick = () => abrirFicha(tema, i);
         titulosActuales.push(b); titulos.append(b);
+        // 8-nov: cada aliado lleva también a su página, al lado de su título.
+        if (tema.id === 'aliados' && item.dato?.sitio) {
+          const w = el('a', 'Visitar su sitio ↗', 'kit-serv-sitio'); w.href = item.dato.sitio; w.target = '_blank'; w.rel = 'noopener noreferrer';
+          w.setAttribute('aria-label', `Visitar el sitio de ${item.titulo} (se abre en otra pestaña)`);
+          if (w.style) { w.style.top = (cy / 660 * 100) + '%'; w.style.setProperty?.('--i', i); }
+          titulos.append(w);
+        }
       });
       const centro = svg('g', { class: 'kit-serv-centro' });
       centro.append(svg('circle', { cx: C[0], cy: C[1], r: 158 }));
@@ -344,7 +352,22 @@
         });
         const enviar = el('button', cfg.contacto.formulario.boton || 'Agendar una reunión', 'kit-contacto-enviar'); enviar.type = 'submit';
         const aviso = el('p', null, 'kit-contacto-aviso'); aviso.setAttribute('role', 'status');
-        f.onsubmit = ev => { ev?.preventDefault?.(); aviso.textContent = 'El formulario todavía no envía mensajes. Mientras lo activamos, escríbenos a ' + cfg.contacto.correo + '.'; };
+        // E59 (8-nov): el formulario envía a la base (tabla contactos, solo inserción). Campo trampa oculto contra envíos automáticos.
+        const trampa = el('input', null, 'kit-contacto-trampa'); trampa.type = 'text'; trampa.name = 'sitio_web'; trampa.tabIndex = -1; trampa.autocomplete = 'off'; trampa.setAttribute('aria-hidden', 'true'); f.append(trampa);
+        f.onsubmit = async ev => {
+          ev?.preventDefault?.();
+          const valores = Object.fromEntries(cfg.contacto.formulario.campos.map(c => [c.id, String(f.elements?.[c.id]?.value ?? '').trim()]));
+          const faltan = cfg.contacto.formulario.campos.filter(c => c.obligatorio && !valores[c.id]).map(c => c.etiqueta);
+          if (faltan.length) { aviso.textContent = 'Falta: ' + faltan.join(', ') + '.'; return; }
+          if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(valores.correo || '')) { aviso.textContent = 'Revisa el correo.'; return; }
+          if (trampa.value) { aviso.textContent = 'Gracias. Te escribiremos pronto.'; f.reset?.(); return; }
+          const datos = root.App?.datos;
+          if (!datos?.enviarContacto) { aviso.textContent = 'No pudimos enviar el mensaje. Escríbenos a ' + cfg.contacto.correo + '.'; return; }
+          enviar.disabled = true; aviso.textContent = 'Enviando…';
+          try { await datos.enviarContacto({ ...valores, mensaje: valores.mensaje || null }); aviso.textContent = 'Gracias. Recibimos tu mensaje y te escribiremos pronto.'; f.reset?.(); }
+          catch (_) { aviso.textContent = 'No pudimos enviar el mensaje. Escríbenos a ' + cfg.contacto.correo + '.'; }
+          finally { enviar.disabled = false; }
+        };
         f.append(enviar, aviso); rejilla.append(f);
       }
       s.append(rejilla); partes.push(s);

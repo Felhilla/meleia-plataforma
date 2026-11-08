@@ -230,3 +230,12 @@ test('E40: Metodología pinta secciones y avisa cuando aún no hay contenido', a
   assert.match(lleno.textContent, /Resumen/); assert.match(lleno.textContent, /Paso 1/); assert.match(lleno.textContent, /Referencias/);
   delete globalThis.App;
 });
+
+test('E59: la tabla de contactos solo deja insertar y leer a los administradores', () => {
+  const sql = readFileSync(new URL('../supabase/kit-02-contacto.sql', import.meta.url), 'utf8');
+  assert.match(sql, /alter table public\.contactos enable row level security/);
+  assert.match(sql, /revoke all on public\.contactos from anon, authenticated/);
+  assert.match(sql, /for select to authenticated using \(public\.es_admin\(\)\)/);
+  assert.doesNotMatch(sql, /grant (update|delete)|for (update|delete)/i, 'nadie edita ni borra mensajes desde la plataforma');
+  for (const c of ['nombre', 'correo', 'empresa', 'mensaje']) assert.match(sql, new RegExp(c + '\\s+text.*check'), c + ' con límite en la base');
+});
