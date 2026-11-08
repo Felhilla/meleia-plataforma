@@ -143,7 +143,7 @@ button.enlace:focus-visible { outline: 2px solid var(--principal); outline-offse
 .dim-ficha-tabla th[scope="col"] { position: sticky; top: 0; background: var(--superficie); z-index: 1; }
 .dim-ficha-tabla th[scope="row"] { font-size: .95rem; line-height: 1.45; }
 .dim-ficha-tabla td, .dim-ficha-tabla th { vertical-align: top; padding: 14px 12px; overflow-wrap: break-word; }
-.dim-codigo { display: inline-block; min-width: 30px; font-weight: 700; color: var(--oro-texto); }
+.dim-codigo { display: inline-block; min-width: 30px; margin-right: 10px; white-space: nowrap; font-family: var(--fuente-mono); font-size: .8em; letter-spacing: .04em; font-weight: 700; color: var(--oro-texto); }
 .dim-ficha-c { text-align: center; }
 .dim-circulo { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; font-weight: 700; color: #fff; background: var(--sem-gris); }
 .dim-circulo.sem-rojo { background: var(--sem-rojo); } .dim-circulo.sem-naranja { background: var(--sem-naranja); }
@@ -331,3 +331,11 @@ button.enlace:focus-visible { outline: 2px solid var(--principal); outline-offse
  .ddhh-cruce-tema { width: 8.5rem; }
  .ddhh-cruce-tabla th, .ddhh-cruce-tabla td { padding: var(--e2); }
 }
+
+/* E55 (8-nov): escala de 0 a 5 con un color por nivel (boceto 261108_Home_Criterios, aprobado por Felipe). Tokens --nivel-* de estilos.css. */
+.dim-circulo.sem-nivel-0 { background: var(--nivel-0); color: var(--sobre-nivel-0); } .sem-fondo-nivel-0 { background: color-mix(in srgb, var(--nivel-0) 18%, var(--superficie)); color: var(--texto); box-shadow: inset 4px 0 0 var(--nivel-0); }
+.dim-circulo.sem-nivel-1 { background: var(--nivel-1); color: var(--sobre-nivel-1); } .sem-fondo-nivel-1 { background: color-mix(in srgb, var(--nivel-1) 18%, var(--superficie)); color: var(--texto); box-shadow: inset 4px 0 0 var(--nivel-1); }
+.dim-circulo.sem-nivel-2 { background: var(--nivel-2); color: var(--sobre-nivel-2); } .sem-fondo-nivel-2 { background: color-mix(in srgb, var(--nivel-2) 18%, var(--superficie)); color: var(--texto); box-shadow: inset 4px 0 0 var(--nivel-2); }
+.dim-circulo.sem-nivel-3 { background: var(--nivel-3); color: var(--sobre-nivel-3); } .sem-fondo-nivel-3 { background: color-mix(in srgb, var(--nivel-3) 18%, var(--superficie)); color: var(--texto); box-shadow: inset 4px 0 0 var(--nivel-3); }
+.dim-circulo.sem-nivel-4 { background: var(--nivel-4); color: var(--sobre-nivel-4); } .sem-fondo-nivel-4 { background: color-mix(in srgb, var(--nivel-4) 18%, var(--superficie)); color: var(--texto); box-shadow: inset 4px 0 0 var(--nivel-4); }
+.dim-circulo.sem-nivel-5 { background: var(--nivel-5); color: var(--sobre-nivel-5); } .sem-fondo-nivel-5 { background: color-mix(in srgb, var(--nivel-5) 18%, var(--superficie)); color: var(--texto); box-shadow: inset 4px 0 0 var(--nivel-5); }

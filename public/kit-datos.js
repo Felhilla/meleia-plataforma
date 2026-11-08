@@ -46,6 +46,8 @@
     function invalidar(e, c) { const k = llave(e, c); cache.delete(k); pendientes.delete(k); versiones.set(k, (versiones.get(k) || 0) + 1); }
     const api = {
       async iniciarSesion(correo, clave) { limpiar(); return (await pedir(cliente.auth.signInWithPassword({ email: correo, password: clave }))).user; },
+      // E59: el formulario de contacto solo inserta. La base no deja leer ni editar los mensajes (salvo administradores).
+      async enviarContacto(mensaje) { await pedir(cliente.from('contactos').insert(mensaje)); return true; },
       async cerrarSesion() { try { await pedir(cliente.auth.signOut({ scope: 'local' })); } finally { limpiar(); } },
       async usuarioActual() { return (await pedir(cliente.auth.getSession()))?.session?.user || null; },
       async empresas() {

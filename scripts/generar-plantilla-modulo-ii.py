@@ -20,20 +20,23 @@ FILAS_EDITABLES = 'FFF7E6'
 ENCABEZADO = 'E8EEF4'
 
 INSTRUCCIONES = [
-    ('Plantilla de carga · Módulo II · Debida diligencia en DDHH', True),
+    ('Plantilla de carga del Módulo II, Debida diligencia en DDHH', True),
     ('', False),
     ('Cómo se llena', True),
-    ('1. Hoja «Evaluación»: escribe el nombre y la fecha (AAAA-MM-DD) en la fila 2. El mes identifica la evaluación: '
-     'si subes otro archivo con el mismo año y mes, reemplaza los datos de esa evaluación.', False),
-    ('2. Hoja «Indicadores»: llena las columnas en color (Incorporado, Documentos analizados, Hallazgo, Calificación '
-     'y Brecha y recomendación). No cambies ni borres las columnas Código, Etapa o tema, Criterio y Pregunta, '
+    ('1. Hoja "Evaluación": escribe el nombre y la fecha (AAAA-MM-DD) en la fila 2. El mes identifica la evaluación. '
+     'Si subes otro archivo con el mismo año y mes, reemplaza los datos de esa evaluación.', False),
+    ('2. Hoja "Indicadores": llena las columnas en color (Incorporado, Documentos analizados, Hallazgo, Calificación '
+     'y Brecha y recomendación). No cambies ni borres las columnas Código, Etiqueta, Etapa o tema, Criterio y Pregunta, '
      'ni borres filas.', False),
-    ('3. Hoja «Hallazgos»: escribe los hallazgos y las brechas de cada dimensión, uno por línea '
+    ('La Etiqueta identifica cada pregunta: módulo, etapa (E) o derecho (D), criterio (C) y número de pregunta (P). '
+     'Por ejemplo, II-E3-C2-P01 es la pregunta 1 del criterio 2 de la etapa 3. Es la misma que se ve en la Metodología, '
+     'en el cuestionario y en los Resultados.', False),
+    ('3. Hoja "Hallazgos": escribe los hallazgos y las brechas de cada dimensión, uno por línea '
      '(Alt + Enter para cambiar de línea dentro de la celda).', False),
     ('', False),
     ('Regla importante: la calificación en blanco vale 0', True),
-    ('Una calificación vacía cuenta como 0 («No hay información») en todos los promedios. Si un indicador tiene '
-     'evidencia, califícalo; si no la tiene, déjalo en 0. La vista previa dice cuántos indicadores quedaron en blanco '
+    ('Una calificación vacía cuenta como 0 (No hay información) en todos los promedios. Si un indicador tiene '
+     'evidencia, califícalo. Si no la tiene, déjalo en 0. La vista previa dice cuántos indicadores quedaron en blanco '
      'antes de que confirmes la carga.', False),
     ('', False),
     ('Qué calcula la plataforma', True),
@@ -105,9 +108,9 @@ def main():
     columnas = [titulo('ddhh-indicadores', 'indicador'), *hoja['informativas'],
                 *[c['encabezado'] for c in hoja['columnas'] if c['campo'] != 'indicador']]
     ws = wb.create_sheet(hoja['hoja'])
-    encabezados(ws, columnas, [18, 30, 30, 60, 14, 40, 50, 14, 50])
+    encabezados(ws, columnas, [18, 16, 30, 30, 60, 14, 40, 50, 14, 50])
     for indicador in cat['indicadores']:
-        fila = {columnas[0]: indicador['id'], 'Etapa o tema': ejes[indicador['eje']]['nombre'],
+        fila = {columnas[0]: indicador['id'], 'Etiqueta': indicador['etiqueta'], 'Etapa o tema': ejes[indicador['eje']]['nombre'],
                 'Criterio': componentes.get(indicador.get('componente'), '—'), 'Pregunta': indicador['pregunta']}
         ws.append([fila.get(columna, '') for columna in columnas])
     editables = {columnas.index(c['encabezado']) + 1 for c in hoja['columnas'] if c['campo'] != 'indicador'}

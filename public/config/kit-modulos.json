@@ -18,7 +18,8 @@
       "nombre": "Debida diligencia en DDHH",
       "descripcion": "Reconoce los impactos sobre los derechos humanos y las acciones para prevenirlos.",
       "casos": [
-        "solgas"
+        "solgas",
+        "empresa-demo"
       ],
       "corto": "DDHH"
     },

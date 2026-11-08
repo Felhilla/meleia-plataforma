@@ -174,3 +174,77 @@ a.kit-caso-enlace:hover { text-decoration: underline; }
 @media (max-width: 960px) { .kit-modulos.kit-rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 860px) { .kit-ingreso-banda { grid-template-columns: minmax(0, 1fr); min-height: 0; } }
 @media (max-width: 560px) { .kit-modulos.kit-rejilla { grid-template-columns: minmax(0, 1fr); } .kit-cred-modulos .kit-modulo { min-height: 0; } }
+
+/* E50 (7-nov): Lógica Muñeca Rusa. Cada ficha lleva una X que regresa un nivel; la ruta dice dónde está el lector. */
+.kit-ficha-x { width: 44px; height: 44px; padding: 0; display: grid; place-items: center; border-radius: 50%; font-size: 1.6rem; line-height: 1; font-weight: 400; transition: background .2s ease, color .2s ease, transform .2s var(--ease-out); }
+.kit-ficha-x::before { content: none; }
+.kit-ficha-x:hover { background: var(--principal); color: var(--fondo); transform: rotate(90deg); }
+.kit-ficha-x:focus-visible { outline: 2px solid var(--oro); outline-offset: 3px; }
+.kit-ficha-ruta { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 56px var(--e3) 0; color: var(--texto-suave); font-size: var(--t-micro); }
+.kit-ficha-ruta span:last-child { color: var(--oro-texto); }
+.kit-ficha-ruta-barra { color: var(--linea); }
+
+/* Experiencia: el centro muestra las cifras y abre el listado de clientes. */
+.kit-serv-centro-cifra { font-size: 36px; font-weight: 600; fill: var(--principal); }
+.kit-serv-centro-ver { font-family: var(--fuente-mono); font-size: 14px; letter-spacing: .2em; text-transform: uppercase; fill: var(--oro-texto); }
+.kit-serv-centro-activo { cursor: pointer; }
+.kit-serv-centro-activo circle:first-child { transition: stroke .2s ease, stroke-width .2s ease; }
+.kit-serv-centro-activo:hover circle:first-child { stroke: var(--oro); stroke-width: 3; }
+.kit-serv-centro-boton { position: absolute; left: 10.2%; top: 26%; width: 31.6%; aspect-ratio: 1; border-radius: 50%; background: transparent; border: 0; cursor: pointer; }
+.kit-serv-centro-boton:focus-visible { outline: 2px solid var(--oro); outline-offset: 4px; }
+.kit-sector-hecho { margin: 0 !important; padding-left: 1.1em; display: grid; gap: 6px; font-size: 1.0625rem !important; color: var(--texto) !important; }
+.kit-sector-cifra { background: var(--fondo-alterno); border-style: dashed; }
+.kit-sector-cifra .kit-dato-cifra { font-size: 2rem; }
+.kit-logo-celda.con-nombre { min-height: 110px; }
+.kit-logo-celda.con-nombre .kit-mono { max-width: 150px; color: var(--texto-suave); }
+.kit-clientes-titulo { font-size: clamp(1.4rem, 2.6vw, 2rem); font-weight: 500; margin: 0 0 var(--e3); }
+.kit-clientes-cifras { margin-bottom: var(--e3); }
+.kit-clientes-grupo + .kit-clientes-grupo { border-top: 1px solid var(--borde); }
+.kit-caso-descripcion { margin: 0 0 var(--e4); font-size: 1.0625rem; line-height: 1.6; color: var(--texto-suave); }
+.kit-caso-recuadro { display: grid; gap: var(--e3); }
+.kit-caso-recuadro .kit-ficha-sub { margin-top: 0 !important; }
+.kit-caso-servicio { font-family: var(--fuente-titulos); font-size: 1.2rem !important; }
+@media (max-width: 860px) { .kit-serv-centro-boton { left: 3%; top: 26%; width: 58%; } }
+@media (prefers-reduced-motion: reduce) { .kit-ficha-x { transition: none; } .kit-ficha-x:hover { transform: none; } }
+
+/* E50: «Desarrollado con» en la ficha del cliente. */
+.kit-caso-con { display: flex; align-items: center; gap: var(--e3); margin: 0 0 var(--e4); padding: var(--e2) var(--e3); border: 1px solid var(--borde); border-radius: var(--radio-chico); width: fit-content; background: var(--superficie); }
+.kit-caso-con .kit-mono { margin: 0; }
+.kit-caso-con img { max-height: 40px; max-width: 140px; object-fit: contain; }
+
+/* E50: formulario de contacto (referencia de Olivia con el Look and Feel de Meleia). */
+.kit-contacto-rejilla { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: var(--e6); align-items: start; }
+.kit-contacto-invitacion { font-family: var(--fuente-titulos); font-size: clamp(1.2rem, 2vw, 1.6rem); line-height: 1.35; margin: 0 0 var(--e4); }
+.kit-contacto-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e4) var(--e4); padding: var(--e5); border: 1px solid rgba(249,246,242,.25); border-radius: 28px; }
+.kit-contacto-grupo { display: grid; gap: var(--e2); min-width: 0; }
+.kit-contacto-grupo.completo { grid-column: 1 / -1; }
+.kit-contacto-etiqueta { font-family: var(--fuente-mono); font-size: var(--t-micro); letter-spacing: .12em; text-transform: uppercase; color: #F9F6F2; }
+.kit-contacto-campo { width: 100%; box-sizing: border-box; min-height: 52px; padding: 12px 22px; border: 1px solid transparent; border-radius: 999px; background: rgba(249,246,242,.12); color: #F9F6F2; font: inherit; font-size: 1rem; transition: background .2s ease, border-color .2s ease; }
+textarea.kit-contacto-campo { border-radius: 24px; resize: vertical; }
+.kit-contacto-campo:hover { background: rgba(249,246,242,.18); }
+.kit-contacto-campo:focus { outline: none; border-color: var(--oro); background: rgba(249,246,242,.2); }
+.kit-contacto-campo.es-lista { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='10' viewBox='0 0 16 10'%3E%3Cpath d='M1 1l7 7 7-7' fill='none' stroke='%23F9F6F2' stroke-width='2'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 22px center; padding-right: 52px; }
+.kit-contacto-campo option { color: #1F241B; }
+.kit-contacto-enviar { grid-column: 1 / -1; justify-self: start; padding: 14px 32px; border: 0; border-radius: 999px; background: var(--oro); color: #1F241B; font: inherit; font-weight: 700; cursor: pointer; transition: transform .2s var(--ease-out), box-shadow .2s ease; }
+.kit-contacto-enviar:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,.25); }
+.kit-contacto-aviso { grid-column: 1 / -1; margin: 0; font-size: var(--t-chico); color: #F9F6F2; opacity: .85; }
+.kit-contacto-aviso:empty { display: none; }
+@media (max-width: 860px) { .kit-contacto-rejilla, .kit-contacto-form { grid-template-columns: minmax(0, 1fr); } .kit-contacto-form { padding: var(--e4); } }
+@media (prefers-reduced-motion: reduce) { .kit-contacto-campo, .kit-contacto-enviar { transition: none; } .kit-contacto-enviar:hover { transform: none; } }
+
+/* E50: logos de aliados en versión blanca (Alante, Azaí) van sobre fondo oscuro en claro y en oscuro. */
+.kit-serv-tarjeta-fondo.oscuro { fill: #1F241B; }
+.kit-logo-fondo-oscuro { background: #1F241B; padding: 14px 18px; border-radius: var(--radio-chico); box-sizing: content-box; }
+.kit-aliado-sitio { display: inline-flex; margin-top: var(--e3); padding: 8px var(--e4); border-radius: 999px; background: var(--principal); color: var(--fondo); font-weight: 600; font-size: var(--t-chico); text-decoration: none; }
+.kit-aliado-sitio:hover { background: var(--principal-fuerte); }
+
+/* 8-nov (correcciones de Felipe): Experiencia con círculo blanco e ícono del sector. Logos de aliados sobre fondo
+   blanco cuando el logo no es transparente (los que van sobre oscuro conservan su fondo). Enlace al sitio del aliado. */
+.kit-serv-nodo-blanco .kit-serv-nodo-fondo { fill: #FFFFFF; }
+.kit-serv-nodo-blanco .kit-serv-nodo-icono { color: #3A4733; }
+.kit-serv-tarjeta-fondo.blanco { fill: #FFFFFF; }
+.kit-serv-sitio { pointer-events: auto; position: absolute; left: 73.5%; transform: translateY(46px); font-family: var(--fuente-mono); font-size: var(--t-micro); letter-spacing: .1em; text-transform: uppercase; color: var(--oro-texto) !important; text-decoration: none; white-space: nowrap; }
+.kit-serv-sitio:hover { text-decoration: underline; }
+.kit-serv-sitio:focus-visible { outline: 2px solid var(--oro); outline-offset: 3px; }
+@media (max-width: 860px) { .kit-serv-sitio { position: static; transform: none; display: block; padding: 0 0 var(--e3) 40px; } }
+.kit-contacto-trampa { position: absolute; left: -10000px; width: 1px; height: 1px; opacity: 0; }

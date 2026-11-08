@@ -38,11 +38,22 @@
 
     const servicios = cfg.servicios || [], experiencia = cfg.experiencia || [], personas = cfg.personas || [], aliados = cfg.aliados || [];
     const temasCfg = cfg.temas || {};
+    // E50 (boceto Experiencia, 7-nov): Experiencia se organiza por sector. Los casos con ficha completa y los demás
+    // clientes (solo nombre, logo y descripción) se agrupan por sector, en el orden en que aparecen.
+    const clientes = [...experiencia.map(e => ({ ...e, caso: true })), ...(cfg.clientes || []).map(c => ({ ...c, caso: c.caso === true }))];
+    const sectores = [];
+    clientes.forEach(c => {
+      let s = sectores.find(x => x.sector === c.sector);
+      if (!s) { s = { sector: c.sector, icono: c.icono_sector || null, clientes: [] }; sectores.push(s); }
+      if (!s.icono && c.icono_sector) s.icono = c.icono_sector;
+      s.clientes.push(c);
+    });
+    const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
     const temas = [
       { id: 'servicios', items: servicios.map(v => ({ titulo: v.titulo, sub: 'Ver servicio', nodo: { icono: v.icono }, dato: v })), ficha: fichaServicio },
-      { id: 'experiencia', items: experiencia.map(e => ({ titulo: e.sector, sub: servicios[e.servicio]?.titulo || e.tema, nodo: { logo: e.logo, sigla: e.sigla || e.sector }, dato: e })), ficha: fichaCaso },
+      { id: 'experiencia', items: sectores.map(x => ({ titulo: x.sector, sub: plural(x.clientes.length, 'cliente', 'clientes'), nodo: { icono: x.icono, sigla: x.clientes[0]?.sigla || '' }, dato: x })), ficha: fichaSector, centro: fichaClientes },
       { id: 'equipo', items: personas.map(p => ({ titulo: p.nombre, sub: p.cargo, nodo: { tarjeta: 'foto', foto: p.foto, sigla: p.nombre }, dato: p })), ficha: fichaPersona },
-      { id: 'aliados', items: aliados.map(a => ({ titulo: a.nombre || a.titulo, sub: a.nombre ? a.titulo : 'Ver aliado', nodo: { tarjeta: 'logo', logo: a.logo, icono: a.icono, texto: a.nombre || a.titulo }, dato: a })), ficha: fichaAliado }
+      { id: 'aliados', items: aliados.map(a => ({ titulo: a.nombre || a.titulo, sub: a.nombre ? a.titulo : 'Ver aliado', nodo: { tarjeta: 'logo', logo: a.logo, fondo: a.logo_fondo, icono: a.icono, texto: a.nombre || a.titulo }, dato: a })), ficha: fichaAliado }
     ].filter(t => t.items.length).map(t => ({ ...t, nombre: temasCfg[t.id]?.nombre || t.id, frase: temasCfg[t.id]?.frase || '', titular: temasCfg[t.id]?.titular || '' }));
     const partes = [];
 
@@ -105,10 +116,11 @@
         // E46 (boceto Aliados, 6-nov): en Equipo la foto y en Aliados el logo crecen y se integran al gráfico.
         const [ancho, alto] = item.nodo.tarjeta === 'foto' ? (n > 3 ? [132, 132] : [150, 150]) : item.nodo.tarjeta === 'logo' ? [184, 104] : [100, 100];
         g.append(svg('line', { x1: cx + ancho / 2, y1: cy, x2: 702, y2: cy, class: 'kit-serv-guia' }), svg('circle', { cx: 714, cy, r: 8, class: 'kit-serv-anillo' }));
-        const nodo = svg('g', { class: 'kit-serv-nodo' + (item.nodo.tarjeta ? ' kit-serv-tarjeta' : ''), transform: `translate(${cx} ${cy})` });
+        // 8-nov (correcciones de Felipe): en Experiencia el nodo es un círculo blanco con el ícono del sector, nunca el logo.
+        const nodo = svg('g', { class: 'kit-serv-nodo' + (item.nodo.tarjeta ? ' kit-serv-tarjeta' : '') + (tema.id === 'experiencia' ? ' kit-serv-nodo-blanco' : ''), transform: `translate(${cx} ${cy})` });
         if (item.nodo.tarjeta) {
           const clip = 'kit-clip-' + tema.id + '-' + i, def = svg('clipPath', { id: clip }), forma = { x: -ancho / 2, y: -alto / 2, width: ancho, height: alto, rx: 14 };
-          def.append(svg('rect', forma)); nodo.append(def, svg('rect', { ...forma, class: 'kit-serv-tarjeta-fondo' }));
+          def.append(svg('rect', forma)); nodo.append(def, svg('rect', { ...forma, class: 'kit-serv-tarjeta-fondo' + (item.nodo.fondo === 'oscuro' ? ' oscuro' : item.nodo.logo ? ' blanco' : '') }));
           if (item.nodo.foto || item.nodo.logo) {
             const m = item.nodo.foto ? 0 : 16;
             nodo.append(svg('image', { href: item.nodo.foto || item.nodo.logo, x: -ancho / 2 + m, y: -alto / 2 + m, width: ancho - 2 * m, height: alto - 2 * m, 'clip-path': `url(#${clip})`, preserveAspectRatio: item.nodo.foto ? 'xMidYMid slice' : 'xMidYMid meet' }));
@@ -133,38 +145,79 @@
         if (item.sub) b.append(el('span', item.sub, 'kit-serv-ver'));
         b.setAttribute('aria-label', `${tema.nombre} ${i + 1}: ${item.titulo}. Abrir la ficha`); b.onclick = () => abrirFicha(tema, i);
         titulosActuales.push(b); titulos.append(b);
+        // 8-nov: cada aliado lleva también a su página, al lado de su título.
+        if (tema.id === 'aliados' && item.dato?.sitio) {
+          const w = el('a', 'Visitar su sitio ↗', 'kit-serv-sitio'); w.href = item.dato.sitio; w.target = '_blank'; w.rel = 'noopener noreferrer';
+          w.setAttribute('aria-label', `Visitar el sitio de ${item.titulo} (se abre en otra pestaña)`);
+          if (w.style) { w.style.top = (cy / 660 * 100) + '%'; w.style.setProperty?.('--i', i); }
+          titulos.append(w);
+        }
       });
       const centro = svg('g', { class: 'kit-serv-centro' });
       centro.append(svg('circle', { cx: C[0], cy: C[1], r: 158 }));
       const t0 = svg('text', { x: C[0], y: C[1] - 52, 'text-anchor': 'middle', class: 'kit-serv-centro-ante' }); t0.textContent = 'MELEIA'; centro.append(t0);
-      // La frase se parte en dos renglones: donde diga la configuración (salto de línea) o por la mitad de las palabras.
-      const palabras = tema.frase.split(' '), corte = Math.ceil(palabras.length / 2);
-      (tema.frase.includes('\n') ? tema.frase.split('\n').slice(0, 2) : [palabras.slice(0, corte).join(' '), palabras.slice(corte).join(' ')]).forEach((linea, k) => { const t = svg('text', { x: C[0], y: C[1] + 4 + k * 38, 'text-anchor': 'middle', class: 'kit-serv-centro-frase' }); t.textContent = linea; centro.append(t); });
+      let lineas, extra = [];
+      if (tema.centro) {
+        // Experiencia: las cifras van en el centro, grandes, y el centro abre el listado de clientes.
+        lineas = ['# ' + plural(clientes.length, 'cliente', 'clientes'), '# ' + plural(sectores.length, 'sector', 'sectores')];
+        centro.classList?.add('kit-serv-centro-activo');
+        const b = el('button', null, 'kit-serv-centro-boton'); b.type = 'button';
+        b.setAttribute('aria-label', `${lineas.join(', ').replace(/# /g, '')}. Ver todos los clientes por sector`);
+        b.onclick = () => abrir({ titulo: 'Clientes por sector', origen: b, nodos: () => tema.centro(), desde: null });
+        centro.addEventListener?.('click', () => b.onclick()); extra = [b];
+      } else {
+        // La frase se parte en dos renglones: donde diga la configuración (salto de línea) o por la mitad de las palabras.
+        const palabras = tema.frase.split(' '), corte = Math.ceil(palabras.length / 2);
+        lineas = tema.frase.includes('\n') ? tema.frase.split('\n').slice(0, 2) : [palabras.slice(0, corte).join(' '), palabras.slice(corte).join(' ')];
+      }
+      lineas.forEach((linea, k) => { const t = svg('text', { x: C[0], y: C[1] + 4 + k * 38, 'text-anchor': 'middle', class: 'kit-serv-centro-frase' + (tema.centro ? ' kit-serv-centro-cifra' : '') }); t.textContent = linea; centro.append(t); });
       centro.append(svg('circle', { cx: C[0], cy: C[1] + 90, r: 6, class: 'kit-hero-punto' }));
+      if (tema.centro) { const v = svg('text', { x: C[0], y: C[1] + 124, 'text-anchor': 'middle', class: 'kit-serv-centro-ver' }); v.textContent = 'Ver todos'; centro.append(v); }
       dibujo.append(centro);
-      diagrama.replaceChildren(dibujo, el('p', tema.frase.replace('\n', ' '), 'solo-lectores'), titulos);
+      diagrama.replaceChildren(dibujo, el('p', tema.centro ? lineas.join(', ') : tema.frase.replace('\n', ' '), 'solo-lectores'), titulos, ...extra);
       diagrama.classList?.remove('recarga'); void diagrama.offsetWidth; diagrama.classList?.add('recarga');
     }
 
-    // Fichas: flotan sobre el gráfico, que queda difuminado. Cierre con «Volver al gráfico» o Escape.
-    let abierta = null;
-    function cerrarFicha(enfocar = true) {
-      if (capa.hidden) return;
-      capa.hidden = true; capa.replaceChildren(); diagrama.classList?.remove('difuminado'); if (escena.style) escena.style.minHeight = '';
-      if (enfocar && abierta != null) titulosActuales[abierta]?.focus?.(); abierta = null;
-    }
-    capa.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); cerrarFicha(); } };
-    function abrirFicha(tema, i) {
-      abierta = i;
-      const tarjeta = el('article', null, 'kit-ficha-flotante kit-ficha-' + tema.id);
-      const volver = el('button', 'Volver al gráfico', 'kit-serv-volver'); volver.type = 'button'; volver.onclick = () => cerrarFicha();
-      tarjeta.append(volver, ...tema.ficha(tema.items[i].dato, i));
-      capa.replaceChildren(tarjeta); capa.setAttribute('aria-label', tema.nombre + ': ' + tema.items[i].titulo);
-      const [cx, cy] = nodosActuales[i] || [500, 330], [vx, vw] = angosta?.matches ? [92, 545] : [0, 1000];
-      if (tarjeta.style) tarjeta.style.transformOrigin = `${(cx - vx) / vw * 100}% ${cy / 6.6}%`;
+    // Fichas (Lógica Muñeca Rusa, 7-nov): flotan sobre el gráfico difuminado y pueden abrir otra ficha encima.
+    // Cada ficha lleva una X que regresa un nivel, en el mismo orden en que se abrieron. Escape hace lo mismo.
+    const pila = [];
+    function pintarCima() {
+      const f = pila[pila.length - 1];
+      const tarjeta = el('article', null, 'kit-ficha-flotante ' + (f.clase || ''));
+      const previa = pila[pila.length - 2];
+      const x = el('button', null, 'kit-serv-volver kit-ficha-x'); x.type = 'button'; x.append(el('span', '×', 'kit-ficha-x-signo'));
+      x.setAttribute('aria-label', previa ? 'Regresar a ' + previa.titulo : 'Cerrar y volver al gráfico'); x.onclick = () => regresar();
+      tarjeta.append(x);
+      if (pila.length > 1) {
+        const ruta = el('p', null, 'kit-mono kit-ficha-ruta'); ruta.setAttribute('aria-label', 'Ruta');
+        pila.forEach((p, k) => { if (k) ruta.append(el('span', '/', 'kit-ficha-ruta-barra')); ruta.append(el('span', p.titulo)); });
+        tarjeta.append(ruta);
+      }
+      tarjeta.append(...f.nodos());
+      capa.replaceChildren(tarjeta); capa.setAttribute('aria-label', f.titulo);
+      if (tarjeta.style && f.desde) { const [cx, cy] = f.desde, [vx, vw] = angosta?.matches ? [92, 545] : [0, 1000]; tarjeta.style.transformOrigin = `${(cx - vx) / vw * 100}% ${cy / 6.6}%`; }
       diagrama.classList?.add('difuminado'); capa.hidden = false;
       if (escena.style && tarjeta.offsetHeight) escena.style.minHeight = Math.max(diagrama.offsetHeight || 0, tarjeta.offsetHeight + 48) + 'px';
-      volver.focus?.({ preventScroll: true });
+      x.focus?.({ preventScroll: true });
+      if (pila.length > 1 && escena.getBoundingClientRect && escena.getBoundingClientRect().top < 0) escena.scrollIntoView?.({ behavior: sinMovimiento() ? 'auto' : 'smooth', block: 'start' });
+    }
+    function abrir(f) { pila.push(f); pintarCima(); }
+    function regresar() {
+      const f = pila.pop(); if (!f) return;
+      if (pila.length) { pintarCima(); return; }
+      capa.hidden = true; capa.replaceChildren(); diagrama.classList?.remove('difuminado'); if (escena.style) escena.style.minHeight = '';
+      f.origen?.focus?.();
+    }
+    function cerrarFicha(enfocar = true) {
+      if (capa.hidden) return;
+      const base = pila[0]; pila.length = 0;
+      capa.hidden = true; capa.replaceChildren(); diagrama.classList?.remove('difuminado'); if (escena.style) escena.style.minHeight = '';
+      if (enfocar) base?.origen?.focus?.();
+    }
+    capa.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); regresar(); } };
+    function abrirFicha(tema, i) {
+      pila.length = 0;
+      abrir({ titulo: tema.items[i].titulo, clase: 'kit-ficha-' + tema.id, origen: titulosActuales[i], desde: nodosActuales[i], nodos: () => tema.ficha(tema.items[i].dato, i) });
     }
 
     // Cabecera común de las fichas: círculo con ícono, foto o logo montado sobre la barra del título.
@@ -178,15 +231,50 @@
       c.append(sello, barra); return c;
     }
     const caja = (...hijos) => { const d = el('div', null, 'kit-ficha-descripcion'); d.append(...hijos); return d; };
-    function celdaCaso(e) {
-      const b = el('button', null, 'kit-logo-celda'); b.type = 'button';
-      if (e.logo) { const img = el('img'); img.src = e.logo; img.alt = e.sector; b.append(img); } else b.append(el('span', e.sigla || e.sector, 'kit-logo-sigla'), el('span', e.sector, 'kit-mono'));
-      b.setAttribute('aria-label', `Caso ${e.sector}. Abrir en Experiencia`);
-      b.onclick = async () => { await mostrarTema('experiencia', false); abrirFicha(temas.find(x => x.id === 'experiencia'), experiencia.indexOf(e)); };
+    const nombreCliente = e => e.nombre || ('Empresa del sector ' + String(e.sector || '').replace(/^Sector /, '').toLowerCase());
+    function celdaCaso(e, conNombre = false) {
+      const b = el('button', null, 'kit-logo-celda' + (conNombre ? ' con-nombre' : '')); b.type = 'button';
+      if (e.logo) { const img = el('img'); img.src = e.logo; img.alt = ''; b.append(img); } else b.append(el('span', e.sigla || e.sector, 'kit-logo-sigla'));
+      if (conNombre || !e.logo) b.append(el('span', e.nombre || e.sector, 'kit-mono'));
+      b.setAttribute('aria-label', `${nombreCliente(e)}. Abrir la ficha del cliente`);
+      b.onclick = () => abrir({ titulo: e.nombre || e.sigla || e.sector, clase: 'kit-ficha-experiencia', origen: b, nodos: () => fichaCaso(e, clientes.indexOf(e)) });
       return b;
     }
+    // Ficha del sector (boceto): ícono y sector, qué hemos hecho en él, los clientes y la cifra que abre el listado.
+    function fichaSector(x, i) {
+      const hecho = el('ul', null, 'kit-sector-hecho'), vistos = new Set();
+      x.clientes.filter(c => c.caso).forEach(c => {
+        const linea = (servicios[c.servicio]?.titulo || '') + (c.tema ? ': ' + c.tema : '');
+        if (linea && !vistos.has(linea)) { vistos.add(linea); hecho.append(el('li', linea)); }
+      });
+      const fila = el('div', null, 'kit-casos-logos kit-sector-clientes');
+      x.clientes.forEach(c => fila.append(celdaCaso(c)));
+      const cifra = el('button', null, 'kit-logo-celda kit-sector-cifra'); cifra.type = 'button';
+      cifra.append(el('span', '# ' + x.clientes.length, 'kit-dato-cifra'), el('span', x.clientes.length === 1 ? 'cliente en el sector' : 'clientes en el sector', 'kit-mono'));
+      cifra.setAttribute('aria-label', `${plural(x.clientes.length, 'cliente', 'clientes')} en ${x.sector}. Ver el listado`);
+      cifra.onclick = () => abrir({ titulo: 'Clientes del sector', origen: cifra, nodos: () => fichaClientes(x) });
+      fila.append(cifra);
+      return [cabeza({ icono: x.icono, sigla: x.clientes[0]?.sigla }, i, 'Sector ' + dos(i), x.sector),
+        mono('¿Qué hemos hecho en este sector?', 'kit-ficha-sub'), caja(vistos.size ? hecho : el('p', 'Por confirmar.')),
+        mono('Clientes', 'kit-ficha-sub'), fila];
+    }
+    // Listado de clientes: todos por sector (desde el centro) o solo los de un sector (desde su ficha).
+    function fichaClientes(solo) {
+      const grupos = solo ? [solo] : sectores, cuerpo = el('div', null, 'kit-clientes-listado');
+      const cab = el('ul', null, 'kit-datos kit-clientes-cifras');
+      [[solo ? solo.clientes.length : clientes.length, 'clientes'], ...(solo ? [] : [[sectores.length, 'sectores']])]
+        .forEach(([n, t]) => { const li = el('li'); li.append(el('span', '# ' + n, 'kit-dato-cifra'), el('span', t, 'kit-dato-texto')); cab.append(li); });
+      cuerpo.append(mono(solo ? solo.sector : 'Experiencia', 'kit-ficha-sub'), el('h3', solo ? 'Clientes del sector' : 'Clientes por sector', 'kit-clientes-titulo'), cab);
+      grupos.forEach(x => {
+        const g = el('section', null, 'kit-clientes-grupo'), fila = el('div', null, 'kit-casos-logos');
+        x.clientes.forEach(c => fila.append(celdaCaso(c, true)));
+        if (!solo) g.append(mono(x.sector, 'kit-ficha-sub'));
+        g.append(fila); cuerpo.append(g);
+      });
+      return [cuerpo];
+    }
     function fichaServicio(v, i) {
-      const casos = experiencia.filter(e => e.servicio === i), fila = el('div', null, 'kit-casos-logos');
+      const casos = clientes.filter(e => e.caso && e.servicio === i), fila = el('div', null, 'kit-casos-logos');
       casos.forEach((e, k) => { if (k) fila.append(el('span', '/', 'kit-casos-barra')); fila.append(celdaCaso(e)); });
       return [cabeza({ icono: v.icono }, i, 'Servicio ' + dos(i), v.titulo), caja(el('p', v.descripcion || ''), lista(v.puntos)), mono('Casos', 'kit-ficha-sub'), casos.length ? fila : el('p', 'Casos por confirmar.', 'nota')];
     }
@@ -200,7 +288,21 @@
         else li.append(el('span', '# ' + dos(k), 'kit-caso-enlace sin-enlace'));
         entregables.append(li);
       });
-      cuerpo.append(mono(e.sector + ' · ' + e.tema), el('h3', servicio?.titulo || e.tema), caja(el('p', e.que_se_hizo || e.descripcion)), mono('Entregables', 'kit-ficha-sub'), entregables);
+      cuerpo.append(mono(e.sector), el('h3', nombreCliente(e)), el('p', e.descripcion || '', 'kit-caso-descripcion'));
+      // Proyectos hechos a través de otra organización (por ejemplo, la Universidad EAN): «Desarrollado con» y su logo.
+      if (e.desarrollado_con?.nombre) {
+        const dc = el('div', null, 'kit-caso-con'); dc.append(mono('Desarrollado con'));
+        if (e.desarrollado_con.logo) { const img = el('img'); img.src = e.desarrollado_con.logo; img.alt = e.desarrollado_con.nombre; dc.append(img); }
+        else dc.append(el('strong', e.desarrollado_con.nombre));
+        cuerpo.append(dc);
+      }
+      if (e.caso) {
+        const recuadro = el('div', null, 'kit-ficha-descripcion kit-caso-recuadro');
+        recuadro.append(mono('¿Qué hicimos y qué entregamos?', 'kit-ficha-sub'));
+        if (servicio?.titulo || e.tema) recuadro.append(el('p', [servicio?.titulo, e.tema].filter(Boolean).join(': '), 'kit-caso-servicio'));
+        if (e.alcance) recuadro.append(el('p', 'Alcance: ' + e.alcance + '.'));
+        recuadro.append(entregables); cuerpo.append(recuadro);
+      }
       const g = el('div', null, 'kit-caso-rejilla'); if (g.style) g.style.setProperty?.('--caso-color', e.color || COLORES[i % COLORES.length]);
       g.append(logoCaso, cuerpo); return [g];
     }
@@ -208,12 +310,13 @@
     // Ficha del aliado (boceto, 6-nov): Logo | nombre, descripción y datos resaltados con #; cada dato lleva a Experiencia.
     function fichaAliado(a, i) {
       const logoA = el('div', null, 'kit-caso-logo');
-      if (a.logo) { const img = el('img'); img.src = a.logo; img.alt = a.nombre || a.titulo; logoA.append(img); }
+      if (a.logo) { const img = el('img'); img.src = a.logo; img.alt = a.nombre || a.titulo; if (a.logo_fondo === 'oscuro') img.className = 'kit-logo-fondo-oscuro'; logoA.append(img); }
       else { const sello = el('div', null, 'kit-aliado-sello'); sello.append(icono(a.icono)); logoA.append(sello, el('span', 'Logo por confirmar', 'kit-mono')); }
       const cuerpo = el('div', null, 'kit-caso-cuerpo'), barra = el('div', null, 'kit-ficha-barra kit-aliado-barra');
       barra.append(mono('Aliado ' + dos(i)), el('h3', a.nombre || a.titulo));
       cuerpo.append(barra, caja(el('p', a.descripcion || '')));
-      const casos = (a.casos || []).map(id => experiencia.find(e => e.id === id)).filter(Boolean);
+      if (a.sitio) { const w = el('a', 'Visitar su sitio ↗', 'kit-aliado-sitio'); w.href = a.sitio; w.target = '_blank'; w.rel = 'noopener noreferrer'; cuerpo.append(w); }
+      const casos = (a.casos || []).map(id => clientes.find(e => e.id === id)).filter(Boolean);
       if ((a.datos || []).length) {
         const fila = el('ul', null, 'kit-datos');
         a.datos.forEach(d => { const li = el('li'); li.append(el('span', '# ' + d.cifra, 'kit-dato-cifra'), el('span', d.texto, 'kit-dato-texto')); fila.append(li); });
@@ -229,8 +332,45 @@
     // 3. Contacto.
     if (cfg.contacto?.correo) {
       const s = el('section', null, 'kit-cred-seccion kit-banda kit-banda-oscura kit-cred-contacto'), p = el('p', null, 'kit-contacto-linea'), a = el('a', cfg.contacto.correo);
-      a.href = 'mailto:' + cfg.contacto.correo; s.append(el('h2', 'Contacto', 'kit-mono kit-antetitulo'), el('p', 'Hablemos.', 'kit-titular')); p.append(el('span', 'Escríbenos a '), a); s.append(p);
-      if (cfg.contacto.telefono) s.append(el('p', 'Teléfono: ' + cfg.contacto.telefono)); partes.push(s);
+      a.href = 'mailto:' + cfg.contacto.correo; s.append(el('h2', 'Contacto', 'kit-mono kit-antetitulo'), el('p', 'Hablemos.', 'kit-titular'));
+      const rejilla = el('div', null, 'kit-contacto-rejilla'), lado = el('div', null, 'kit-contacto-lado');
+      lado.append(el('p', cfg.contacto.invitacion || 'Déjanos tus datos y te contactamos para agendar una reunión.', 'kit-contacto-invitacion'));
+      p.append(el('span', 'O escríbenos a '), a); lado.append(p);
+      if (cfg.contacto.telefono) lado.append(el('p', 'Teléfono: ' + cfg.contacto.telefono));
+      rejilla.append(lado);
+      // E50 (7-nov): formulario con el diseño de la referencia de Olivia. Todavía no envía: lo dice en pantalla y deja el correo.
+      if (cfg.contacto.formulario?.campos?.length) {
+        const f = el('form', null, 'kit-contacto-form'); f.noValidate = true; f.setAttribute('aria-label', 'Formulario de contacto');
+        cfg.contacto.formulario.campos.forEach((c, k) => {
+          const id = 'kit-contacto-' + k, et = el('label', c.etiqueta + (c.obligatorio ? '*' : ''), 'kit-contacto-etiqueta'); et.htmlFor = id;
+          let campo;
+          if (c.opciones) { campo = el('select'); const o0 = el('option', 'Selecciona'); o0.value = ''; campo.append(o0); c.opciones.forEach(o => { const op = el('option', o); op.value = o; campo.append(op); }); }
+          else if (c.tipo === 'texto-largo') { campo = el('textarea'); campo.rows = 4; }
+          else { campo = el('input'); campo.type = c.tipo || 'text'; if (c.autocompletar) campo.autocomplete = c.autocompletar; }
+          campo.id = id; campo.name = c.id; campo.className = 'kit-contacto-campo' + (c.opciones ? ' es-lista' : ''); if (c.obligatorio) campo.required = true;
+          const caja = el('div', null, 'kit-contacto-grupo' + (c.ancho === 'completo' ? ' completo' : '')); caja.append(et, campo); f.append(caja);
+        });
+        const enviar = el('button', cfg.contacto.formulario.boton || 'Agendar una reunión', 'kit-contacto-enviar'); enviar.type = 'submit';
+        const aviso = el('p', null, 'kit-contacto-aviso'); aviso.setAttribute('role', 'status');
+        // E59 (8-nov): el formulario envía a la base (tabla contactos, solo inserción). Campo trampa oculto contra envíos automáticos.
+        const trampa = el('input', null, 'kit-contacto-trampa'); trampa.type = 'text'; trampa.name = 'sitio_web'; trampa.tabIndex = -1; trampa.autocomplete = 'off'; trampa.setAttribute('aria-hidden', 'true'); f.append(trampa);
+        f.onsubmit = async ev => {
+          ev?.preventDefault?.();
+          const valores = Object.fromEntries(cfg.contacto.formulario.campos.map(c => [c.id, String(f.elements?.[c.id]?.value ?? '').trim()]));
+          const faltan = cfg.contacto.formulario.campos.filter(c => c.obligatorio && !valores[c.id]).map(c => c.etiqueta);
+          if (faltan.length) { aviso.textContent = 'Falta: ' + faltan.join(', ') + '.'; return; }
+          if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(valores.correo || '')) { aviso.textContent = 'Revisa el correo.'; return; }
+          if (trampa.value) { aviso.textContent = 'Gracias. Te escribiremos pronto.'; f.reset?.(); return; }
+          const datos = root.App?.datos;
+          if (!datos?.enviarContacto) { aviso.textContent = 'No pudimos enviar el mensaje. Escríbenos a ' + cfg.contacto.correo + '.'; return; }
+          enviar.disabled = true; aviso.textContent = 'Enviando…';
+          try { await datos.enviarContacto({ ...valores, mensaje: valores.mensaje || null }); aviso.textContent = 'Gracias. Recibimos tu mensaje y te escribiremos pronto.'; f.reset?.(); }
+          catch (_) { aviso.textContent = 'No pudimos enviar el mensaje. Escríbenos a ' + cfg.contacto.correo + '.'; }
+          finally { enviar.disabled = false; }
+        };
+        f.append(enviar, aviso); rejilla.append(f);
+      }
+      s.append(rejilla); partes.push(s);
     }
     destino.replaceChildren(...partes);
     return { mostrarTema, abrirFicha: (id, i) => abrirFicha(temas.find(t => t.id === id), i), cerrarFicha };
