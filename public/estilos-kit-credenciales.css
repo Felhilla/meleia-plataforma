@@ -237,3 +237,14 @@ textarea.kit-contacto-campo { border-radius: 24px; resize: vertical; }
 .kit-logo-fondo-oscuro { background: #1F241B; padding: 14px 18px; border-radius: var(--radio-chico); box-sizing: content-box; }
 .kit-aliado-sitio { display: inline-flex; margin-top: var(--e3); padding: 8px var(--e4); border-radius: 999px; background: var(--principal); color: var(--fondo); font-weight: 600; font-size: var(--t-chico); text-decoration: none; }
 .kit-aliado-sitio:hover { background: var(--principal-fuerte); }
+
+/* 8-nov (correcciones de Felipe): Experiencia con círculo blanco e ícono del sector. Logos de aliados sobre fondo
+   blanco cuando el logo no es transparente (los que van sobre oscuro conservan su fondo). Enlace al sitio del aliado. */
+.kit-serv-nodo-blanco .kit-serv-nodo-fondo { fill: #FFFFFF; }
+.kit-serv-nodo-blanco .kit-serv-nodo-icono { color: #3A4733; }
+.kit-serv-tarjeta-fondo.blanco { fill: #FFFFFF; }
+.kit-serv-sitio { pointer-events: auto; position: absolute; left: 73.5%; transform: translateY(46px); font-family: var(--fuente-mono); font-size: var(--t-micro); letter-spacing: .1em; text-transform: uppercase; color: var(--oro-texto) !important; text-decoration: none; white-space: nowrap; }
+.kit-serv-sitio:hover { text-decoration: underline; }
+.kit-serv-sitio:focus-visible { outline: 2px solid var(--oro); outline-offset: 3px; }
+@media (max-width: 860px) { .kit-serv-sitio { position: static; transform: none; display: block; padding: 0 0 var(--e3) 40px; } }
+.kit-contacto-trampa { position: absolute; left: -10000px; width: 1px; height: 1px; opacity: 0; }
