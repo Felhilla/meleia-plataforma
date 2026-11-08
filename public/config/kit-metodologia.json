@@ -14,22 +14,60 @@
       "etapas": [
         { "eje": "etapa-ocde-1", "titulo": "Incorporar", "oficial": "Incorporar la conducta empresarial responsable a las políticas y sistemas de gestión", "pagina": "p. 26",
           "pide": "Adoptar una política de conducta empresarial responsable aprobada por la alta dirección, incorporarla a la supervisión y a los sistemas de gestión, y extender esas expectativas a proveedores y socios.",
-          "evidencia": "Política aprobada y publicada, responsables asignados, cláusulas en contratos con proveedores y capacitación." },
+          "evidencia": "Política aprobada y publicada, responsables asignados, cláusulas en contratos con proveedores y capacitación.",
+          "documentos": [
+            { "documento": "Política de conducta empresarial responsable y de derechos humanos", "esg": "G", "fuente": "Guía OCDE, paso 1, y PRNU, principio 16" },
+            { "documento": "Política ambiental", "esg": "A", "fuente": "Guía OCDE, paso 1" },
+            { "documento": "Acta de aprobación de la alta dirección y asignación de responsables", "esg": "G", "fuente": "Guía OCDE, paso 1" },
+            { "documento": "Código de conducta para proveedores y cláusulas en los contratos", "esg": "G", "fuente": "Guía OCDE, paso 1" },
+            { "documento": "Registros de capacitación del personal", "esg": "S", "fuente": "Guía OCDE, paso 1" }
+          ] },
         { "eje": "etapa-ocde-2", "titulo": "Identificar", "oficial": "Identificar y evaluar los impactos negativos reales y potenciales asociados a las actividades, productos o servicios de la empresa", "pagina": "p. 29",
           "pide": "Establecer dónde son más probables y graves los impactos, en la operación y en la cadena de suministro, y determinar si la empresa los causa, contribuye a ellos o está directamente vinculada.",
-          "evidencia": "Evaluación de riesgos en derechos humanos, evaluación de proveedores de mayor riesgo y consulta con los grupos afectados." },
+          "evidencia": "Evaluación de riesgos en derechos humanos, evaluación de proveedores de mayor riesgo y consulta con los grupos afectados.",
+          "documentos": [
+            { "documento": "Mapa de operaciones y de la cadena de suministro", "esg": "G", "fuente": "Guía OCDE, paso 2" },
+            { "documento": "Evaluación de riesgos e impactos en derechos humanos", "esg": "S", "fuente": "Guía OCDE, paso 2, y PRNU, principio 18" },
+            { "documento": "Estudio de impacto ambiental y social (EIA o EISA)", "esg": "A", "fuente": "Guía OCDE, paso 2" },
+            { "documento": "Evaluación de proveedores de mayor riesgo", "esg": "G", "fuente": "Guía OCDE, paso 2" },
+            { "documento": "Registros de consulta con partes interesadas y grupos afectados", "esg": "S", "fuente": "Guía OCDE, paso 2, y PRNU, principio 18" }
+          ] },
         { "eje": "etapa-ocde-3", "titulo": "Prevenir y mitigar", "oficial": "Detener, prevenir y mitigar los impactos negativos", "pagina": "p. 33",
           "pide": "Detener las actividades que causan o contribuyen a un impacto, y aplicar planes para prevenir y mitigar los impactos potenciales, incluidos los de la cadena de suministro.",
-          "evidencia": "Planes de acción con responsables y plazos, medidas en contratos y uso de la influencia sobre proveedores." },
+          "evidencia": "Planes de acción con responsables y plazos, medidas en contratos y uso de la influencia sobre proveedores.",
+          "documentos": [
+            { "documento": "Planes de acción correctivos con responsables y plazos", "esg": "G", "fuente": "Guía OCDE, paso 3" },
+            { "documento": "Medidas de prevención y mitigación de impactos ambientales", "esg": "A", "fuente": "Guía OCDE, paso 3" },
+            { "documento": "Medidas de prevención y mitigación de impactos sobre las personas", "esg": "S", "fuente": "Guía OCDE, paso 3, y PRNU, principio 19" },
+            { "documento": "Requisitos para proveedores y uso de la influencia en la cadena", "esg": "G", "fuente": "Guía OCDE, paso 3" }
+          ] },
         { "eje": "etapa-ocde-4", "titulo": "Hacer seguimiento", "oficial": "Hacer un seguimiento de la implementación y los resultados", "pagina": "p. 36",
           "pide": "Verificar si las medidas se aplican y si funcionan, con indicadores cualitativos y cuantitativos y con la opinión de las personas afectadas.",
-          "evidencia": "Indicadores de seguimiento, auditorías y revisiones periódicas en la operación y en la cadena." },
+          "evidencia": "Indicadores de seguimiento, auditorías y revisiones periódicas en la operación y en la cadena.",
+          "documentos": [
+            { "documento": "Indicadores de seguimiento cualitativos y cuantitativos", "esg": "G", "fuente": "Guía OCDE, paso 4, y PRNU, principio 20" },
+            { "documento": "Auditorías ambientales", "esg": "A", "fuente": "Guía OCDE, paso 4" },
+            { "documento": "Auditorías sociales y laborales", "esg": "S", "fuente": "Guía OCDE, paso 4" },
+            { "documento": "Auditorías financieras y de cumplimiento anticorrupción", "esg": "G", "fuente": "Guía OCDE, paso 4" },
+            { "documento": "Retroalimentación de trabajadores y personas afectadas", "esg": "S", "fuente": "Guía OCDE, paso 4, y PRNU, principio 20" }
+          ] },
         { "eje": "etapa-ocde-5", "titulo": "Comunicar", "oficial": "Informar sobre cómo se abordan los impactos", "pagina": "p. 37",
           "pide": "Comunicar las políticas, los procesos de debida diligencia, los impactos identificados y las medidas tomadas, de forma accesible para los interesados.",
-          "evidencia": "Informe de sostenibilidad o de derechos humanos y comunicación directa con comunidades y grupos afectados." },
+          "evidencia": "Informe de sostenibilidad o de derechos humanos y comunicación directa con comunidades y grupos afectados.",
+          "documentos": [
+            { "documento": "Informe anual o de sostenibilidad", "esg": "G", "fuente": "Guía OCDE, paso 5, y GRI 3" },
+            { "documento": "Información pública sobre los impactos ambientales y su gestión", "esg": "A", "fuente": "Guía OCDE, paso 5" },
+            { "documento": "Comunicación directa con las comunidades y los grupos afectados", "esg": "S", "fuente": "Guía OCDE, paso 5, y PRNU, principio 21" }
+          ] },
         { "eje": "etapa-ocde-6", "titulo": "Reparar", "oficial": "Reparar o colaborar en la reparación del impacto cuando corresponda", "pagina": "p. 38",
           "pide": "Cuando la empresa causa o contribuye a un impacto, repararlo o colaborar en su reparación, con mecanismos de reclamación legítimos, accesibles y eficaces.",
-          "evidencia": "Mecanismo de quejas en funcionamiento, casos atendidos y cumplimiento de los criterios de eficacia del Principio 31 de los PRNU." }
+          "evidencia": "Mecanismo de quejas en funcionamiento, casos atendidos y cumplimiento de los criterios de eficacia del Principio 31 de los PRNU.",
+          "documentos": [
+            { "documento": "Mecanismo de quejas y reclamos a nivel operacional", "esg": "S", "fuente": "Guía OCDE, paso 6, y PRNU, principios 29 y 31" },
+            { "documento": "Registro de quejas, casos atendidos y su resolución", "esg": "G", "fuente": "Guía OCDE, paso 6" },
+            { "documento": "Acuerdos de reparación con las personas afectadas", "esg": "S", "fuente": "Guía OCDE, paso 6, y PRNU, principio 22" },
+            { "documento": "Planes de restauración o compensación ambiental", "esg": "A", "fuente": "Guía OCDE, paso 6" }
+          ] }
       ]
     },
     "temas": {
@@ -49,8 +87,8 @@
       ]
     },
     "dimensiones": {
-      "titular": "El resultado se lee en dos dimensiones.",
-      "intro": "La primera mira el proceso de debida diligencia de la empresa. La segunda mira cómo gestiona cada derecho. Cada dimensión es el promedio de sus etapas o de sus derechos."
+      "titular": "El resultado se lee con dos enfoques.",
+      "intro": "El primero mira el proceso de debida diligencia de la empresa. El segundo mira cómo gestiona cada derecho. Cada enfoque es el promedio de sus etapas o de sus derechos."
     },
     "calificacion": {
       "titular": "Una sola escala, de 0 a 5, para todo el módulo.",

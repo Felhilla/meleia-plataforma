@@ -131,7 +131,10 @@
     // Escape regresa un nivel, también si el foco quedó fuera de la ventana (por ejemplo, en el cuerpo de la página).
     const alTeclado = ev => { if (ev.key === 'Escape' && pila.length) { ev.preventDefault?.(); regresar(); } };
     capa.onkeydown = ev => { if (ev.key === 'Escape') { ev.stopPropagation?.(); alTeclado(ev); } };
-    capa.onclick = ev => { if (ev.target === capa) regresar(); };
+    // Regreso rápido (regla transversal, 8-nov): el fondo difuminado es un botón enorme e invisible que cierra todas
+    // las ventanas y deja al usuario en la vista central del módulo. La X sigue regresando de a un nivel.
+    function cerrarTodo() { while (pila.length > 1) { const v = pila.pop(); v.v.remove?.(); } regresar(); }
+    capa.onclick = ev => { if (ev.target === capa) cerrarTodo(); };
 
     // ---------- Primer vistazo ----------
     portada = el('section', null, 'kit-banda kit-banda-oscura kit-met-portada');
@@ -147,7 +150,7 @@
     const tiles = el('ul', null, 'kit-met-tiles');
     [[fichas.length, 'Estándares', 'internacionales que respaldan el método', ventanaEstandares],
       [etapas.length, 'Etapas', 'del proceso de debida diligencia de la OCDE', b => ventanaProceso(b, 'etapas')],
-      [d.dimensiones.length, 'Dimensiones', 'en las que se lee el resultado', ventanaDimensiones],
+      [d.dimensiones.length, 'Enfoques', 'con los que se lee el resultado', ventanaDimensiones],
       [d.totalCriterios, 'Criterios', `que agrupan ${num(d.totalIndicadores)} preguntas calificadas de 0 a 5`, ventanaCriterios]]
       .forEach(([n, rotulo, sub, fn], k) => {
         const cifra = el('span', num(n), 'kit-met-tile-num');
@@ -291,6 +294,7 @@
     // ---------- Ventana: Proceso (boceto 261108_Metodologicos_Proceso) ----------
     // Dos partes en la misma ventana: Incorporación de la debida diligencia (6 etapas OCDE) y Gestión de DDHH (10 derechos).
     // Cada etapa o derecho abre su ficha, y la ficha abre la ventana de preguntas.
+    const ESG = { A: 'Ambiental', S: 'Social', G: 'Gobernanza' };
     const CIRC = (cx, cy, r) => `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0`;
     const ICONOS = {
       'etapa-ocde-1': 'M6 3h8l4 4v14H6zM14 3v4h4M9 13l2 2 4-4',
@@ -405,7 +409,15 @@
       });
       const caja = (clase, rotulo, ...hijos) => { const s = el('section', null, 'kit-pro-caja ' + clase); s.append(mono(rotulo, 'kit-pro-rotulo'), ...hijos); return s; };
       const derecha = el('div', null, 'kit-pro-derecha');
-      if (esEtapa && f.evidencia) derecha.append(caja('kit-pro-evidencias', 'Evidencias', parrafo(f.evidencia)));
+      if (esEtapa && f.documentos?.length) {
+        // Documentos que la Guía OCDE y los demás estándares piden o recomiendan. La viñeta dice la dimensión ESG
+        // (forma y color, como en el Módulo III). Lo económico va en Gobernanza.
+        const ul = el('ul', null, 'kit-pro-docs');
+        f.documentos.forEach(x => { const li = el('li', null, 'kit-esg-' + x.esg); li.title = x.fuente; li.append(el('span', ESG[x.esg] + ': ', 'solo-lectores'), el('span', x.documento)); ul.append(li); });
+        const ley = el('ul', null, 'kit-pro-leyenda'); ley.setAttribute('aria-hidden', 'true');
+        [...new Set(f.documentos.map(x => x.esg))].sort((a, b) => 'ASG'.indexOf(a) - 'ASG'.indexOf(b)).forEach(k => ley.append(el('li', ESG[k], 'kit-esg-' + k)));
+        derecha.append(caja('kit-pro-evidencias', 'Evidencias: documentos que analizamos', ul, ley));
+      } else if (esEtapa && f.evidencia) derecha.append(caja('kit-pro-evidencias', 'Evidencias', parrafo(f.evidencia)));
       derecha.append(caja('kit-pro-estandar', esEtapa ? 'Estándares que la respaldan' : 'Estándares que lo respaldan', respaldo));
       const bp = boton('kit-pro-preguntar', el('span', '¿Qué preguntamos?', 'kit-pro-preguntar-texto'), el('span', `${num(total)} preguntas`, 'kit-mono'));
       bp.setAttribute('aria-haspopup', 'dialog'); bp.onclick = () => ventanaPreguntas(it, eje, bp);
@@ -414,7 +426,7 @@
       const crit = (eje?.componentes || []);
       if (crit.length) {
         const ul = el('ul', null, 'kit-pro-busca');
-        crit.forEach(c => { const li = el('li'); li.append(el('strong', c.nombre), el('span', c.descripcion || '')); ul.append(li); });
+        crit.forEach(c => { const li = el('li'); li.append(el('strong', c.nombre)); if (c.descripcion && c.descripcion.trim() !== c.nombre.trim()) li.append(el('span', c.descripcion)); ul.append(li); });
         analiza.append(caja('kit-pro-izq', 'Qué buscamos', ul));
       } else analiza.classList?.add('kit-pro-solo');
       analiza.append(derecha);
@@ -436,19 +448,44 @@
         el('p', `${num(todas.length)} preguntas, tal como se le formulan a la empresa. Cada una se califica de 0 a 5 con su evidencia.`, 'kit-met-intro'), grupos], desde, 'kit-ven-preguntas');
     }
 
-    // ---------- Ventana: Dimensiones ----------
+    // ---------- Ventana: Enfoques (boceto 261108_Metodologicos_Ejes) ----------
+    // Laberinto inteligente: cada pieza lleva a un lugar que ya existe. Entregables al Resultado, cifra e ícono a la
+    // Metodología de ese enfoque (ventana Proceso) y la pastilla Criterios a la ventana de Criterios.
+    function iconoArco() {
+      const s = svg('svg', { class: 'kit-enf-arco', viewBox: '0 0 60 60', 'aria-hidden': 'true', focusable: 'false' });
+      [0, 1, 2, 3, 4, 5].forEach(k => { const a0 = (-90 + k * 30 + 2) * Math.PI / 180, a1 = (-90 + (k + 1) * 30 - 2) * Math.PI / 180;
+        const P = (r, a) => `${14 + r * Math.cos(a)} ${30 + r * Math.sin(a)}`;
+        s.append(svg('path', { d: `M${P(26, a0)}A26 26 0 0 1 ${P(26, a1)}L${P(15, a1)}A15 15 0 0 0 ${P(15, a0)}Z`, fill: COLORES[k % 4] })); });
+      return s;
+    }
     function ventanaDimensiones(desde) {
-      const ul = el('ul', null, 'kit-met-dimensiones');
+      const rejilla = el('div', null, 'kit-enf');
+      const resultados = extra.empresa ? `#/${extra.modulo}/${extra.empresa}/resultados` : '';
+      const entrega = m.entrega?.items || [];
       d.dimensiones.forEach((g, k) => {
-        const esEtapas = g.id === 'etapas-ocde', n = g.ejes.length;
-        const chips = lista((g.estandares || []).map(t => t.replace(/ · /g, ', ')), 'kit-met-chips');
-        const b = boton('kit-met-dimension', mono('Dimensión ' + dos(k)), el('span', g.titulo, 'kit-met-dimension-titulo'), el('span', g.pregunta, 'kit-met-dimension-pregunta'),
-          el('span', `${num(n)} ${esEtapas ? 'etapas' : 'derechos'}`, 'kit-met-dimension-cifra'), chips, el('span', esEtapas ? 'Ver las etapas' : 'Ver los derechos', 'kit-met-dimension-ver'));
-        b.setAttribute('aria-haspopup', 'dialog');
-        b.onclick = () => ventanaProceso(b, esEtapas ? 'etapas' : 'derechos');
-        const li = el('li'); li.append(b); ul.append(li);
+        const esEtapas = g.id === 'etapas-ocde', cual = esEtapas ? 'etapas' : 'derechos', n = g.ejes.length;
+        const crit = g.ejes.reduce((t, id) => t + (d.ejes.get(id)?.componentes?.length || 0), 0);
+        const tarjeta = el('section', null, 'kit-enf-tarjeta' + (esEtapas ? '' : ' kit-enf-oro'));
+        tarjeta.append(mono('Enfoque ' + dos(k)), el('h3', g.titulo, 'kit-enf-titulo'), el('p', g.pregunta, 'kit-enf-pregunta'));
+        // Entregables: lo que la empresa recibe en los Resultados para este enfoque.
+        const ent = el('div', null, 'kit-enf-entregables'), ul = el('ul');
+        entrega.slice(0, 3).forEach(it => {
+          const t = it.titulo.replace(/ por etapa y por tema$/, esEtapas ? ' por etapa' : ' por derecho');
+          const li = el('li');
+          if (resultados) { const a = el('a', t, 'kit-enf-entregable'); a.href = resultados; li.append(a); } else li.append(el('span', t, 'kit-enf-entregable'));
+          ul.append(li);
+        });
+        ent.append(mono('Entregables', 'kit-pro-rotulo'), ul);
+        // Cifra e ícono: llevan a la metodología del enfoque.
+        const met = boton('kit-enf-metodo', el('span', num(crit || n), 'kit-enf-cifra'), el('span', crit ? `criterios en ${num(n)} etapas` : `derechos, cada uno con sus preguntas`, 'kit-enf-cifra-sub'), iconoArco(), el('span', 'Ver la metodología', 'kit-enf-ver'));
+        met.setAttribute('aria-haspopup', 'dialog'); met.onclick = () => ventanaProceso(met, cual);
+        const cuerpo = el('div', null, 'kit-enf-cuerpo'); cuerpo.append(ent, met);
+        tarjeta.append(cuerpo); rejilla.append(tarjeta);
       });
-      abrir('Dimensiones', [...encabezado('Dimensiones', m.dimensiones?.titular || 'Dimensiones', m.dimensiones?.intro), ul], desde, 'kit-ven-dimensiones');
+      const pie = el('div', null, 'kit-ven-pie kit-enf-pie'), bc = boton('kit-met-pastilla kit-enf-criterios', el('span', 'Criterios'));
+      bc.setAttribute('aria-haspopup', 'dialog'); bc.onclick = () => ventanaCriterios(bc);
+      pie.append(el('p', 'Los entregables llevan a los Resultados. La cifra lleva a la metodología de cada enfoque.', 'kit-met-nota'), bc);
+      abrir('Enfoques', [...encabezado('Cómo se lee el resultado', m.dimensiones?.titular || 'Enfoques', m.dimensiones?.intro), rejilla, pie], desde, 'kit-ven-enfoques');
     }
 
     // ---------- Ventana: Criterios (cómo se califica) ----------
@@ -463,7 +500,7 @@
       [[d.totalIndicadores, 'preguntas', 'Cada una se califica de 0 a 5 con su evidencia.'],
         [d.totalCriterios, 'criterios', 'Promedio de sus preguntas.'],
         [d.totalEjes, 'etapas y derechos', 'Promedio de sus criterios. Los derechos sin criterios promedian sus preguntas.'],
-        [d.dimensiones.length, 'dimensiones', 'Promedio de sus etapas o de sus derechos.']]
+        [d.dimensiones.length, 'enfoques', 'Promedio de sus etapas o de sus derechos.']]
         .forEach(([v, t, x]) => { const li = el('li'); li.append(el('span', '# ' + num(v), 'kit-dato-cifra'), el('span', t, 'kit-met-calculo-rotulo'), el('span', x, 'kit-dato-texto')); calculo.append(li); });
       const cortes = el('div', null, 'kit-met-cortes'), cs = d.umbrales.cortes;
       cs.forEach((c, k) => {

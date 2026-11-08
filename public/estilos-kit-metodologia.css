@@ -379,3 +379,42 @@ button.kit-cruce-col:focus-visible { outline: 2px solid var(--oro); }
 @media (prefers-reduced-motion: reduce) {
   .kit-pro-nav-boton, .kit-pro-preguntar { transition: none; }
 }
+
+/* E53 (8-nov). Evidencias con viñetas ESG: forma y color como los marcadores del Módulo III
+   (Ambiental triángulo verde, Social círculo dorado, Gobernanza cuadrado azul), en sus tonos para fondo oscuro. */
+.kit-ven-pro-ficha { --esg-a: #C9D6B4; --esg-s: #E0C27C; --esg-g: #96BEE3; }
+.kit-pro-docs { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e2); }
+.kit-pro-docs li, .kit-pro-leyenda li { position: relative; padding-left: 1.5rem; line-height: 1.45; }
+.kit-pro-docs li::before, .kit-pro-leyenda li::before { content: ""; position: absolute; left: 0; top: .32em; width: .7rem; height: .7rem; background: var(--esg); }
+.kit-esg-A { --esg: var(--esg-a); } .kit-esg-S { --esg: var(--esg-s); } .kit-esg-G { --esg: var(--esg-g); }
+.kit-esg-A::before { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.kit-esg-S::before { border-radius: 50%; }
+.kit-pro-leyenda { list-style: none; margin: var(--e3) 0 0; padding: var(--e2) 0 0; border-top: 1px solid var(--borde); display: flex; flex-wrap: wrap; gap: var(--e2) var(--e4); font-family: var(--fuente-mono); font-size: var(--t-micro); letter-spacing: .1em; text-transform: uppercase; color: var(--texto-suave); }
+.kit-pro-leyenda li { padding-left: 1.1rem; }
+.kit-pro-leyenda li::before { width: .6rem; height: .6rem; top: .2em; }
+
+/* Ventana Enfoques (boceto 261108_Metodologicos_Ejes): dos tarjetas, una blanca y una dorada. */
+.kit-ven-enfoques { --fondo: #34412E; --superficie: #3D4B36; --texto: #F1EEE6; --texto-suave: #D3D5C6; --borde: #56664C; --linea: #56664C; --oro-texto: #E0C27C; background: linear-gradient(160deg, #3A4733, #2B3626); }
+.kit-enf { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e4); }
+.kit-enf-tarjeta { --tono: #F1EEE6; display: grid; align-content: start; gap: var(--e2); padding: var(--e4); border-radius: 16px; border: 2px solid var(--tono); background: rgba(241,238,230,.08); }
+.kit-enf-oro { --tono: #D8B66A; background: rgba(183,141,54,.14); }
+.kit-enf-titulo { margin: 0; font-family: var(--fuente-titulos); font-size: clamp(1.5rem, 2.6vw, 2rem); font-weight: 500; line-height: 1.1; color: var(--tono); }
+.kit-enf-pregunta { margin: 0 0 var(--e2); color: var(--texto-suave); line-height: 1.5; }
+.kit-enf-cuerpo { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: var(--e3); align-items: stretch; }
+.kit-enf-entregables { padding: var(--e3); border-radius: 12px; border: 1px solid var(--tono); }
+.kit-enf-entregables ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e2); }
+.kit-enf-entregable { display: block; padding: var(--e2) var(--e3); border-radius: 8px; border: 1px solid var(--borde); background: rgba(241,238,230,.06); color: var(--texto); text-decoration: none; font-size: var(--t-chico); font-weight: 600; transition: border-color .2s ease, background .2s ease; }
+a.kit-enf-entregable::after { content: " →"; color: var(--tono); }
+a.kit-enf-entregable:hover { border-color: var(--tono); background: rgba(241,238,230,.12); }
+.kit-enf-metodo { all: unset; box-sizing: border-box; cursor: pointer; display: grid; align-content: start; justify-items: start; gap: 4px; padding: var(--e3); border-radius: 12px; border: 1px solid var(--tono); transition: background .2s ease, transform .2s var(--ease-out); }
+.kit-enf-metodo:hover { background: rgba(241,238,230,.1); transform: translateY(-2px); }
+.kit-enf-metodo:focus-visible, a.kit-enf-entregable:focus-visible { outline: 2px solid var(--oro); outline-offset: 3px; }
+.kit-enf-cifra { font-family: var(--fuente-titulos); font-size: 2.6rem; font-weight: 600; line-height: 1; color: var(--tono); }
+.kit-enf-cifra-sub { font-size: var(--t-chico); color: var(--texto-suave); line-height: 1.35; }
+.kit-enf-arco { width: 64px; height: 64px; margin: var(--e2) 0; }
+.kit-enf-ver { white-space: nowrap; font-family: var(--fuente-mono); font-size: var(--t-micro); letter-spacing: .12em; text-transform: uppercase; color: var(--tono); }
+.kit-enf-ver::after { content: " ↗"; }
+.kit-enf-pie { border-top-color: var(--borde); }
+.kit-enf-criterios { background: #A9C48A; color: #1B2216; border-color: #A9C48A; }
+@media (max-width: 860px) { .kit-enf, .kit-enf-cuerpo { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { .kit-enf-metodo, .kit-enf-entregable { transition: none; } }

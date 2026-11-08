@@ -227,7 +227,7 @@ test('E40/E49: Metodología del Módulo II con cifras del catálogo, fichas de e
     // E51: primer vistazo con cuatro cifras que abren ventanas anidadas (Lógica Muñeca Rusa).
     const todos = () => n.todos(), clase = c => todos().filter(x => (x.className || '').split(' ').includes(c));
     const tiles = clase('kit-met-tile');
-    assert.deepEqual(tiles.map(t => t.children[1].textContent), ['Estándares', 'Etapas', 'Dimensiones', 'Criterios']);
+    assert.deepEqual(tiles.map(t => t.children[1].textContent), ['Estándares', 'Etapas', 'Enfoques', 'Criterios']);
     assert.equal(tiles[0].children[0].textContent, String(m.estandares.fichas.length));
     assert.match(tiles[3].textContent, new RegExp(String(cat.indicadores.length)));
     const capa = clase('kit-ven-capa')[0], abiertas = () => capa.children.length, cima = () => capa.children[capa.children.length - 1];
@@ -248,9 +248,13 @@ test('E40/E49: Metodología del Módulo II con cifras del catálogo, fichas de e
     const grupo = cima().todos().find(y => y.className === 'kit-cruce-grupo-boton'), filas = cima().todos().filter(y => y.className === 'kit-cruce-fila');
     assert.ok(filas.length && filas.every(f => f.hidden)); grupo.onclick(); assert.ok(filas.filter(f => !f.hidden).length > 0);
     x().onclick(); x().onclick(); assert.equal(abiertas(), 0); assert.equal(capa.hidden, true);
-    tiles[2].onclick(); cima().todos().find(y => y.className === 'kit-met-dimension').onclick(); assert.equal(abiertas(), 2);
-    cima().todos().find(y => y.className === 'kit-serv-titulo').onclick(); assert.equal(abiertas(), 3, 'dimensión, etapas y ficha de la etapa');
-    x().onclick(); x().onclick(); x().onclick(); assert.equal(abiertas(), 0);
+    // E53: Enfoques (laberinto inteligente). La cifra lleva a la metodología, la pastilla a Criterios, y el fondo cierra todo.
+    tiles[2].onclick(); assert.ok(cima().todos().some(y => y.tag === 'a' && y.href === '#/ddhh/uno/resultados'), 'los entregables llevan al resultado');
+    cima().todos().find(y => y.className === 'kit-enf-metodo').onclick(); assert.equal(abiertas(), 2);
+    cima().todos().find(y => y.className === 'kit-serv-titulo').onclick(); assert.equal(abiertas(), 3, 'enfoque, proceso y ficha de la etapa');
+    capa.onclick({ target: capa }); assert.equal(abiertas(), 0, 'el fondo regresa de una vez a la vista central'); assert.equal(capa.hidden, true);
+    tiles[2].onclick(); cima().todos().find(y => (y.className || '').includes('kit-enf-criterios')).onclick(); assert.match(cima().textContent, /Reglas/);
+    x().onclick(); x().onclick(); assert.equal(abiertas(), 0);
     // E52: Proceso con dos partes (Incorporación y Gestión). Ficha y ventana de preguntas apiladas.
     tiles[1].onclick(); assert.equal(abiertas(), 1);
     const navs = () => cima().todos().filter(y => y.className?.startsWith('kit-pro-nav-boton')), titulosArco = () => cima().todos().filter(y => y.className === 'kit-serv-titulo');
@@ -259,6 +263,7 @@ test('E40/E49: Metodología del Módulo II con cifras del catálogo, fichas de e
     assert.equal(navs()[1].attrs['aria-pressed'], 'true');
     navs()[0].onclick(); titulosArco()[0].onclick(); assert.equal(abiertas(), 2);
     assert.match(cima().textContent, /¿Qué pide el estándar\?/); assert.match(cima().textContent, /Evidencias/);
+    for (const e of m.metodo.etapas) assert.ok(e.documentos.length && e.documentos.every(x => 'ASG'.includes(x.esg) && x.fuente), e.titulo + ': documentos con dimensión ESG y fuente');
     const pide = cima().todos().find(y => y.className === 'kit-pro-preguntar'); pide.onclick(); assert.equal(abiertas(), 3);
     assert.equal(cima().todos().filter(y => y.tag === 'li').length, d.indicadores(m.metodo.etapas[0].eje).length, 'todas las preguntas de la etapa');
     x().onclick(); x().onclick(); assert.equal(abiertas(), 1);
