@@ -255,7 +255,13 @@
     return { nombre: meta.nombre, completas: av.filter(a => a.ciclo === meta.ciclo && a.estado === 'completa' && a.id !== 'evaluacion').length, total: null };
   }
   instalar();
-  const api = { MODULOS, enlaceValido, enProceso, VISTA };
+  // E64: solo lectura para los Módulos II y III (sus vistas tienen su propio código). Deshabilita lo que edita cada vez que
+  // la zona se vuelve a pintar; la navegación (secciones, volver, seguir) sigue activa. Es comodidad: la barrera real es RLS.
+  function soloLectura(zona) {
+    const apagar = () => zona.querySelectorAll?.('.kit-ali-preguntas input, .kit-ali-preguntas select, .kit-ali-preguntas textarea, .kit-ali-preguntas button, .kit-ali-calcular, .kit-ali-pie .kit-met-pastilla, .kit-ali-dimensiones input, .kit-ali-dimensiones textarea').forEach(n => { n.disabled = true; });
+    if (root.MutationObserver) new root.MutationObserver(apagar).observe(zona, { childList: true, subtree: true });
+  }
+  const api = { MODULOS, enlaceValido, enProceso, VISTA, soloLectura };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.KitAlimentacionRegistros = api;
 }(typeof window !== 'undefined' ? window : globalThis));
