@@ -6,7 +6,9 @@
   const ocultas = { riesgos: ['medidas'] };
   const nombresPestana = { metodologia: 'Metodología', alimentacion: 'Alimentación', mapa: 'Resultados', matriz: 'Resultados', resultados: 'Resultados', estandares: 'Cruce de estándares' };
   const roles = { admin: 'Soporte Meleia', responsable: 'Responsable', demostrador: 'Demostración' };
-  function pestanas(modulo, permiso) { return (tabsModulo[modulo] || []).filter(p => p !== 'alimentacion' || permiso === true || ['admin', 'responsable'].includes(permiso)); }
+  // E64 (9-nov, Felipe): la Alimentación se ve en todos los casos. Sin permiso de edición se muestra como ejemplo de solo
+  // lectura; los permisos reales siguen en la base (RLS), no en la pantalla.
+  function pestanas(modulo) { return [...(tabsModulo[modulo] || [])]; }
   function casos(modulo, empresas) { return empresas.filter(e => e.muestra_comercial === false || (e.muestra_comercial === true && modulo.casos.includes(e.id))); }
   function resolverRuta(hash, usuario, empresas, puedeEditar = id => ['admin', 'responsable'].includes(empresas.find(e => e.id === id)?.rol)) {
     if (!usuario) return { clave: 'ingresar', hash: '#/ingresar' };
@@ -156,6 +158,9 @@
             const tabs = el('nav', null, 'kit-pestanas'); tabs.setAttribute('aria-label', 'Pestañas del módulo');
             pestanas(ruta.modulo.id, datos.puedeEditar(ruta.empresa.id)).filter(p => !(ocultas[ruta.modulo.id] || []).includes(p)).forEach(p => tabs.append(enlace(nombresPestana[p] || p[0].toUpperCase() + p.slice(1), '#/' + ruta.modulo.id + '/' + ruta.empresa.id + '/' + p, p === ruta.sub)));
             if (tabs.children.length > 1) zona.append(tabs);
+            // E64: la Alimentación lleva la misma ventana de título que la Metodología y los Resultados (caso y arco).
+            if (ruta.sub === 'alimentacion' && root.KitVistaMetodologia?.cabeceraModulo) zona.append(root.KitVistaMetodologia.cabeceraModulo(zona.firstChild, { modulo: ruta.modulo.id, empresa: ruta.empresa.id, actual: 'Alimentación', titulo: ruta.modulo.nombre,
+              afirmacion: 'Se alimenta por secciones, con evidencias por enlace y guardado automático.', texto: 'La empresa cierra cada sección. Los Resultados se recalculan cuando todas estén completas.' }));
             const cuerpo = el('div'); zona.append(cuerpo);
             const vista = vistas.get(ruta.clave);
             if (vista) {

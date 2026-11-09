@@ -349,7 +349,7 @@
     const svg = (tag, attrs = {}) => { const n = doc.createElementNS(SVG, tag); Object.entries(attrs).forEach(([k, v]) => n.setAttribute(k, String(v))); return n; };
     const nav = el('nav', null, 'kit-met-selector'); nav.setAttribute('aria-label', 'Secciones del módulo');
     const base = extra.empresa ? `#/${extra.modulo}/${extra.empresa}/` : '';
-    const ops = [['Metodología', base && base + 'metodologia'], ['Alimentación', extra.puedeEditar && base && base + 'alimentacion'], ['Resultados', base && base + (extra.resultados || { actores: 'mapa', riesgos: 'matriz' }[extra.modulo] || 'resultados')]]
+    const ops = [['Metodología', base && base + 'metodologia'], ['Alimentación', base && base + 'alimentacion'], ['Resultados', base && base + (extra.resultados || { actores: 'mapa', riesgos: 'matriz' }[extra.modulo] || 'resultados')]]
       .map(([n, h]) => [n, h, n === actual]).filter(o => o[2] || o[1]);
     const C = [-120, 180], R = 300, p = g => [C[0] + R * Math.cos(g * Math.PI / 180), C[1] + R * Math.sin(g * Math.PI / 180)];
     const angulos = ops.length === 3 ? [-24, 0, 24] : ops.length === 2 ? [-12, 12] : [0];
@@ -367,6 +367,26 @@
       li.append(a); ul.append(li);
     });
     nav.append(dibujo, ul); return nav;
+  }
+
+  // E64 (9-nov, Felipe): el caso es el contexto de Metodología, Alimentación y Resultados. El botón Caso del armazón
+  // pasa al panel, sobre el título, en lugar del rótulo "Módulo I, …".
+  function casoEnPanel(c) {
+    const slot = root.App.el('div', null, 'kit-res-caso');
+    const vista = c?.closest?.('.kit-vista'), sel = vista?.querySelector?.(':scope > .kit-casos, :scope > .kit-caso-unico');
+    if (sel) slot.append(sel);
+    return slot;
+  }
+  // Ventana de título común (la usa la Alimentación; la Metodología y los Resultados arman la suya con las mismas piezas).
+  function cabeceraModulo(c, { modulo, empresa, actual, titulo, afirmacion, texto }) {
+    const el = root.App.el;
+    const s = el('section', null, 'kit-banda kit-banda-oscura kit-met-portada kit-ali-portada');
+    const panel = el('div', null, 'kit-met-panel'), tx = el('div', null, 'kit-met-panel-texto'), marca = el('div', null, 'kit-met-marca');
+    marca.append(casoEnPanel(c));
+    const desc = el('div', null, 'kit-met-descripcion'); desc.append(el('p', afirmacion, 'kit-met-afirmacion'));
+    if (texto) desc.append(el('p', texto, 'kit-met-texto'));
+    tx.append(marca, el('h2', titulo, 'kit-met-titulo'), desc);
+    panel.append(tx, selectorArco({ modulo, empresa }, actual)); s.append(panel); return s;
   }
 
   function pintar(c, m, extra = {}) {
@@ -470,7 +490,7 @@
     portada = el('section', null, 'kit-banda kit-banda-oscura kit-met-portada');
     const panel = el('div', null, 'kit-met-panel'), texto = el('div', null, 'kit-met-panel-texto');
     const marca = el('div', null, 'kit-met-marca');
-    marca.append(mono('Módulo ' + m.romano + ', metodología'));
+    marca.append(casoEnPanel(c));
     if (m.estado === 'borrador') marca.append(el('span', 'Borrador en revisión', 'kit-met-estado'));
     const desc = el('div', null, 'kit-met-descripcion');
     desc.append(el('p', m.afirmacion, 'kit-met-afirmacion'), el('p', m.resumen, 'kit-met-texto'), el('p', m.cuando, 'kit-met-texto kit-met-cuando'));
@@ -487,7 +507,7 @@
       const li = el('li'); li.append(b); tiles.append(li); if (!t.icono) contar(cifra, t.n);
     });
     portada.append(panel, tiles);
-    if (extra.empresa && extra.puedeEditar) {
+    if (extra.empresa) {
       const pie = el('div', null, 'kit-met-portada-pie'), a = el('a', 'Ir a Alimentación', 'kit-met-pastilla');
       a.href = `#/${extra.modulo}/${extra.empresa}/alimentacion`; pie.append(a); portada.append(pie);
     }
@@ -863,7 +883,7 @@
           b.onclick = () => vz.abre(!vz.abierto());
           const li = el('li'); li.append(vz.caja); grupos.append(li);
         });
-        const destino = extra.empresa && extra.puedeEditar ? `#/${extra.modulo}/${extra.empresa}/alimentacion` : C.plantilla;
+        const destino = extra.empresa ? `#/${extra.modulo}/${extra.empresa}/alimentacion` : C.plantilla;
         // Sin permiso de edición y sin plantilla (Módulo III), la tarjeta solo muestra las reglas.
         const a = destino ? el('a', null, 'kit-cri-alimentacion') : boton('kit-cri-alimentacion');
         if (destino) a.href = destino;
@@ -953,7 +973,7 @@
       return pintar(c, m, { datos: d, modulo, empresa: p?.empresa, puedeEditar: p?.puedeEditar });
     }
   });
-  const api = { pintar, vista, datos, selectorArco, ICONOS, datosDdhh, datosActores, datosMaterialidad, datosRiesgos, FUENTES };
+  const api = { pintar, vista, datos, selectorArco, casoEnPanel, cabeceraModulo, ICONOS, datosDdhh, datosActores, datosMaterialidad, datosRiesgos, FUENTES };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.KitVistaMetodologia = api;
   if (root.App) ['actores', 'ddhh', 'materialidad', 'riesgos'].forEach(m => root.App.registrarVista(m + '/metodologia', vista(m)));

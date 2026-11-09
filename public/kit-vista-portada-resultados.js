@@ -57,12 +57,11 @@
     const App = root.App, el = App.el, M = App.modulos.find(x => x.id === modulo);
     const s = el('section', null, 'kit-banda kit-banda-oscura kit-met-portada kit-res-portada');
     const panel = el('div', null, 'kit-met-panel'), texto = el('div', null, 'kit-met-panel-texto'), marca = el('div', null, 'kit-met-marca');
-    marca.append(el('p', `Módulo ${ROMANO[modulo]}, resultados`, 'kit-mono'));
-    const caso = el('div', null, 'kit-res-caso');
+    const caso = el('div', null, 'kit-res-caso'); marca.append(caso);
     const desc = el('div', null, 'kit-met-descripcion');
     desc.append(el('p', cifras.afirmacion, 'kit-met-afirmacion'));
     if (cifras.texto) desc.append(el('p', cifras.texto, 'kit-met-texto'));
-    texto.append(marca, caso, el('h2', M?.nombre || '', 'kit-met-titulo'), desc);
+    texto.append(marca, el('h2', M?.nombre || '', 'kit-met-titulo'), desc);
     panel.append(texto, root.KitVistaMetodologia.selectorArco({ modulo, empresa: p.empresa, puedeEditar: p.puedeEditar }, 'Resultados'));
     const tiles = el('ul', null, 'kit-met-tiles');
     const destino = el('div', null, 'kit-res-ancla'); destino.tabIndex = -1;

@@ -33,11 +33,11 @@ test('casos: muestras configuradas y clientes reales visibles en todos los módu
   }
   assert.equal(App.resolverRuta('#/actores/' + casoDDHH, {}, muestras).hash, '#/');
 });
-test('Alimentación exige permiso sobre la empresa del caso', () => {
+test('E64: la Alimentación se ve en todos los casos (sin permiso, como ejemplo de solo lectura)', () => {
   for (const modulo of ['actores','ddhh','materialidad','riesgos']) {
-    assert.ok(!App.pestanas(modulo, 'demostrador').includes('alimentacion'));
-    assert.equal(resolver('#/' + modulo + '/dos/alimentacion').hash, '#/');
-    assert.equal(App.resolverRuta('#/' + modulo + '/uno/alimentacion', {}, empresas, () => false).hash, '#/');
+    assert.ok(App.pestanas(modulo, 'demostrador').includes('alimentacion'));
+    assert.equal(resolver('#/' + modulo + '/dos/alimentacion').clave, modulo + '/alimentacion');
+    assert.equal(App.resolverRuta('#/' + modulo + '/uno/alimentacion', {}, empresas, () => false).clave, modulo + '/alimentacion');
   }
 });
 test('entrada del Kit no carga el relato, conserva SDK fijo y orden defer', () => {
@@ -150,7 +150,7 @@ test('DOM E24: selector accesible con uno o varios casos y pestaña Mapa de acto
   varias.root.location.hash = enlace.href; await varias.eventos.hashchange();
   assert.equal(varias.root.App.resolverRuta(varias.root.location.hash, {}, muestras).clave,'actores/metodologia');
   assert.equal(varias.nodos.contenido.todos().filter(n=>n.className==='kit-pestanas').length,1);
-  assert.doesNotMatch(varias.nodos.contenido.textContent, /Alimentación/);
+  assert.match(varias.nodos.contenido.textContent, /Alimentación/);
   assert.match(varias.nodos['kit-cuenta'].textContent, /Responsable/);
   varias.root.location.hash = '#/actores/' + casosActores[1]; varias.datos.puedeEditar = id => id === casosActores[1]; await varias.root.App.actualizarVista();
   assert.match(varias.nodos.contenido.textContent, /Alimentación/);
@@ -194,14 +194,14 @@ test('DOM E24b: el armazón no pide ni muestra logos de empresa', async () => {
   assert.ok(!m.nodos.contenido.todos().some(n => n.className === 'kit-empresa-logo'));
 });
 
-test('E40: Alimentación visible como pestaña con permiso y oculta sin él',async()=>{
+test('E40 y E64: Alimentación visible como pestaña con y sin permiso',async()=>{
  const m=await montar({hash:'#/ddhh/uno/alimentacion'});
  assert.equal(m.root.location.hash,'#/ddhh/uno/alimentacion');
  const tabs=m.nodos.contenido.todos().find(n=>n.className==='kit-pestanas');
  assert.deepEqual(tabs.children.map(n=>n.textContent),['Metodología','Alimentación','Resultados','Cruce de estándares']);
- m.datos.puedeEditar=()=>false;await m.root.App.actualizarVista();assert.equal(m.root.location.hash,'#/');
+ m.datos.puedeEditar=()=>false;await m.root.App.actualizarVista();assert.equal(m.root.location.hash,'#/ddhh/uno/alimentacion');
  const d=await montar({hash:'#/ddhh/dos/resultados'});
- assert.deepEqual(d.nodos.contenido.todos().find(n=>n.className==='kit-pestanas').children.map(n=>n.textContent),['Metodología','Resultados','Cruce de estándares']);
+ assert.deepEqual(d.nodos.contenido.todos().find(n=>n.className==='kit-pestanas').children.map(n=>n.textContent),['Metodología','Alimentación','Resultados','Cruce de estándares']);
 });
 
 test('E30 y E40: rutas anteriores convergen y todos los módulos muestran sus pestañas',async()=>{
@@ -210,13 +210,13 @@ test('E30 y E40: rutas anteriores convergen y todos los módulos muestran sus pe
   assert.equal(resolver('#/e/uno/materialidad/'+sub).clave,'materialidad/resultados');
  }
  assert.equal(resolver('#/materialidad/uno/alimentacion').clave,'materialidad/alimentacion');
- assert.equal(resolver('#/materialidad/dos/alimentacion').clave,'portada');
- for(const [hash,esperadas] of [['#/materialidad/uno/resultados',['Metodología','Alimentación','Resultados']],['#/materialidad/dos/resultados',['Metodología','Resultados']],['#/riesgos/uno/matriz',['Metodología','Alimentación','Resultados']],['#/riesgos/dos/matriz',['Metodología','Resultados']],['#/actores/uno/mapa',['Metodología','Alimentación','Resultados']]]){
+ assert.equal(resolver('#/materialidad/dos/alimentacion').clave,'materialidad/alimentacion');
+ for(const [hash,esperadas] of [['#/materialidad/uno/resultados',['Metodología','Alimentación','Resultados']],['#/materialidad/dos/resultados',['Metodología','Alimentación','Resultados']],['#/riesgos/uno/matriz',['Metodología','Alimentación','Resultados']],['#/riesgos/dos/matriz',['Metodología','Alimentación','Resultados']],['#/actores/uno/mapa',['Metodología','Alimentación','Resultados']]]){
   const m=await montar({hash});
   assert.deepEqual(m.nodos.contenido.todos().find(n=>n.className==='kit-pestanas').children.map(n=>n.textContent),esperadas);
  }
  for (const vista of ['matriz', 'medidas']) assert.equal(resolver('#/riesgos/uno/' + vista).clave, 'riesgos/' + vista);
- assert.equal(resolver('#/riesgos/dos/alimentacion').clave, 'portada');
+ assert.equal(resolver('#/riesgos/dos/alimentacion').clave, 'riesgos/alimentacion');
 });
 
 
