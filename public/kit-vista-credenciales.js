@@ -55,8 +55,8 @@
       { id: 'servicios', items: servicios.map(v => ({ titulo: v.titulo, sub: 'Ver servicio', nodo: { icono: v.icono }, dato: v })), ficha: fichaServicio },
       // E64 (9-nov, Felipe): Metodologías, los estándares con los que trabajamos, por categoría.
       { id: 'metodologias', items: (met?.categorias || []).map(c => ({ titulo: c.nombre, sub: plural(estandaresDe(c).length, 'estándar', 'estándares'), nodo: { icono: c.icono }, dato: c })), ficha: fichaCategoria, centro: fichaTodasMetodologias,
-        cifras: () => { const n = (met?.categorias || []).flatMap(estandaresDe).length, sec = (met?.categorias || []).flatMap(c => c.grupos || []).length;
-          return { lineas: ['# ' + plural(n, 'metodología', 'metodologías'), '# ' + plural(sec, 'sector', 'sectores')], titulo: 'Metodologías por categoría', ver: 'Ver todas las metodologías por categoría' }; } },
+        cifras: () => { const n = (met?.categorias || []).flatMap(estandaresDe).length, enf = (met?.categorias || []).length;
+          return { lineas: ['# ' + plural(n, 'metodología', 'metodologías'), '# ' + plural(enf, 'enfoque', 'enfoques')], titulo: 'Metodologías por enfoque', ver: 'Ver todas las metodologías por enfoque' }; } },
       { id: 'experiencia', items: sectores.map(x => ({ titulo: x.sector, sub: plural(x.clientes.length, 'cliente', 'clientes'), nodo: { icono: x.icono, sigla: x.clientes[0]?.sigla || '' }, dato: x })), ficha: fichaSector, centro: fichaClientes,
         cifras: () => ({ lineas: ['# ' + plural(clientes.length, 'cliente', 'clientes'), '# ' + plural(sectores.length, 'sector', 'sectores')], titulo: 'Clientes por sector', ver: 'Ver todos los clientes por sector' }) },
       { id: 'equipo', items: personas.map(p => ({ titulo: p.nombre, sub: p.cargo, nodo: { tarjeta: 'foto', foto: p.foto, sigla: p.nombre }, dato: p })), ficha: fichaPersona },
@@ -184,6 +184,14 @@
       centro.append(svg('circle', { cx: C[0], cy: C[1] + 90, r: 6, class: 'kit-hero-punto' }));
       if (tema.centro) { const v = svg('text', { x: C[0], y: C[1] + 124, 'text-anchor': 'middle', class: 'kit-serv-centro-ver' }); v.textContent = 'Ver todos'; centro.append(v); }
       dibujo.append(centro);
+      // E64: las cifras del centro nunca se salen del círculo. Si un renglón es más ancho que la cuerda del círculo a su
+      // altura (con margen), se reduce su letra hasta que quepa.
+      // Todos los renglones toman el mismo tamaño (el del que más necesita reducirse).
+      const ajustar = () => { const ts = [...(centro.querySelectorAll?.('.kit-serv-centro-frase') || [])].filter(t => t.getComputedTextLength); if (!ts.length) return;
+        ts.forEach(t => { t.style.fontSize = ''; });
+        const f = Math.min(1, ...ts.map(t => { const dy = Number(t.getAttribute('y')) - C[1] - 10, cuerda = 2 * Math.sqrt(Math.max(0, 158 * 158 - dy * dy)) * .86; return cuerda / (t.getComputedTextLength() || 1); }));
+        if (f < 1) ts.forEach(t => { t.style.fontSize = (parseFloat(root.getComputedStyle(t).fontSize) * f).toFixed(1) + 'px'; }); };
+      root.requestAnimationFrame?.(() => root.requestAnimationFrame(ajustar)); root.document.fonts?.ready?.then(ajustar);
       diagrama.replaceChildren(dibujo, el('p', tema.centro ? lineas.join(', ') : tema.frase.replace('\n', ' '), 'solo-lectores'), titulos, ...extra);
       diagrama.classList?.remove('recarga'); void diagrama.offsetWidth; diagrama.classList?.add('recarga');
     }
@@ -318,7 +326,7 @@
     }
     // E64: ficha de una categoría de Metodologías (Muñeca Rusa): cada estándar abre su propia ficha.
     function fichaCategoria(c, i) {
-      const bloques = c.grupos ? c.grupos : [{ estandares: c.estandares || [] }], salida = [cabeza({ icono: c.icono }, i, 'Categoría ' + dos(i), c.nombre), caja(el('p', c.descripcion || ''))];
+      const bloques = c.grupos ? c.grupos : [{ estandares: c.estandares || [] }], salida = [cabeza({ icono: c.icono }, i, 'Enfoque ' + dos(i), c.nombre), caja(el('p', c.descripcion || ''))];
       bloques.forEach(g => {
         if (g.nombre) salida.push(mono(g.nombre, 'kit-ficha-sub'));
         const fila = el('div', null, 'kit-met-estandares');
@@ -337,9 +345,9 @@
     function fichaTodasMetodologias() {
       const cuerpo = el('div', null, 'kit-clientes-listado'), cats = met?.categorias || [];
       const cab = el('ul', null, 'kit-datos kit-clientes-cifras');
-      [[cats.flatMap(estandaresDe).length, 'metodologías'], [cats.length, 'categorías'], [cats.flatMap(c => c.grupos || []).length, 'sectores']]
+      [[cats.flatMap(estandaresDe).length, 'metodologías'], [cats.length, 'enfoques']]
         .forEach(([n, t]) => { const li = el('li'); li.append(el('span', '# ' + n, 'kit-dato-cifra'), el('span', t, 'kit-dato-texto')); cab.append(li); });
-      cuerpo.append(mono('Metodologías', 'kit-ficha-sub'), el('h3', 'Metodologías por categoría', 'kit-clientes-titulo'), cab);
+      cuerpo.append(mono('Metodologías', 'kit-ficha-sub'), el('h3', 'Metodologías por enfoque', 'kit-clientes-titulo'), cab);
       cats.forEach((c, i) => { const g = el('section', null, 'kit-clientes-grupo'); g.append(...fichaCategoria(c, i).slice(2)); g.prepend(mono(c.nombre, 'kit-ficha-sub')); cuerpo.append(g); });
       return [cuerpo];
     }

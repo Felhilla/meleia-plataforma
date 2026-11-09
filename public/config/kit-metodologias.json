@@ -1,6 +1,6 @@
 {
   "_nota": "E64 (9-nov): pestaña Metodologías de Credenciales. Estándares con los que Meleia ha trabajado, por categoría. Si un id ya tiene ficha en kit-metodologia.json, la ficha se toma de allí (y se dice en qué módulo del Kit se usa). Textos de las fichas nuevas: propuesta de Claude, por validar con Felipe.",
-  "tema": { "nombre": "Metodologías", "titular": "Los estándares con los que trabajamos, por categoría." },
+  "tema": { "nombre": "Metodologías", "titular": "Los estándares con los que trabajamos, por enfoque." },
   "categorias": [
     {
       "id": "reporte", "nombre": "Reporte", "icono": "sostenibilidad",
