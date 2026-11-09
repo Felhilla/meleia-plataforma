@@ -54,8 +54,11 @@
     const temas = [
       { id: 'servicios', items: servicios.map(v => ({ titulo: v.titulo, sub: 'Ver servicio', nodo: { icono: v.icono }, dato: v })), ficha: fichaServicio },
       // E64 (9-nov, Felipe): Metodologías, los estándares con los que trabajamos, por categoría.
-      { id: 'metodologias', items: (met?.categorias || []).map(c => ({ titulo: c.nombre, sub: plural(estandaresDe(c).length, 'estándar', 'estándares'), nodo: { icono: c.icono }, dato: c })), ficha: fichaCategoria },
-      { id: 'experiencia', items: sectores.map(x => ({ titulo: x.sector, sub: plural(x.clientes.length, 'cliente', 'clientes'), nodo: { icono: x.icono, sigla: x.clientes[0]?.sigla || '' }, dato: x })), ficha: fichaSector, centro: fichaClientes },
+      { id: 'metodologias', items: (met?.categorias || []).map(c => ({ titulo: c.nombre, sub: plural(estandaresDe(c).length, 'estándar', 'estándares'), nodo: { icono: c.icono }, dato: c })), ficha: fichaCategoria, centro: fichaTodasMetodologias,
+        cifras: () => { const n = (met?.categorias || []).flatMap(estandaresDe).length, sec = (met?.categorias || []).flatMap(c => c.grupos || []).length;
+          return { lineas: ['# ' + plural(n, 'metodología', 'metodologías'), '# ' + plural(sec, 'sector', 'sectores')], titulo: 'Metodologías por categoría', ver: 'Ver todas las metodologías por categoría' }; } },
+      { id: 'experiencia', items: sectores.map(x => ({ titulo: x.sector, sub: plural(x.clientes.length, 'cliente', 'clientes'), nodo: { icono: x.icono, sigla: x.clientes[0]?.sigla || '' }, dato: x })), ficha: fichaSector, centro: fichaClientes,
+        cifras: () => ({ lineas: ['# ' + plural(clientes.length, 'cliente', 'clientes'), '# ' + plural(sectores.length, 'sector', 'sectores')], titulo: 'Clientes por sector', ver: 'Ver todos los clientes por sector' }) },
       { id: 'equipo', items: personas.map(p => ({ titulo: p.nombre, sub: p.cargo, nodo: { tarjeta: 'foto', foto: p.foto, sigla: p.nombre }, dato: p })), ficha: fichaPersona },
       { id: 'aliados', items: aliados.map(a => ({ titulo: a.nombre || a.titulo, sub: a.nombre ? a.titulo : 'Ver aliado', nodo: { tarjeta: 'logo', logo: a.logo, fondo: a.logo_fondo, icono: a.icono, texto: a.nombre || a.titulo }, dato: a })), ficha: fichaAliado }
     ].filter(t => t.items.length).map(t => ({ ...t, nombre: temasCfg[t.id]?.nombre || t.id, frase: temasCfg[t.id]?.frase || '', titular: temasCfg[t.id]?.titular || '' }));
@@ -165,11 +168,12 @@
       let lineas, extra = [];
       if (tema.centro) {
         // Experiencia: las cifras van en el centro, grandes, y el centro abre el listado de clientes.
-        lineas = ['# ' + plural(clientes.length, 'cliente', 'clientes'), '# ' + plural(sectores.length, 'sector', 'sectores')];
+        // E64: también Metodologías (# metodologías, # sectores).
+        const cif = tema.cifras(); lineas = cif.lineas;
         centro.classList?.add('kit-serv-centro-activo');
         const b = el('button', null, 'kit-serv-centro-boton'); b.type = 'button';
-        b.setAttribute('aria-label', `${lineas.join(', ').replace(/# /g, '')}. Ver todos los clientes por sector`);
-        b.onclick = () => abrir({ titulo: 'Clientes por sector', origen: b, nodos: () => tema.centro(), desde: null });
+        b.setAttribute('aria-label', `${lineas.join(', ').replace(/# /g, '')}. ${cif.ver}`);
+        b.onclick = () => abrir({ titulo: cif.titulo, origen: b, nodos: () => tema.centro(), desde: null });
         centro.addEventListener?.('click', () => b.onclick()); extra = [b];
       } else {
         // La frase se parte en dos renglones: donde diga la configuración (salto de línea) o por la mitad de las palabras.
@@ -328,6 +332,16 @@
         salida.push(fila);
       });
       return salida;
+    }
+    // E64: desde el centro, todas las metodologías por categoría (cada una abre su ficha).
+    function fichaTodasMetodologias() {
+      const cuerpo = el('div', null, 'kit-clientes-listado'), cats = met?.categorias || [];
+      const cab = el('ul', null, 'kit-datos kit-clientes-cifras');
+      [[cats.flatMap(estandaresDe).length, 'metodologías'], [cats.length, 'categorías'], [cats.flatMap(c => c.grupos || []).length, 'sectores']]
+        .forEach(([n, t]) => { const li = el('li'); li.append(el('span', '# ' + n, 'kit-dato-cifra'), el('span', t, 'kit-dato-texto')); cab.append(li); });
+      cuerpo.append(mono('Metodologías', 'kit-ficha-sub'), el('h3', 'Metodologías por categoría', 'kit-clientes-titulo'), cab);
+      cats.forEach((c, i) => { const g = el('section', null, 'kit-clientes-grupo'); g.append(...fichaCategoria(c, i).slice(2)); g.prepend(mono(c.nombre, 'kit-ficha-sub')); cuerpo.append(g); });
+      return [cuerpo];
     }
     function fichaEstandar(e, i) {
       const cuerpo = [cabeza({ sigla: e.sigla }, i, e.tipo || 'Estándar', e.nombre), caja(el('p', e.que_es || ''))];
