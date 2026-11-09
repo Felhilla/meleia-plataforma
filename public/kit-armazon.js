@@ -47,7 +47,7 @@
       const leer = k => { try { return root.localStorage.getItem(k); } catch (_) { return null; } };
       const guardar = (k, v) => { try { root.localStorage.setItem(k, v); } catch (_) { /* Comodidad opcional. */ } };
       const media = root.matchMedia?.('(prefers-color-scheme: dark)');
-      let tema = leer('gh-meleia-tema');
+      let tema = leer('gh-meleia-tema-v2');
       const botonMenu = document.getElementById('kit-menu') || { hidden: true, setAttribute() {}, addEventListener() {} };
       function menu(abrir) { nav.classList?.toggle('abierto', abrir); botonMenu.setAttribute('aria-expanded', String(abrir)); botonMenu.setAttribute('aria-label', abrir ? 'Cerrar el menú' : 'Abrir el menú'); }
       botonMenu.addEventListener('click', () => menu(botonMenu.getAttribute?.('aria-expanded') !== 'true'));
@@ -55,13 +55,14 @@
       root.document?.addEventListener?.('keydown', e => { if (e.key === 'Escape' && botonMenu.getAttribute?.('aria-expanded') === 'true') { menu(false); botonMenu.focus?.(); } });
       const botonTema = document.getElementById('tema');
       function aplicarTema() {
-        const oscuro = tema === 'oscuro' || (tema !== 'claro' && media?.matches);
+        // 9-nov (Felipe): el tema oscuro es el predeterminado; el claro solo si la persona lo elige con el botón.
+        const oscuro = tema !== 'claro';
         document.documentElement.dataset.tema = oscuro ? 'oscuro' : 'claro';
         botonTema.textContent = oscuro ? '☀' : '☾';
         botonTema.setAttribute('aria-label', oscuro ? 'Activar tema claro' : 'Activar tema oscuro');
         botonTema.setAttribute('aria-pressed', String(!!oscuro));
       }
-      botonTema.onclick = () => { tema = document.documentElement.dataset.tema === 'oscuro' ? 'claro' : 'oscuro'; guardar('gh-meleia-tema', tema); aplicarTema(); };
+      botonTema.onclick = () => { tema = document.documentElement.dataset.tema === 'oscuro' ? 'claro' : 'oscuro'; guardar('gh-meleia-tema-v2', tema); aplicarTema(); };
       media?.addEventListener?.('change', aplicarTema); aplicarTema();
       const saltar = document.querySelector('.saltar');
       saltar.onclick = e => { e.preventDefault(); contenido.focus(); };

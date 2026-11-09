@@ -118,10 +118,11 @@
         const g = svg('g', { class: 'kit-serv-seg', style: `--i:${i}` });
         g.append(svg('path', { d: `M${x0} ${y0}A${R1} ${R1} 0 0 1 ${x1} ${y1}L${x2} ${y2}A${R0} ${R0} 0 0 0 ${x3} ${y3}Z`, fill: COLORES[i % COLORES.length] }));
         // Sin tarjetas el número va dentro del segmento. Con tarjetas (fotos o logos) va como insignia en su esquina.
-        if (!item.nodo.tarjeta) { const [nx, ny] = punto(222, medio - (n > 3 ? 11 : 15)), num = svg('text', { x: nx, y: ny, class: 'kit-serv-num', 'text-anchor': 'middle', 'dominant-baseline': 'central' }); num.textContent = String(i + 1); g.append(num); }
+        // 9-nov (Felipe): sin numeración en los segmentos ni en las tarjetas; el ícono o el logo ocupa todo el espacio posible.
         const [cx, cy] = punto(RN, medio); nodosActuales.push([cx, cy]);
         // E46 (boceto Aliados, 6-nov): en Equipo la foto y en Aliados el logo crecen y se integran al gráfico.
-        const [ancho, alto] = item.nodo.tarjeta === 'foto' ? (n > 3 ? [132, 132] : [150, 150]) : item.nodo.tarjeta === 'logo' ? [184, 104] : [100, 100];
+        const rN = n > 5 ? 60 : n > 3 ? 70 : 76;
+        const [ancho, alto] = item.nodo.tarjeta === 'foto' ? (n > 3 ? [132, 132] : [150, 150]) : item.nodo.tarjeta === 'logo' ? [184, 104] : [2 * rN, 2 * rN];
         // E64: con más de 5 elementos (Metodologías) los títulos se reparten parejo y la guía baja en diagonal hasta su título.
         const yT = n > 5 ? 50 + (i + .5) * (560 / n) : cy;
         g.append(svg('line', { x1: cx + ancho / 2, y1: cy, x2: 702, y2: yT, class: 'kit-serv-guia' }), svg('circle', { cx: 714, cy: yT, r: 8, class: 'kit-serv-anillo' }));
@@ -138,14 +139,13 @@
             if (item.nodo.icono) { const ic = icono(item.nodo.icono, 'kit-serv-nodo-icono'); Object.entries({ x: -32, y: -32, width: 64, height: 64 }).forEach(([k, v]) => ic.setAttribute(k, v)); nodo.append(ic); }
           }
           nodo.append(svg('rect', { ...forma, class: 'kit-serv-tarjeta-borde', stroke: COLORES[i % COLORES.length] }));
-          const insignia = svg('g', { class: 'kit-serv-insignia', transform: `translate(${-ancho / 2} ${-alto / 2})` }), cifra = svg('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', y: 1 });
-          cifra.textContent = String(i + 1); insignia.append(svg('circle', { r: 21, fill: COLORES[i % COLORES.length] }), cifra); nodo.append(insignia);
         } else {
-          nodo.append(svg('circle', { r: 50, class: 'kit-serv-nodo-fondo' }), svg('circle', { r: 44, class: 'kit-serv-nodo-aro', stroke: COLORES[i % COLORES.length] }));
-          if (item.nodo.icono) { const ic = icono(item.nodo.icono, 'kit-serv-nodo-icono'); Object.entries({ x: -30, y: -30, width: 60, height: 60 }).forEach(([k, v]) => ic.setAttribute(k, v)); nodo.append(ic); }
+          const rA = rN - 6, rI = Math.round(rN * .66);
+          nodo.append(svg('circle', { r: rN, class: 'kit-serv-nodo-fondo' }), svg('circle', { r: rA, class: 'kit-serv-nodo-aro', stroke: COLORES[i % COLORES.length] }));
+          if (item.nodo.icono) { const ic = icono(item.nodo.icono, 'kit-serv-nodo-icono'); Object.entries({ x: -rI, y: -rI, width: 2 * rI, height: 2 * rI }).forEach(([k, v]) => ic.setAttribute(k, v)); nodo.append(ic); }
           else if (item.nodo.logo) {
-            const clip = 'kit-clip-' + tema.id + '-' + i, def = svg('clipPath', { id: clip }); def.append(svg('circle', { r: 41 })); nodo.append(def);
-            nodo.append(svg('image', { href: item.nodo.logo, x: -41, y: -41, width: 82, height: 82, 'clip-path': `url(#${clip})`, preserveAspectRatio: 'xMidYMid meet' }));
+            const rL = rA - 3, clip = 'kit-clip-' + tema.id + '-' + i, def = svg('clipPath', { id: clip }); def.append(svg('circle', { r: rL })); nodo.append(def);
+            nodo.append(svg('image', { href: item.nodo.logo, x: -rL, y: -rL, width: 2 * rL, height: 2 * rL, 'clip-path': `url(#${clip})`, preserveAspectRatio: 'xMidYMid meet' }));
           } else { const t = svg('text', { class: 'kit-serv-sigla', 'text-anchor': 'middle', 'dominant-baseline': 'central' }); t.textContent = item.nodo.sigla; nodo.append(t); }
         }
         g.append(nodo); g.addEventListener?.('click', () => abrirFicha(tema, i)); dibujo.append(g);
