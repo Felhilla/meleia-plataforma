@@ -630,3 +630,7 @@ button.kit-cri-alimentacion { all: unset; box-sizing: border-box; cursor: help; 
 .kit-ali-opcion .kit-met-pastilla { justify-self: start; }
 .kit-ali-opcion :disabled, .kit-ali-preguntas :disabled { cursor: not-allowed; opacity: .6; }
 .kit-ali-preguntas .kit-ali-nivel[aria-checked="true"]:disabled { opacity: 1; }
+/* E64: capa del caso en la Metodología. */
+.kit-met-caso { margin-top: var(--e3); padding-top: var(--e3); border-top: 1px solid rgba(241,238,230,.16); }
+.kit-met-caso .kit-mono { margin: 0 0 var(--e1); color: var(--oro-texto, #D8B66A); }
+.kit-met-caso .kit-met-texto { margin: 0; }

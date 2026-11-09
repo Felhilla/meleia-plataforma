@@ -494,6 +494,7 @@
     if (m.estado === 'borrador') marca.append(el('span', 'Borrador en revisión', 'kit-met-estado'));
     const desc = el('div', null, 'kit-met-descripcion');
     desc.append(el('p', m.afirmacion, 'kit-met-afirmacion'), el('p', m.resumen, 'kit-met-texto'), el('p', m.cuando, 'kit-met-texto kit-met-cuando'));
+    if (extra.caso?.contexto) { const cc = el('div', null, 'kit-met-caso'); cc.append(mono('En este caso'), el('p', extra.caso.contexto, 'kit-met-texto')); desc.append(cc); }
     texto.append(marca, el('h2', m.nombre, 'kit-met-titulo'), desc);
     panel.append(texto, selectorArco(extra));
 
@@ -966,14 +967,28 @@
     if (modulo === 'materialidad') return datosMaterialidad(f[0], { temas: f[1], impacto: f[2], financiera: f[3], participacion: f[4] }, m);
     return datosRiesgos(f[0], { riesgos: f[1], calificacion: f[2], validaciones: f[3], medidas: f[4] }, m, f[5], f[6]);
   }
+  // E64 (9-nov, Felipe): la Metodología muestra la capa de cada caso. La teoría del módulo es de Meleia; cada caso suma
+  // los estándares que usó y su contexto. Vive en la base, colección metodologia-caso (un registro por módulo, id = módulo),
+  // con los permisos de la empresa. Sin registro, se ve la Metodología común.
+  async function capaCaso(todo, modulo, m, datos, empresa) {
+    let caso = null;
+    try { caso = (await datos?.listar?.(empresa, 'metodologia-caso') || []).find(r => r.id === modulo) || null; } catch (_) { caso = null; }
+    if (!caso || !Array.isArray(caso.estandares) || !caso.estandares.length) return { m, caso };
+    let catalogo = [];
+    try { const met = await cargar('config/kit-metodologias.json'); catalogo = (met.categorias || []).flatMap(c => c.estandares || (c.grupos || []).flatMap(g => g.estandares)); } catch (_) { catalogo = []; }
+    const todas = Object.values(todo).flatMap(x => fichasDe(x));
+    const fichas = caso.estandares.map(id => fichasDe(m).find(f => f.id === id) || todas.find(f => f.id === id) || catalogo.find(f => f.id === id)).filter(Boolean)
+      .map(f => ({ ...f, por_que: caso.por_que?.[f.id] || f.por_que || 'Estándar aplicado en este caso.', cruces: (f.cruces || []).filter(x => caso.estandares.includes(x.con)) }));
+    return { m: { ...m, estandares: { ...(m.estandares || {}), fichas } }, caso };
+  }
   const vista = modulo => ({
-    async render(c, _, p) {
-      const todo = await cargar('config/kit-metodologia.json'), m = todo[modulo], d = await datos(modulo, m);
+    async render(c, datosKit, p) {
+      const todo = await cargar('config/kit-metodologia.json'), { m, caso } = await capaCaso(todo, modulo, todo[modulo], datosKit, p?.empresa), d = await datos(modulo, m);
       if (p?.vigente && !p.vigente()) return;
-      return pintar(c, m, { datos: d, modulo, empresa: p?.empresa, puedeEditar: p?.puedeEditar });
+      return pintar(c, m, { datos: d, modulo, empresa: p?.empresa, puedeEditar: p?.puedeEditar, caso });
     }
   });
-  const api = { pintar, vista, datos, selectorArco, casoEnPanel, cabeceraModulo, ICONOS, datosDdhh, datosActores, datosMaterialidad, datosRiesgos, FUENTES };
+  const api = { pintar, vista, datos, capaCaso, selectorArco, casoEnPanel, cabeceraModulo, ICONOS, datosDdhh, datosActores, datosMaterialidad, datosRiesgos, FUENTES };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.KitVistaMetodologia = api;
   if (root.App) ['actores', 'ddhh', 'materialidad', 'riesgos'].forEach(m => root.App.registrarVista(m + '/metodologia', vista(m)));
