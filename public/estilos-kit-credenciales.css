@@ -263,3 +263,12 @@ textarea.kit-contacto-campo { border-radius: 24px; resize: vertical; }
 .kit-met-carrusel-nota { margin-top: var(--e2); }
 .kit-met-carrusel .kit-est-portada { overflow: hidden; }
 .kit-met-carrusel .kit-est-portada-sigla { font-size: 1.45rem; line-height: 1.1; overflow-wrap: break-word; }
+
+/* 9-nov (Felipe): con más de 5 elementos (Metodologías) las guías son rectas y el título se compacta: número y título en
+   una línea, sin partir el nombre; debajo, el número de estándares. */
+@media (min-width: 861px) {
+  .kit-serv-titulos.compacto .kit-serv-titulo { grid-template-columns: auto 1fr; column-gap: var(--e2); row-gap: 0; padding: 0; align-items: baseline; }
+  .kit-serv-titulos.compacto .kit-serv-titulo .kit-mono { grid-row: 1; }
+  .kit-serv-titulos.compacto .kit-serv-titulo-texto { font-size: clamp(1rem, 1.5vw, 1.3rem); white-space: nowrap; line-height: 1.2; }
+  .kit-serv-titulos.compacto .kit-serv-ver { grid-column: 2; font-size: var(--t-micro); }
+}

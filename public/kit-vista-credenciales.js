@@ -111,7 +111,7 @@
       dibujo = svg('svg', { class: 'kit-serv-svg', 'aria-hidden': 'true', focusable: 'false' }); encuadre();
       dibujo.append(svg('path', { d: `M${C[0]} ${C[1] - 318}a318 318 0 0 1 0 636`, class: 'kit-serv-marco' }));
       titulosActuales = []; nodosActuales = [];
-      const titulos = el('div', null, 'kit-serv-titulos');
+      const titulos = el('div', null, 'kit-serv-titulos' + (n > 5 ? ' compacto' : ''));
       tema.items.forEach((item, i) => {
         const a0 = -90 + i * paso + 1.2, a1 = -90 + (i + 1) * paso - 1.2, medio = -90 + (i + .5) * paso;
         const [x0, y0] = punto(R1, a0), [x1, y1] = punto(R1, a1), [x2, y2] = punto(R0, a1), [x3, y3] = punto(R0, a0);
@@ -123,8 +123,8 @@
         // E46 (boceto Aliados, 6-nov): en Equipo la foto y en Aliados el logo crecen y se integran al gráfico.
         const rN = n > 5 ? 60 : n > 3 ? 70 : 76;
         const [ancho, alto] = item.nodo.tarjeta === 'foto' ? (n > 3 ? [132, 132] : [150, 150]) : item.nodo.tarjeta === 'logo' ? [184, 104] : [2 * rN, 2 * rN];
-        // E64: con más de 5 elementos (Metodologías) los títulos se reparten parejo y la guía baja en diagonal hasta su título.
-        const yT = n > 5 ? 50 + (i + .5) * (560 / n) : cy;
+        // 9-nov (Felipe): las guías son siempre rectas (horizontales); con muchos elementos el título se compacta (ver CSS).
+        const yT = cy;
         g.append(svg('line', { x1: cx + ancho / 2, y1: cy, x2: 702, y2: yT, class: 'kit-serv-guia' }), svg('circle', { cx: 714, cy: yT, r: 8, class: 'kit-serv-anillo' }));
         // 8-nov (correcciones de Felipe): en Experiencia el nodo es un círculo blanco con el ícono del sector, nunca el logo.
         const nodo = svg('g', { class: 'kit-serv-nodo' + (item.nodo.tarjeta ? ' kit-serv-tarjeta' : '') + (tema.id === 'experiencia' ? ' kit-serv-nodo-blanco' : ''), transform: `translate(${cx} ${cy})` });
