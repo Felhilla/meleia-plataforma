@@ -188,10 +188,15 @@ test('E22: el Módulo III ofrece exclusivamente el caso configurado y sus rutas'
   assert.deepEqual(App.casos(modulo,[...muestras,...casos]).map(e=>e.id),[casos[0].id]);
 });
 
-test('DOM E24b: el armazón no pide ni muestra logos de empresa', async () => {
+// E64 (9-nov, Felipe) reemplaza E24b (27-oct): el caso se identifica con su logo, leído de perfil/logo de su empresa.
+test('DOM E64: el caso muestra el logo de su empresa en un recuadro, y solo acepta imágenes', async () => {
   const m = await montar({hash:'#/actores/uno',listar:async () => [{id:'logo',imagen:'data:image/png;base64,YQ==',alt:'Empresa de prueba'}]});
-  assert.equal(m.consultas.filter(c => c[1] === 'perfil').length,0);
-  assert.ok(!m.nodos.contenido.todos().some(n => n.className === 'kit-empresa-logo'));
+  await new Promise(r => setTimeout(r, 0));
+  assert.ok(m.consultas.some(c => c[1] === 'perfil'));
+  assert.ok(m.nodos.contenido.todos().some(n => String(n.className).startsWith('kit-caso-logo-caja')));
+  const malo = await montar({hash:'#/actores/uno',listar:async () => [{id:'logo',imagen:'javascript:alert(1)'}]});
+  await new Promise(r => setTimeout(r, 0));
+  assert.ok(!malo.nodos.contenido.todos().some(n => n.tag === 'img' && String(n.src).startsWith('javascript')));
 });
 
 test('E40 y E64: Alimentación visible como pestaña con y sin permiso',async()=>{

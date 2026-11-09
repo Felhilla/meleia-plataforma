@@ -65,6 +65,19 @@
       media?.addEventListener?.('change', aplicarTema); aplicarTema();
       const saltar = document.querySelector('.saltar');
       saltar.onclick = e => { e.preventDefault(); contenido.focus(); };
+      // E64 (9-nov, Felipe): el caso se identifica con su logo, en un recuadro blanco grande (como en Aliados). Meleia es la
+      // empresa de prueba de todo lo que se hace (la Empresa de demostración se muestra como Meleia, con su logo).
+      const esMeleia = e => ['demo-local', 'empresa-demo'].includes(e?.id);
+      const nombreDe = e => esMeleia(e) ? 'Meleia' : e?.nombre;
+      const logos = new Map();
+      const logoDe = e => { if (esMeleia(e)) return Promise.resolve('img/logo-meleia-color.png');
+        if (!logos.has(e.id)) logos.set(e.id, Promise.resolve().then(() => datos.listar(e.id, 'perfil')).then(l => { const src = (l || []).find(r => r.id === 'logo')?.imagen; return typeof src === 'string' && /^(data:image\/(png|jpe?g|webp|svg\+xml);|img\/)/.test(src) ? src : null; }).catch(() => null));
+        return logos.get(e.id); };
+      function cajaLogo(e, clase = '') {
+        const caja = el('span', null, ('kit-caso-logo-caja ' + clase).trim()); caja.append(el('span', nombreDe(e), 'kit-caso-logo-nombre'));
+        logoDe(e).then(src => { if (!src) return; const img = el('img'); img.src = src; img.alt = nombreDe(e); caja.replaceChildren(img); caja.classList?.add('con-logo'); });
+        return caja;
+      }
       function enlace(texto, href, actual) { const a = el('a', texto); a.href = href; if (actual) a.setAttribute('aria-current', 'page'); return a; }
       function mensaje(texto, alerta = false) { const p = el('p', texto, alerta ? 'kit-error' : 'nota'); p.setAttribute('role', alerta ? 'alert' : 'status'); return p; }
       function mostrarError(error, destino = contenido) { destino.replaceChildren(mensaje(error.message, true)); }
@@ -157,7 +170,7 @@
           } else {
             const disponibles = casos(ruta.modulo, empresas);
             if (disponibles.length === 1) {
-              const caso = el('p', null, 'kit-caso-unico'); caso.append(el('span', 'Caso'), el('strong', ruta.empresa.nombre)); zona.append(caso);
+              const caso = el('p', null, 'kit-caso-unico'); const fuerte = el('strong'); fuerte.append(cajaLogo(ruta.empresa)); caso.append(el('span', 'Caso'), fuerte); zona.append(caso);
             } else {
               const selector = el('nav', null, 'kit-casos'); selector.setAttribute('aria-label','Casos del módulo');
               const botonCaso = el('button','Caso','kit-credenciales-boton'), listaCasos = el('div',null,'kit-casos-lista');
@@ -165,8 +178,9 @@
               const cerrarCasos = () => { listaCasos.hidden = true; botonCaso.setAttribute('aria-expanded','false'); botonCaso.focus(); };
               botonCaso.onclick = () => { const abrir = listaCasos.hidden; listaCasos.hidden = !abrir; botonCaso.setAttribute('aria-expanded',String(abrir)); };
               selector.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); cerrarCasos(); } };
-              disponibles.forEach(e => { const sub = pestanas(ruta.modulo.id, datos.puedeEditar(e.id)).includes(ruta.sub) ? '/' + ruta.sub : ''; const a = enlace(e.nombre, '#/' + ruta.modulo.id + '/' + e.id + sub, e.id === ruta.empresa.id); a.onclick = cerrarCasos; listaCasos.append(a); });
-              selector.append(botonCaso,el('span',ruta.empresa.nombre,'kit-caso-actual'),listaCasos); zona.append(selector);
+              disponibles.forEach(e => { const sub = pestanas(ruta.modulo.id, datos.puedeEditar(e.id)).includes(ruta.sub) ? '/' + ruta.sub : ''; const a = enlace(null, '#/' + ruta.modulo.id + '/' + e.id + sub, e.id === ruta.empresa.id); a.append(cajaLogo(e, 'chica'), el('span', nombreDe(e))); a.onclick = cerrarCasos; listaCasos.append(a); });
+              const actualCaso = el('span', null, 'kit-caso-actual'); actualCaso.append(cajaLogo(ruta.empresa)); actualCaso.setAttribute('aria-label', 'Caso actual: ' + nombreDe(ruta.empresa));
+              selector.append(botonCaso,actualCaso,listaCasos); zona.append(selector);
             }
             const tabs = el('nav', null, 'kit-pestanas'); tabs.setAttribute('aria-label', 'Pestañas del módulo');
             pestanas(ruta.modulo.id, datos.puedeEditar(ruta.empresa.id)).filter(p => !(ocultas[ruta.modulo.id] || []).includes(p)).forEach(p => tabs.append(enlace(nombresPestana[p] || p[0].toUpperCase() + p.slice(1), '#/' + ruta.modulo.id + '/' + ruta.empresa.id + '/' + p, p === ruta.sub)));
