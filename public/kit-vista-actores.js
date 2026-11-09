@@ -161,125 +161,38 @@
   // Las 7 primeras (promedio de ejes) llevan burbuja y nombre; desde la 8.ª son puntos pequeños sin nombre.
   // Si varias quedan en el mismo lugar (misma calificación o muy cerca), un punto negro marca la posición real
   // y líneas punteadas llevan a cada institución.
-  const SVG = 'http://www.w3.org/2000/svg';
-  function svg(tag, attrs = {}) { const n = root.document.createElementNS(SVG, tag); Object.entries(attrs).forEach(([k, v]) => n.setAttribute(k, v)); return n; }
+  const KC = root.KitCuadrantes;
   const slugNivel = n => n.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z]+/g, '-');
   const COLORES_GI = { autoridades: '#2F5D7C', comunidades: '#B78D36', gremios: '#5C6B7A', academia: '#2E8A85', proveedores: '#9A6B4F', medios: '#6E5A8A' };
   const COLORES_EXTRA = ['#7A8F3A', '#8A5A6E', '#4F7396', '#A0703A'];
-  const GRANDES = 7;
   const puntaje = o => ((o.influencia || 0) + (o.impacto || 0)) / 2;
   const ordenar = lista => [...lista].sort((a, b) => puntaje(b) - puntaje(a) || a.nombre.localeCompare(b.nombre, 'es'));
   function gruposDe(todas) {
     const presentes = unicos(todas.map(o => o.categoria || 'Sin grupo'));
     const conocidos = categorias.filter(c => presentes.includes(c[0])).map(c => ({ cat: c[0], nombre: c[1], slug: c[2], color: COLORES_GI[c[2]] }));
     const otros = presentes.filter(p => !categorias.some(c => c[0] === p)).map((p, i) => ({ cat: p, nombre: p, slug: 'gremios', color: COLORES_EXTRA[i % COLORES_EXTRA.length] }));
-    return [...conocidos, ...otros];
+    return [...conocidos, ...otros].map(g => ({ ...g, icono: 'img/actores/' + g.slug + '.svg' }));
   }
   const grupoDe = (gis, o) => gis.find(g => g.cat === (o.categoria || 'Sin grupo')) || gis[0];
   const nombreActor = (ctx, a) => a.nombre_servidor || (ctx.listas['actores-contactos'] || []).find(c => c.id === a.id)?.nombre || a.cargo || 'Sin nombre registrado';
-  function icono(gi, x, y, lado) { return svg('image', { href: 'img/actores/' + gi.slug + '.svg', x: x - lado / 2, y: y - lado / 2, width: lado, height: lado, 'aria-hidden': 'true' }); }
-  function texto2(x, y, valor, clase, ancla = 'middle') { const t = svg('text', { x, y, 'text-anchor': ancla, class: clase }); t.textContent = valor; return t; }
-  function lineasNombre(nombre, max = 18) {
-    const palabras = nombre.split(/\s+/), lineas = [''];
-    palabras.forEach(p => { const actual = lineas.at(-1); if (!actual) lineas[lineas.length - 1] = p; else if ((actual + ' ' + p).length <= max) lineas[lineas.length - 1] = actual + ' ' + p; else lineas.push(p); });
-    if (lineas.length > 2) { lineas.length = 2; lineas[1] = lineas[1].slice(0, max - 1) + '…'; }
-    return lineas.map(l => l.length > max + 4 ? l.slice(0, max + 3) + '…' : l);
-  }
-  function comoBoton(n, etiquetaAccesible, fn) {
-    n.setAttribute('tabindex', '0'); n.setAttribute('role', 'button'); n.setAttribute('aria-label', etiquetaAccesible);
-    const t = svg('title'); t.textContent = etiquetaAccesible; n.append(t);
-    n.addEventListener('click', fn); n.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(); } });
-    return n;
-  }
   function matrizGeneral(ctx, lista, gis, alZoom) {
-    const A = 720, H = 480, m = { i: 30, d: 6, s: 6, b: 28 }, w = A - m.i - m.d, h = H - m.s - m.b, cx = m.i + w / 2, cy = m.s + h / 2;
-    const g = svg('svg', { viewBox: `0 0 ${A} ${H}`, role: 'group', 'aria-label': `Matriz de actores por grupo de interés, con ${orgs(lista.length)}` }); g.classList.add('ka-matriz-svg', 'ka-general');
-    const conteos = ctx.cfg.niveles.map(n => gis.map(gi => ({ gi, n: lista.filter(o => o.cuadrante === n.nombre && grupoDe(gis, o) === gi).length })).filter(x => x.n));
-    const maximo = Math.max(1, ...conteos.flat().map(x => x.n));
-    ctx.cfg.niveles.forEach((n, k) => {
-      const izq = n.influencia === 'baja', arriba = n.impacto === 'alto', x0 = izq ? m.i : cx, y0 = arriba ? m.s : cy, enCuadrante = lista.filter(o => o.cuadrante === n.nombre);
-      const grupo = svg('g', { class: 'ka-cuadrante-boton' });
-      grupo.append(svg('rect', { x: x0, y: y0, width: w / 2, height: h / 2, class: 'ka-zona ka-zona-' + slugNivel(n.nombre) }));
-      grupo.append(texto2(x0 + 14, y0 + 24, n.nombre, 'ka-zona-nombre', 'start'), texto2(x0 + w / 2 - 14, y0 + 24, orgs(enCuadrante.length), 'ka-zona-cuenta', 'end'));
-      const items = conteos[k], filas = []; for (let i = 0; i < items.length; i += 3) filas.push(items.slice(i, i + 3));
-      const altoFila = (h / 2 - 50) / Math.max(1, filas.length), rMax = filas.length > 1 ? 30 : 40;
-      filas.forEach((fila, f) => fila.forEach((it, j) => {
-        const x = x0 + (w / 2) * (j + 1) / (fila.length + 1), r = 13 + (rMax - 13) * Math.sqrt(it.n / maximo), yc = y0 + 40 + altoFila * (f + .5) - 9;
-        grupo.append(svg('circle', { cx: x, cy: yc, r, class: 'ka-gi-circulo', fill: it.gi.color, stroke: it.gi.color }), icono(it.gi, x, yc, r * 1.15));
-        const t = texto2(x, yc + r + 17, numero(it.n), 'ka-gi-numero'); t.setAttribute('fill', it.gi.color); grupo.append(t);
-      }));
-      if (!items.length) grupo.append(texto2(x0 + w / 4, y0 + h / 4 + 6, 'Sin instituciones', 'ka-zona-vacia'));
-      comoBoton(grupo, `${n.nombre}: ${orgs(enCuadrante.length)}${items.length ? ' (' + items.map(it => `${it.gi.nombre} ${numero(it.n)}`).join(', ') + ')' : ''}. Ampliar el cuadrante`, () => alZoom(n));
-      g.append(grupo);
-    });
-    g.append(svg('line', { x1: cx, y1: m.s, x2: cx, y2: m.s + h, class: 'ka-cruz' }), svg('line', { x1: m.i, y1: cy, x2: m.i + w, y2: cy, class: 'ka-cruz' }));
-    g.append(texto2(m.i + w / 2, H - 6, 'Influencia →', 'ka-eje-nombre'));
-    const ey = texto2(14, m.s + h / 2, 'Impacto →', 'ka-eje-nombre'); ey.setAttribute('transform', `rotate(-90 14 ${m.s + h / 2})`); g.append(ey);
-    return g;
-  }
-  // Ubica sin superponer: cada institución parte de su posición real y se separa de las vecinas.
-  function acomodar(nodos, limites) {
-    // Las posiciones compartidas quedan libres en el centro (punto negro) y sus instituciones se reparten alrededor.
-    const cuenta = new Map(); nodos.forEach(n => { const k = Math.round(n.ax) + ',' + Math.round(n.ay); n.clave = k; cuenta.set(k, (cuenta.get(k) || 0) + 1); });
-    const fijos = [...cuenta].filter(([, c]) => c > 1).map(([k]) => { const [x, y] = k.split(',').map(Number); return { x, y, hw: 7, hh: 7, oy: 0 }; });
-    const vistos = new Map();
-    nodos.forEach((n, i) => { const k = vistos.get(n.clave) || 0; vistos.set(n.clave, k + 1); const comparte = cuenta.get(n.clave) > 1, a = k * 2.39996 + i * .001, d = comparte ? 18 + 3.2 * Math.sqrt(k) * 3 : 0; n.x = n.ax + Math.cos(a) * d; n.y = n.ay + Math.sin(a) * d; });
-    const separar = (p, q, soloQ) => {
-      const dx = q.x - p.x, dy = (q.y + q.oy) - (p.y + p.oy), sx = p.hw + q.hw + 4 - Math.abs(dx), sy = p.hh + q.hh + 4 - Math.abs(dy);
-      if (sx <= 0 || sy <= 0) return;
-      if (sx < sy) { const s = (dx >= 0 ? 1 : -1) * sx; if (soloQ) q.x += s; else { p.x -= s / 2; q.x += s / 2; } }
-      else { const s = (dy >= 0 ? 1 : -1) * sy; if (soloQ) q.y += s; else { p.y -= s / 2; q.y += s / 2; } }
-    };
-    for (let paso = 0; paso < 280; paso++) {
-      for (let i = 0; i < nodos.length; i++) for (let j = i + 1; j < nodos.length; j++) separar(nodos[i], nodos[j]);
-      nodos.forEach(n => { fijos.forEach(f => separar(f, n, true)); n.x += (n.ax - n.x) * .015; n.y += (n.ay - n.y) * .015; n.x = Math.min(limites.x1 - n.hw, Math.max(limites.x0 + n.hw, n.x)); n.y = Math.min(limites.y1 - n.hh - n.oy, Math.max(limites.y0 + n.hh - n.oy, n.y)); });
-    }
-  }
-  function graficoZoom(ctx, nivel, lista, gis, abrir) {
-    const corte = ctx.cfg.corte, xr = nivel.influencia === 'alta' ? [corte, 5] : [1, corte], yr = nivel.impacto === 'alto' ? [corte, 5] : [1, corte];
-    const A = 900, H = 600, m = { i: 46, d: 14, s: 14, b: 40 }, borde = 80, bordeY = 46;
-    const X = v => m.i + borde + (v - xr[0]) / (xr[1] - xr[0]) * (A - m.i - m.d - 2 * borde), Y = v => H - m.b - bordeY - (v - yr[0]) / (yr[1] - yr[0]) * (H - m.s - m.b - 2 * bordeY);
-    const g = svg('svg', { viewBox: `0 0 ${A} ${H}`, role: 'group', 'aria-label': `${nivel.nombre}: ${orgs(lista.length)} en su posición` }); g.classList.add('ka-matriz-svg', 'ka-zoom-svg');
-    g.append(svg('rect', { x: m.i, y: m.s, width: A - m.i - m.d, height: H - m.s - m.b, class: 'ka-zoom-area' }));
-    const paso = xr[1] - xr[0] <= 1 ? .5 : 1, marcas = r => { const v = []; for (let t = r[0]; t <= r[1] + 1e-9; t += paso) v.push(Math.round(t * 10) / 10); return v; };
-    marcas(xr).forEach(v => { g.append(svg('line', { x1: X(v), y1: m.s, x2: X(v), y2: H - m.b, class: 'ka-guia' }), texto2(X(v), H - m.b + 18, numero(v), 'ka-eje-valor')); });
-    marcas(yr).forEach(v => { g.append(svg('line', { x1: m.i, y1: Y(v), x2: A - m.d, y2: Y(v), class: 'ka-guia' }), texto2(m.i - 8, Y(v) + 4, numero(v), 'ka-eje-valor', 'end')); });
-    g.append(texto2(m.i + (A - m.i - m.d) / 2, H - 6, 'Influencia →', 'ka-eje-nombre'));
-    const ey = texto2(14, m.s + (H - m.s - m.b) / 2, 'Impacto →', 'ka-eje-nombre'); ey.setAttribute('transform', `rotate(-90 14 ${m.s + (H - m.s - m.b) / 2})`); g.append(ey);
-    const nodos = ordenar(lista).map((o, i) => { const grande = i < GRANDES; return { o, gi: grupoDe(gis, o), grande, ax: X(o.influencia), ay: Y(o.impacto), hw: grande ? 64 : 8, hh: grande ? 46 : 8, oy: grande ? 18 : 0 }; });
-    acomodar(nodos, { x0: m.i + 4, x1: A - m.d - 4, y0: m.s + 4, y1: H - m.b - 4 });
-    const capaLineas = svg('g'), capaAnclas = svg('g'), capaPuntos = svg('g'), capaBurbujas = svg('g'), anclas = new Set();
-    nodos.forEach(n => {
-      if (Math.hypot(n.x - n.ax, n.y - n.ay) > 4) {
-        capaLineas.append(svg('line', { x1: n.ax, y1: n.ay, x2: n.x, y2: n.y, class: 'ka-guia-punteada' }));
-        const clave = Math.round(n.ax) + ',' + Math.round(n.ay); if (!anclas.has(clave)) { anclas.add(clave); capaAnclas.append(svg('circle', { cx: n.ax, cy: n.ay, r: 6, class: 'ka-ancla' })); }
-      }
-      const pos = n.o.posicion || 'Neutral', clasePos = 'ka-fav-' + pos.toLowerCase(), etiquetaPunto = `${n.o.nombre}. ${n.gi.nombre}. ${pos}. Influencia ${formatoValor(n.o.influencia)}, impacto ${formatoValor(n.o.impacto)}. Abrir ficha`;
-      if (!n.grande) { capaPuntos.append(comoBoton(svg('circle', { cx: n.x, cy: n.y, r: 6.5, fill: n.gi.color, class: 'ka-punto-chico ' + clasePos }), etiquetaPunto, () => abrir(n.o))); return; }
-      const b = svg('g', { class: 'ka-burbuja' });
-      b.append(svg('circle', { cx: n.x, cy: n.y, r: 26, class: 'ka-gi-circulo', fill: n.gi.color, stroke: n.gi.color }), icono(n.gi, n.x, n.y, 30), svg('circle', { cx: n.x + 20, cy: n.y - 20, r: 8, class: 'ka-fav ' + clasePos }));
-      lineasNombre(n.o.nombre).forEach((l, i) => { const t = texto2(n.x, n.y + 44 + i * 15, l, 'ka-zoom-nombre'); t.setAttribute('fill', n.gi.color); b.append(t); });
-      capaBurbujas.append(comoBoton(b, etiquetaPunto, () => abrir(n.o)));
-    });
-    g.append(capaLineas, capaAnclas, capaPuntos, capaBurbujas);
-    return g;
-  }
-  function resumenCuadrante(lista) {
-    const s = el('ul', null, 'ka-zoom-resumen'), actoresN = lista.reduce((t, o) => t + o.actores.length, 0);
-    [[lista.length, lista.length === 1 ? 'Institución en el cuadrante' : 'Instituciones en el cuadrante', 'total'], [actoresN, actoresN === 1 ? 'Actor en el cuadrante' : 'Actores en el cuadrante', 'actores'],
-      ...posiciones.map((p, i) => [lista.filter(o => o.posicion === p).length, `Inst. ${plurales[i].toLowerCase()}`, p.toLowerCase()])]
-      .forEach(([n, rotulo, clase]) => { const li = el('li', null, 'ka-zoom-dato ka-zoom-' + clase); li.append(el('strong', numero(n)), el('span', rotulo)); s.append(li); });
-    return s;
-  }
-  function leyendaFavorabilidad() {
-    const l = el('div', null, 'ka-leyenda-fav'); posiciones.forEach(p => l.append(el('span', p === 'Neutral' ? 'Neutro' : p, 'ka-conv-fav ka-fav-' + p.toLowerCase()))); return l;
+    return KC.general({ numero, ejeX: 'Influencia', ejeY: 'Impacto', etiqueta: `Matriz de actores por grupo de interés, con ${orgs(lista.length)}`, alZoom: c => alZoom(c.nivel),
+      cuadrantes: ctx.cfg.niveles.map(n => { const en = lista.filter(o => o.cuadrante === n.nombre); return { nivel: n, nombre: n.nombre, izq: n.influencia === 'baja', arriba: n.impacto === 'alto', clase: 'ka-zona-' + slugNivel(n.nombre), cuenta: orgs(en.length),
+        grupos: gis.map(gi => ({ ...gi, n: en.filter(o => grupoDe(gis, o) === gi).length })) }; }) });
   }
   function abrirZoom(ctx, nivel, lista, gis, abrir, descripcion) {
     const p = ctx.dialogo(nivel.nombre, false, true); p.classList.add('ka-zoom', 'ka-zoom-' + slugNivel(nivel.nombre)); p.parentElement?.classList.add('ka-fondo-difuso');
-    p.append(el('p', descripcion, 'ka-zoom-vista'), resumenCuadrante(lista));
+    const actoresN = lista.reduce((t, o) => t + o.actores.length, 0);
+    p.append(el('p', descripcion, 'ka-zoom-vista'), KC.resumen([[numero(lista.length), lista.length === 1 ? 'Institución en el cuadrante' : 'Instituciones en el cuadrante', 'total'], [numero(actoresN), actoresN === 1 ? 'Actor en el cuadrante' : 'Actores en el cuadrante', 'actores'],
+      ...posiciones.map((pos, i) => [numero(lista.filter(o => o.posicion === pos).length), `Inst. ${plurales[i].toLowerCase()}`, pos.toLowerCase()])], el));
     if (!lista.length) { p.append(el('p', 'No hay instituciones en este cuadrante con la vista y el filtro elegidos.', 'nota')); return; }
-    p.append(graficoZoom(ctx, nivel, lista, gis, abrir), leyendaFavorabilidad());
-    p.append(el('p', `Cada institución está en su posición real (promedio de sus actores o resultado modificado). Las ${GRANDES} de mayor promedio llevan su nombre; las demás son puntos pequeños. El punto negro marca una calificación compartida.`, 'nota ka-zoom-nota'));
+    const corte = ctx.cfg.corte;
+    p.append(KC.zoom({ numero, ejeX: 'Influencia', ejeY: 'Impacto', etiqueta: `${nivel.nombre}: ${orgs(lista.length)} en su posición`, abrir: o => abrir(o),
+      xr: nivel.influencia === 'alta' ? [corte, 5] : [1, corte], yr: nivel.impacto === 'alto' ? [corte, 5] : [1, corte],
+      puntos: ordenar(lista).map(o => { const gi = grupoDe(gis, o), pos = o.posicion || 'Neutral';
+        return { id: o.id, dato: o, nombre: o.nombre, x: o.influencia, y: o.impacto, color: gi.color, icono: gi.icono, clase: 'ka-fav-' + pos.toLowerCase(), etiqueta: `${o.nombre}. ${gi.nombre}. ${pos}. Influencia ${formatoValor(o.influencia)}, impacto ${formatoValor(o.impacto)}. Abrir ficha` }; }) }),
+      KC.leyenda(posiciones.map(pos => [pos === 'Neutral' ? 'Neutro' : pos, 'ka-fav-' + pos.toLowerCase()]), el));
+    p.append(el('p', `Cada institución está en su posición real (promedio de sus actores o resultado modificado). Las ${KC.GRANDES} de mayor promedio llevan su nombre; las demás son puntos pequeños. El punto negro marca una calificación compartida.`, 'nota ka-zoom-nota'));
   }
   function fichaActor(ctx, a, org, gis) {
     if (!ctx.activo()) return;
@@ -335,7 +248,7 @@
     const resumen = el('section', null, 'ka-resumen-tarjeta');
     const met = el('a', null, 'ka-met-tarjeta'); met.href = '#/actores/' + encodeURIComponent(params.empresa) + '/metodologia';
     const icoMet = root.KitVistaMetodologia?.ICONOS?.balanza;
-    if (icoMet) { const ic = svg('svg', { viewBox: '0 0 24 24', 'aria-hidden': 'true', class: 'ka-met-icono' }), path = svg('path', { d: icoMet }); ic.append(path); met.append(ic); }
+    if (icoMet) { const ic = KC.svg('svg', { viewBox: '0 0 24 24', 'aria-hidden': 'true', class: 'ka-met-icono' }), path = KC.svg('path', { d: icoMet }); ic.append(path); met.append(ic); }
     met.append(el('strong', 'Metodología'), el('span', 'AA1000SES: cómo se identificó y calificó a cada actor.'));
     lateral.append(resumen, met);
     const marco = el('div', null, 'ka-marco-oro'), leyenda = el('figcaption', null, 'ka-convenciones');

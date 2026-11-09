@@ -120,14 +120,14 @@
         try { cifras = await CIFRAS[modulo](d, p.empresa); } catch (_) { cifras = null; }
         if (p.vigente && !p.vigente()) return;
         if (!cifras) return original.render(c, d, p);
-        // E65 (boceto de Felipe del 9-nov): en el Módulo I los resultados se despliegan con un botón grande y se cierran con ×.
+        // E65/E66 (Felipe, 9-nov): en los módulos I y III los resultados se despliegan con un botón grande y se cierran con ×.
         let abrirResultados = null;
         const { s, caso, destino } = portada(modulo, d, p, cifras, () => abrirResultados?.());
         // El selector de casos del armazón pasa al panel (la banda de título y las pestañas se ocultan, como en la Metodología).
         const vista = c.closest?.('.kit-vista'), sel = vista?.querySelector?.(':scope > .kit-casos, :scope > .kit-caso-unico');
         if (sel) caso.append(sel);
         const cuerpo = root.App.el('section', null, 'kit-res-cuerpo');
-        if (modulo === 'actores') {
+        if (modulo === 'actores' || modulo === 'materialidad') {
           const el = root.App.el, ver = el('button', 'Ver resultados', 'kit-res-ver'), cerrar = el('button', '×', 'kit-cerrar kit-res-cerrar');
           ver.type = 'button'; ver.setAttribute('aria-expanded', 'false'); cerrar.type = 'button'; cerrar.setAttribute('aria-label', 'Cerrar resultados');
           cuerpo.hidden = true; cuerpo.classList.add('kit-res-plegable'); cuerpo.append(cerrar);
