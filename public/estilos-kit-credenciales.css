@@ -248,3 +248,12 @@ textarea.kit-contacto-campo { border-radius: 24px; resize: vertical; }
 .kit-serv-sitio:focus-visible { outline: 2px solid var(--oro); outline-offset: 3px; }
 @media (max-width: 860px) { .kit-serv-sitio { position: static; transform: none; display: block; padding: 0 0 var(--e3) 40px; } }
 .kit-contacto-trampa { position: absolute; left: -10000px; width: 1px; height: 1px; opacity: 0; }
+
+/* E64 (9-nov): Metodologías. Botones por estándar dentro de la ficha de la categoría. */
+@media (min-width: 861px) { .kit-temas { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.kit-met-estandares { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: var(--e2); margin-bottom: var(--e3); }
+.kit-met-estandar { display: grid; gap: 4px; text-align: left; padding: var(--e3); border: 1px solid var(--borde); border-radius: 12px; background: var(--superficie); color: var(--texto); font: inherit; cursor: pointer; transition: border-color .2s, transform .2s; }
+.kit-met-estandar:hover, .kit-met-estandar:focus-visible { border-color: #B78D36; transform: translateY(-2px); }
+.kit-met-estandar-sigla { font-family: var(--fuente-titulos); font-weight: 600; font-size: 1.05rem; }
+.kit-met-estandar-nombre { font-size: var(--t-chico); color: var(--texto-suave); line-height: 1.35; }
+.kit-met-estandar-dato { font-size: 1rem !important; }

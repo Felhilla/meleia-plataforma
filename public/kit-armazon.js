@@ -118,6 +118,18 @@
         try {
           const r = await root.fetch('config/kit-credenciales.json'); if (!r.ok) throw Error('No se pudieron cargar las credenciales.');
           const cfg = await r.json();
+          // E64 (9-nov): pestaña Metodologías. Las fichas que ya existen en la Metodología de los módulos se reutilizan
+          // (y dicen en qué módulo del Kit se usan); las demás vienen de kit-metodologias.json. Si falla, Credenciales sigue sin ella.
+          try {
+            const [rm, rk] = await Promise.all(['config/kit-metodologias.json', 'config/kit-metodologia.json'].map(u => root.fetch(u).catch(() => null)));
+            if (rm?.ok) {
+              const met = await rm.json(), kit = rk?.ok ? await rk.json() : {}, base = {};
+              Object.entries(kit).forEach(([modulo, v]) => (v?.estandares?.fichas || []).forEach(f => { base[f.id] ||= { ...f, modulos: [] }; base[f.id].modulos.push({ modulo, por_que: f.por_que }); }));
+              const completar = e => ({ ...(base[e.id] || {}), ...e });
+              (met.categorias || []).forEach(c => { if (c.estandares) c.estandares = c.estandares.map(completar); (c.grupos || []).forEach(g => { g.estandares = g.estandares.map(completar); }); });
+              cfg.metodologias = met;
+            }
+          } catch (_) { /* Sin pestaña Metodologías. */ }
           // E46 (6-nov): la portada vive en kit-vista-credenciales.js (Look and Feel de Meleia).
           if (!root.KitCredenciales) throw Error('No se pudo cargar la vista de credenciales.');
           root.KitCredenciales.render(destino, cfg, App);

@@ -88,12 +88,12 @@ test('DOM: portada global no consulta colecciones ni muestra selector global', a
   const m = await montar();
   assert.match(m.nodos.contenido.textContent, /Meleia/); assert.doesNotMatch(m.nodos.contenido.textContent, /GH Estudio/);
   assert.match(m.nodos.contenido.textContent, /laboratorio de ideas y soluciones para la sostenibilidad/i);
-  // E46 (6-nov): hero con cuatro botones; el semicírculo arranca cerrado y Equipo y Aliados viven en él.
+  // E46 (6-nov) y E64 (9-nov): hero con cinco botones (Metodologías nueva); el semicírculo arranca cerrado y Equipo y Aliados viven en él.
   const secciones = m.nodos.contenido.todos().filter(n => String(n.className).startsWith('kit-cred-seccion')).map(n => n.children[0].textContent);
   assert.deepEqual(secciones, ['Quiénes somos', '', 'Contacto']);
   // 6-nov: sin bloque de módulos en el Home; se llega a ellos por el menú.
   assert.ok(!m.nodos.contenido.todos().some(n => n.className === 'kit-modulo'));
-  assert.deepEqual(m.nodos.contenido.todos().filter(n => n.className === 'kit-tema-boton').map(n => n.textContent), ['Servicios', 'Experiencia', 'Equipo', 'Aliados']);
+  assert.deepEqual(m.nodos.contenido.todos().filter(n => n.className === 'kit-tema-boton').map(n => n.textContent), ['Servicios', 'Metodologías', 'Experiencia', 'Equipo', 'Aliados']);
   assert.equal(m.nodos.contenido.todos().find(n => n.id === 'kit-explorar').hidden, true);
   // E45: el correo provisional (dominio GH) solo aparece en Contacto, como enlace; nunca en las fichas del equipo.
   const correo = m.nodos.contenido.todos().find(n => String(n.href || '').startsWith('mailto:'));
