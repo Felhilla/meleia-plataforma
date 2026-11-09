@@ -179,10 +179,12 @@ test('DOM: error de vista visible y sesión revocada vuelve al ingreso', async (
   m.datos.salir(); assert.equal(m.root.location.hash,'#/ingresar');
 });
 
-test('E22: el Módulo III ofrece exclusivamente el caso configurado y sus rutas', () => {
+// E68 (9-nov) actualiza E22: el Módulo III ofrece su caso de muestra y la empresa de Meleia (orden del 6-nov: Meleia alimenta
+// los 4 módulos). Ningún otro caso de muestra entra.
+test('E68: el Módulo III ofrece su caso de muestra y la empresa de Meleia, y sus rutas', () => {
   const modulo=App.modulos.find(m=>m.id==='materialidad');
-  assert.equal(modulo.casos.length,1);
-  assert.notEqual(modulo.casos[0],'empresa-demo');
+  assert.equal(modulo.casos.length,2);
+  assert.notEqual(modulo.casos[0],'empresa-demo'); assert.equal(modulo.casos[1],'empresa-demo');
   const casos=[{id:modulo.casos[0],nombre:'Caso de muestra',rol:'demostrador',muestra_comercial:true}];
   assert.equal(App.resolverRuta('#/materialidad',{},casos).hash,'#/materialidad/'+casos[0].id+'/metodologia');
   assert.deepEqual(App.casos(modulo,[...muestras,...casos]).map(e=>e.id),[casos[0].id]);
@@ -492,6 +494,10 @@ test('E61: Alimentación por secciones de los Módulos I y IV valida con las fun
     await IV.guardar(cal); assert.deepEqual(guardados.at(-1).slice(0, 2), ['riesgos-calificacion', 'r-01']);
     cal.registro.escala = 4; await assert.rejects(IV.guardar(cal), /1 a 3/);
     assert.ok(A.enlaceValido('https://a.co/x')); assert.ok(!A.enlaceValido('javascript:x'));
+    // E68: el id del borrador cumple la regla de la base (la misma de kit-datos.js), también con ids largos o con mayúsculas.
+    const regla = /^[a-z0-9-]{1,80}$/;
+    for (const [c, s, i] of [[1, 'calificacion', 'r-01'], [12, 'Academia', 'org-' + 'x'.repeat(70)], [2, 'medios de comunicación', 'act-1']]) assert.match(A.claveBorrador(c, s, i), regla);
+    assert.notEqual(A.claveBorrador(1, 'calificacion', 'r-01'), A.claveBorrador(2, 'calificacion', 'r-01'), 'cada ciclo tiene su borrador');
     assert.deepEqual(await A.enProceso({ listar: async () => [{ id: 'evaluacion', ciclo: 1, estado: 'en-proceso', nombre: 'N' }, { id: 'sec-a', ciclo: 1, estado: 'completa' }] }, 'x', 'actores'), { nombre: 'N', completas: 1, total: null });
   } finally { delete globalThis.fetch; delete globalThis.KitActores; delete globalThis.KitRiesgos; }
 });
