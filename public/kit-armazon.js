@@ -132,6 +132,18 @@
               cfg.metodologias = met;
             }
           } catch (_) { /* Sin pestaña Metodologías. */ }
+          // 9-nov (Felipe): los nombres y logos de clientes, casos y aliados viven en la base, en la empresa de Meleia
+          // (empresa-demo), con permisos (RLS): solo quien tenga acceso a Meleia los lee. Sin acceso, Credenciales sigue anónima.
+          try {
+            if (empresas.some(e => e.id === 'empresa-demo')) {
+              const [cli, cas, ali] = await Promise.all(['credenciales-clientes', 'credenciales-casos', 'credenciales-aliados'].map(c => datos.listar('empresa-demo', c).catch(() => [])));
+              const logo = v => typeof v === 'string' && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(v) ? v : null;
+              const limpio = r => { const { id: _id, ...x } = r; return { ...x, logo: logo(x.logo) }; };
+              if (cas.length) cfg.experiencia.forEach(e => { const r = cas.find(x => x.id === e.id); if (r) Object.assign(e, limpio(r)); });
+              if (cli.length) cfg.clientes = [...cli].sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0)).map(r => ({ ...limpio(r), id: r.id }));
+              if (ali.length) (cfg.aliados || []).forEach(a => { const r = ali.find(x => x.titulo === a.titulo); if (r) Object.assign(a, limpio(r)); });
+            }
+          } catch (_) { /* Credenciales anónimas. */ }
           // E46 (6-nov): la portada vive en kit-vista-credenciales.js (Look and Feel de Meleia).
           if (!root.KitCredenciales) throw Error('No se pudo cargar la vista de credenciales.');
           root.KitCredenciales.render(destino, cfg, App);

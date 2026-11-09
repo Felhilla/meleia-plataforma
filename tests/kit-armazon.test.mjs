@@ -521,3 +521,24 @@ test('E62: Alimentación del Módulo III calcula con el motor E38 y escribe lo q
     assert.equal(await A.enProceso({ listar: async () => [] }, 'x'), null);
   } finally { delete globalThis.KitMaterialidad; }
 });
+
+test('9-nov: Credenciales lee nombres y logos de la base solo con acceso a Meleia, y solo acepta imágenes seguras', async () => {
+  const png = 'data:image/png;base64,iVBORw0KGgo=';
+  const registros = { 'credenciales-clientes': [{ id: 'cli-x', nombre: 'Cliente Inventado', sector: 'Sector Inventado', icono_sector: 'dialogo', logo: png, orden: 1 }, { id: 'cli-y', nombre: 'Otro Inventado', sector: 'Sector Inventado', logo: 'data:image/svg+xml;base64,PHN2Zz4=' }],
+    'credenciales-casos': [{ id: 'caso-1', nombre: 'Caso Inventado', logo: 'https://example.test/logo.png' }], 'credenciales-aliados': [] };
+  const listar = async (e, c) => e === 'empresa-demo' ? registros[c] || [] : [];
+  const con = await montar({ listar, empresas: [...empresas, { id: 'empresa-demo', nombre: 'Empresa de demostración' }] });
+  const leidas = con.consultas.filter(c => c[0] === 'empresa-demo').map(c => c[1]);
+  assert.deepEqual(leidas.filter(c => c.startsWith('credenciales-')).sort(), ['credenciales-aliados', 'credenciales-casos', 'credenciales-clientes']);
+  const todos = () => con.nodos.contenido.todos();
+  await todos().find(n => n.className === 'kit-tema-boton' && n.dataset.tema === 'experiencia').onclick();
+  assert.match(con.nodos.contenido.textContent, /# 6 clientes/);
+  todos().find(n => n.className === 'kit-serv-centro-boton').onclick();
+  const capa = todos().find(n => n.className === 'kit-ficha-capa');
+  assert.match(capa.textContent, /Cliente Inventado/); assert.match(capa.textContent, /Caso Inventado/);
+  const fuentes = capa.todos().filter(n => n.tag === 'img').map(n => n.src);
+  assert.ok(fuentes.includes(png)); assert.ok(!fuentes.some(f => /svg|https:/.test(f)), 'ni SVG ni enlaces externos');
+  const sin = await montar({ listar });
+  assert.ok(!sin.consultas.some(c => String(c[1]).startsWith('credenciales-')), 'sin acceso a Meleia no se consulta');
+  const K = con.root.KitCredenciales; assert.ok(K);
+});
