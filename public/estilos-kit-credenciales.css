@@ -283,3 +283,18 @@ textarea.kit-contacto-campo { border-radius: 24px; resize: vertical; }
 .kit-sector-metodologias .kit-sector-estandar:hover, .kit-sector-metodologias .kit-sector-estandar:focus-visible { border-color: var(--oro); }
 .kit-sector-metodologias .kit-est-tarjeta-sigla { font-family: var(--fuente-titulos); font-size: 1.1rem; }
 .kit-sector-metodologias .kit-est-tarjeta-tipo { font-size: var(--t-micro); color: var(--texto-suave); }
+/* 9-nov: todos los logos de clientes en el mismo recuadro blanco, del mismo tamaño (favorece logos transparentes y cuadrados). */
+.kit-logo-celda img { box-sizing: border-box; width: 132px; height: 64px; padding: 6px 8px; object-fit: contain; background: #FFFFFF; border-radius: 8px; }
+/* 9-nov (Felipe, referencia de directorio): cada cliente es un recuadro blanco cuadrado con el logo grande y centrado,
+   el nombre debajo y una pastilla. El punto verde marca los clientes con caso. */
+.kit-logo-celda:not(.kit-sector-cifra) { width: 136px; min-width: 0; min-height: 0; padding: 0; display: grid; justify-items: center; align-content: start; gap: 8px; background: none; border: 0; box-shadow: none; }
+.kit-logo-celda:not(.kit-sector-cifra):hover { box-shadow: none; }
+.kit-logo-caja { position: relative; display: grid; place-items: center; width: 128px; height: 128px; background: #FFFFFF; border: 2px solid transparent; border-radius: 16px; box-shadow: 0 2px 10px rgb(0 0 0 / 25%); transition: border-color .2s var(--ease-out); }
+.kit-logo-celda:hover .kit-logo-caja, .kit-logo-celda:focus-visible .kit-logo-caja { border-color: var(--oro); }
+.kit-logo-celda .kit-logo-caja img { width: 108px; height: 108px; max-width: none; max-height: none; padding: 0; background: none; border-radius: 0; object-fit: contain; }
+.kit-logo-caja .kit-logo-sigla { color: #1F241B; }
+.kit-logo-punto { position: absolute; top: 8px; right: 8px; width: 12px; height: 12px; border-radius: 50%; background: #7FB069; border: 2px solid #1F241B; }
+.kit-logo-nombre { max-width: 136px; font-weight: 700; font-size: .88rem; line-height: 1.25; color: var(--texto); text-align: center; }
+.kit-logo-pastilla { padding: 2px 12px; border-radius: 999px; background: var(--fondo-alterno); border: 1px solid var(--borde); font-size: var(--t-micro); color: var(--texto-suave); }
+.kit-logo-celda.kit-sector-cifra { width: 128px; height: 128px; align-self: start; }
+.kit-casos-logos { align-items: start; }

@@ -253,8 +253,12 @@
     const nombreCliente = e => e.nombre || ('Empresa del sector ' + String(e.sector || '').replace(/^Sector /, '').toLowerCase());
     function celdaCaso(e, conNombre = false) {
       const b = el('button', null, 'kit-logo-celda' + (conNombre ? ' con-nombre' : '')); b.type = 'button';
-      if (e.logo) { const img = el('img'); img.src = e.logo; img.alt = ''; b.append(img); } else b.append(el('span', e.sigla || e.sector, 'kit-logo-sigla'));
-      if (conNombre || !e.logo) b.append(el('span', e.nombre || e.sector, 'kit-mono'));
+      // 9-nov (Felipe): recuadro blanco cuadrado con el logo grande, nombre debajo y pastilla (referencia de directorio).
+      const caja = el('span', null, 'kit-logo-caja');
+      if (e.logo) { const img = el('img'); img.src = e.logo; img.alt = ''; caja.append(img); } else caja.append(el('span', e.sigla || e.sector, 'kit-logo-sigla'));
+      if (e.caso) caja.append(el('span', null, 'kit-logo-punto'));
+      b.append(caja, el('span', e.nombre || e.sector, 'kit-logo-nombre'));
+      if (e.caso) b.append(el('span', 'Caso', 'kit-logo-pastilla'));
       b.setAttribute('aria-label', `${nombreCliente(e)}. Abrir la ficha del cliente`);
       b.onclick = () => abrir({ titulo: e.nombre || e.sigla || e.sector, clase: 'kit-ficha-experiencia', origen: b, nodos: () => fichaCaso(e, clientes.indexOf(e)) });
       return b;
