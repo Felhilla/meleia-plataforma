@@ -53,7 +53,7 @@
     }
   };
 
-  function portada(modulo, d, p, cifras) {
+  function portada(modulo, d, p, cifras, alIr) {
     const App = root.App, el = App.el, M = App.modulos.find(x => x.id === modulo);
     const s = el('section', null, 'kit-banda kit-banda-oscura kit-met-portada kit-res-portada');
     const panel = el('div', null, 'kit-met-panel'), texto = el('div', null, 'kit-met-panel-texto'), marca = el('div', null, 'kit-met-marca');
@@ -70,7 +70,7 @@
       b.append(el('span', t.texto || num(t.n, 0), 'kit-met-tile-num'), el('span', t.rotulo, 'kit-met-tile-rotulo'), el('span', t.sub, 'kit-met-tile-sub'), el('span', 'Ver', 'kit-met-tile-abrir'));
       b.setAttribute('aria-label', `${t.texto || num(t.n, 0)} ${t.rotulo}, ${t.sub}. Ir al resultado`);
       b.style?.setProperty?.('--i', k);
-      b.onclick = () => { destino.scrollIntoView?.({ behavior: root.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); destino.focus?.({ preventScroll: true }); };
+      b.onclick = () => { alIr?.(); destino.scrollIntoView?.({ behavior: root.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); destino.focus?.({ preventScroll: true }); };
       const li = el('li'); li.append(b); tiles.append(li);
     });
     // Cuarta tarjeta: cómo se calificó, en la Metodología (ícono, como en la Metodología).
@@ -120,11 +120,23 @@
         try { cifras = await CIFRAS[modulo](d, p.empresa); } catch (_) { cifras = null; }
         if (p.vigente && !p.vigente()) return;
         if (!cifras) return original.render(c, d, p);
-        const { s, caso, destino } = portada(modulo, d, p, cifras);
+        // E65 (boceto de Felipe del 9-nov): en el Módulo I los resultados se despliegan con un botón grande y se cierran con ×.
+        let abrirResultados = null;
+        const { s, caso, destino } = portada(modulo, d, p, cifras, () => abrirResultados?.());
         // El selector de casos del armazón pasa al panel (la banda de título y las pestañas se ocultan, como en la Metodología).
         const vista = c.closest?.('.kit-vista'), sel = vista?.querySelector?.(':scope > .kit-casos, :scope > .kit-caso-unico');
         if (sel) caso.append(sel);
         const cuerpo = root.App.el('section', null, 'kit-res-cuerpo');
+        if (modulo === 'actores') {
+          const el = root.App.el, ver = el('button', 'Ver resultados', 'kit-res-ver'), cerrar = el('button', '×', 'kit-cerrar kit-res-cerrar');
+          ver.type = 'button'; ver.setAttribute('aria-expanded', 'false'); cerrar.type = 'button'; cerrar.setAttribute('aria-label', 'Cerrar resultados');
+          cuerpo.hidden = true; cuerpo.classList.add('kit-res-plegable'); cuerpo.append(cerrar);
+          abrirResultados = () => { cuerpo.hidden = false; ver.hidden = true; ver.setAttribute('aria-expanded', 'true'); };
+          ver.onclick = () => { abrirResultados(); destino.scrollIntoView?.({ behavior: root.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); cerrar.focus?.({ preventScroll: true }); };
+          cerrar.onclick = () => { cuerpo.hidden = true; ver.hidden = false; ver.setAttribute('aria-expanded', 'false'); ver.focus?.(); };
+          c.append(s, destino, ver, cuerpo);
+          return original.render(cuerpo, d, p);
+        }
         c.append(s, destino, cuerpo);
         return original.render(cuerpo, d, p);
       }
