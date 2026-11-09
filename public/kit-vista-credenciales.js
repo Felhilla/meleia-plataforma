@@ -37,7 +37,9 @@
     }
 
     const servicios = cfg.servicios || [], experiencia = cfg.experiencia || [], personas = cfg.personas || [], aliados = cfg.aliados || [];
-    const temasCfg = cfg.temas || {};
+    const temasCfg = { ...(cfg.temas || {}) }, met = cfg.metodologias;
+    if (met?.tema) temasCfg.metodologias = met.tema;
+    const estandaresDe = c => c.estandares || (c.grupos || []).flatMap(g => g.estandares);
     // E50 (boceto Experiencia, 7-nov): Experiencia se organiza por sector. Los casos con ficha completa y los demás
     // clientes (solo nombre, logo y descripción) se agrupan por sector, en el orden en que aparecen.
     const clientes = [...experiencia.map(e => ({ ...e, caso: true })), ...(cfg.clientes || []).map(c => ({ ...c, caso: c.caso === true }))];
@@ -51,7 +53,12 @@
     const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`;
     const temas = [
       { id: 'servicios', items: servicios.map(v => ({ titulo: v.titulo, sub: 'Ver servicio', nodo: { icono: v.icono }, dato: v })), ficha: fichaServicio },
-      { id: 'experiencia', items: sectores.map(x => ({ titulo: x.sector, sub: plural(x.clientes.length, 'cliente', 'clientes'), nodo: { icono: x.icono, sigla: x.clientes[0]?.sigla || '' }, dato: x })), ficha: fichaSector, centro: fichaClientes },
+      // E64 (9-nov, Felipe): Metodologías, los estándares con los que trabajamos, por categoría.
+      { id: 'metodologias', items: (met?.categorias || []).map(c => ({ titulo: c.nombre, sub: plural(estandaresDe(c).length, 'estándar', 'estándares'), nodo: { icono: c.icono }, dato: c })), ficha: fichaCategoria, centro: fichaTodasMetodologias,
+        cifras: () => { const n = (met?.categorias || []).flatMap(estandaresDe).length, enf = (met?.categorias || []).length;
+          return { lineas: ['# ' + plural(n, 'metodología', 'metodologías'), '# ' + plural(enf, 'enfoque', 'enfoques')], titulo: 'Metodologías por enfoque', ver: 'Ver todas las metodologías por enfoque' }; } },
+      { id: 'experiencia', items: sectores.map(x => ({ titulo: x.sector, sub: plural(x.clientes.length, 'cliente', 'clientes'), nodo: { icono: x.icono, sigla: x.clientes[0]?.sigla || '' }, dato: x })), ficha: fichaSector, centro: fichaClientes,
+        cifras: () => ({ lineas: ['# ' + plural(clientes.length, 'cliente', 'clientes'), '# ' + plural(sectores.length, 'sector', 'sectores')], titulo: 'Clientes por sector', ver: 'Ver todos los clientes por sector' }) },
       { id: 'equipo', items: personas.map(p => ({ titulo: p.nombre, sub: p.cargo, nodo: { tarjeta: 'foto', foto: p.foto, sigla: p.nombre }, dato: p })), ficha: fichaPersona },
       { id: 'aliados', items: aliados.map(a => ({ titulo: a.nombre || a.titulo, sub: a.nombre ? a.titulo : 'Ver aliado', nodo: { tarjeta: 'logo', logo: a.logo, fondo: a.logo_fondo, icono: a.icono, texto: a.nombre || a.titulo }, dato: a })), ficha: fichaAliado }
     ].filter(t => t.items.length).map(t => ({ ...t, nombre: temasCfg[t.id]?.nombre || t.id, frase: temasCfg[t.id]?.frase || '', titular: temasCfg[t.id]?.titular || '' }));
@@ -104,18 +111,21 @@
       dibujo = svg('svg', { class: 'kit-serv-svg', 'aria-hidden': 'true', focusable: 'false' }); encuadre();
       dibujo.append(svg('path', { d: `M${C[0]} ${C[1] - 318}a318 318 0 0 1 0 636`, class: 'kit-serv-marco' }));
       titulosActuales = []; nodosActuales = [];
-      const titulos = el('div', null, 'kit-serv-titulos');
+      const titulos = el('div', null, 'kit-serv-titulos' + (n > 5 ? ' compacto' : ''));
       tema.items.forEach((item, i) => {
         const a0 = -90 + i * paso + 1.2, a1 = -90 + (i + 1) * paso - 1.2, medio = -90 + (i + .5) * paso;
         const [x0, y0] = punto(R1, a0), [x1, y1] = punto(R1, a1), [x2, y2] = punto(R0, a1), [x3, y3] = punto(R0, a0);
         const g = svg('g', { class: 'kit-serv-seg', style: `--i:${i}` });
         g.append(svg('path', { d: `M${x0} ${y0}A${R1} ${R1} 0 0 1 ${x1} ${y1}L${x2} ${y2}A${R0} ${R0} 0 0 0 ${x3} ${y3}Z`, fill: COLORES[i % COLORES.length] }));
         // Sin tarjetas el número va dentro del segmento. Con tarjetas (fotos o logos) va como insignia en su esquina.
-        if (!item.nodo.tarjeta) { const [nx, ny] = punto(222, medio - (n > 3 ? 11 : 15)), num = svg('text', { x: nx, y: ny, class: 'kit-serv-num', 'text-anchor': 'middle', 'dominant-baseline': 'central' }); num.textContent = String(i + 1); g.append(num); }
+        // 9-nov (Felipe): sin numeración en los segmentos ni en las tarjetas; el ícono o el logo ocupa todo el espacio posible.
         const [cx, cy] = punto(RN, medio); nodosActuales.push([cx, cy]);
         // E46 (boceto Aliados, 6-nov): en Equipo la foto y en Aliados el logo crecen y se integran al gráfico.
-        const [ancho, alto] = item.nodo.tarjeta === 'foto' ? (n > 3 ? [132, 132] : [150, 150]) : item.nodo.tarjeta === 'logo' ? [184, 104] : [100, 100];
-        g.append(svg('line', { x1: cx + ancho / 2, y1: cy, x2: 702, y2: cy, class: 'kit-serv-guia' }), svg('circle', { cx: 714, cy, r: 8, class: 'kit-serv-anillo' }));
+        const rN = Math.min(n > 5 ? 60 : n > 3 ? 70 : 76, Math.floor(RN * Math.sin(paso * Math.PI / 360)) - 3); // sin montarse aunque haya muchos
+        const [ancho, alto] = item.nodo.tarjeta === 'foto' ? (n > 3 ? [132, 132] : [150, 150]) : item.nodo.tarjeta === 'logo' ? [184, 104] : [2 * rN, 2 * rN];
+        // 9-nov (Felipe): las guías son siempre rectas (horizontales); con muchos elementos el título se compacta (ver CSS).
+        const yT = cy;
+        g.append(svg('line', { x1: cx + ancho / 2, y1: cy, x2: 702, y2: yT, class: 'kit-serv-guia' }), svg('circle', { cx: 714, cy: yT, r: 8, class: 'kit-serv-anillo' }));
         // 8-nov (correcciones de Felipe): en Experiencia el nodo es un círculo blanco con el ícono del sector, nunca el logo.
         const nodo = svg('g', { class: 'kit-serv-nodo' + (item.nodo.tarjeta ? ' kit-serv-tarjeta' : '') + (tema.id === 'experiencia' ? ' kit-serv-nodo-blanco' : ''), transform: `translate(${cx} ${cy})` });
         if (item.nodo.tarjeta) {
@@ -129,18 +139,17 @@
             if (item.nodo.icono) { const ic = icono(item.nodo.icono, 'kit-serv-nodo-icono'); Object.entries({ x: -32, y: -32, width: 64, height: 64 }).forEach(([k, v]) => ic.setAttribute(k, v)); nodo.append(ic); }
           }
           nodo.append(svg('rect', { ...forma, class: 'kit-serv-tarjeta-borde', stroke: COLORES[i % COLORES.length] }));
-          const insignia = svg('g', { class: 'kit-serv-insignia', transform: `translate(${-ancho / 2} ${-alto / 2})` }), cifra = svg('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', y: 1 });
-          cifra.textContent = String(i + 1); insignia.append(svg('circle', { r: 21, fill: COLORES[i % COLORES.length] }), cifra); nodo.append(insignia);
         } else {
-          nodo.append(svg('circle', { r: 50, class: 'kit-serv-nodo-fondo' }), svg('circle', { r: 44, class: 'kit-serv-nodo-aro', stroke: COLORES[i % COLORES.length] }));
-          if (item.nodo.icono) { const ic = icono(item.nodo.icono, 'kit-serv-nodo-icono'); Object.entries({ x: -30, y: -30, width: 60, height: 60 }).forEach(([k, v]) => ic.setAttribute(k, v)); nodo.append(ic); }
+          const rA = rN - 6, rI = Math.round(rN * .66);
+          nodo.append(svg('circle', { r: rN, class: 'kit-serv-nodo-fondo' }), svg('circle', { r: rA, class: 'kit-serv-nodo-aro', stroke: COLORES[i % COLORES.length] }));
+          if (item.nodo.icono) { const ic = icono(item.nodo.icono, 'kit-serv-nodo-icono'); Object.entries({ x: -rI, y: -rI, width: 2 * rI, height: 2 * rI }).forEach(([k, v]) => ic.setAttribute(k, v)); nodo.append(ic); }
           else if (item.nodo.logo) {
-            const clip = 'kit-clip-' + tema.id + '-' + i, def = svg('clipPath', { id: clip }); def.append(svg('circle', { r: 41 })); nodo.append(def);
-            nodo.append(svg('image', { href: item.nodo.logo, x: -41, y: -41, width: 82, height: 82, 'clip-path': `url(#${clip})`, preserveAspectRatio: 'xMidYMid meet' }));
+            const rL = rA - 3, clip = 'kit-clip-' + tema.id + '-' + i, def = svg('clipPath', { id: clip }); def.append(svg('circle', { r: rL })); nodo.append(def);
+            nodo.append(svg('image', { href: item.nodo.logo, x: -rL, y: -rL, width: 2 * rL, height: 2 * rL, 'clip-path': `url(#${clip})`, preserveAspectRatio: 'xMidYMid meet' }));
           } else { const t = svg('text', { class: 'kit-serv-sigla', 'text-anchor': 'middle', 'dominant-baseline': 'central' }); t.textContent = item.nodo.sigla; nodo.append(t); }
         }
         g.append(nodo); g.addEventListener?.('click', () => abrirFicha(tema, i)); dibujo.append(g);
-        const b = el('button', null, 'kit-serv-titulo'); b.type = 'button'; if (b.style) { b.style.top = (cy / 660 * 100) + '%'; b.style.setProperty?.('--i', i); }
+        const b = el('button', null, 'kit-serv-titulo'); b.type = 'button'; if (b.style) { b.style.top = (yT / 660 * 100) + '%'; b.style.setProperty?.('--i', i); }
         b.append(el('span', dos(i), 'kit-mono'), el('span', item.titulo, 'kit-serv-titulo-texto'));
         if (item.sub) b.append(el('span', item.sub, 'kit-serv-ver'));
         b.setAttribute('aria-label', `${tema.nombre} ${i + 1}: ${item.titulo}. Abrir la ficha`); b.onclick = () => abrirFicha(tema, i);
@@ -155,15 +164,17 @@
       });
       const centro = svg('g', { class: 'kit-serv-centro' });
       centro.append(svg('circle', { cx: C[0], cy: C[1], r: 158 }));
-      const t0 = svg('text', { x: C[0], y: C[1] - 52, 'text-anchor': 'middle', class: 'kit-serv-centro-ante' }); t0.textContent = 'MELEIA'; centro.append(t0);
+      // 9-nov (Felipe): el centro lleva el logo de Meleia en lugar del texto.
+      const t0 = svg('image', { href: 'img/logo-meleia-grande-claro.png', x: C[0] - 78, y: C[1] - 112, width: 156, height: 64, class: 'kit-serv-centro-logo', role: 'img', 'aria-label': 'Meleia' }); centro.append(t0);
       let lineas, extra = [];
       if (tema.centro) {
         // Experiencia: las cifras van en el centro, grandes, y el centro abre el listado de clientes.
-        lineas = ['# ' + plural(clientes.length, 'cliente', 'clientes'), '# ' + plural(sectores.length, 'sector', 'sectores')];
+        // E64: también Metodologías (# metodologías, # sectores).
+        const cif = tema.cifras(); lineas = cif.lineas;
         centro.classList?.add('kit-serv-centro-activo');
         const b = el('button', null, 'kit-serv-centro-boton'); b.type = 'button';
-        b.setAttribute('aria-label', `${lineas.join(', ').replace(/# /g, '')}. Ver todos los clientes por sector`);
-        b.onclick = () => abrir({ titulo: 'Clientes por sector', origen: b, nodos: () => tema.centro(), desde: null });
+        b.setAttribute('aria-label', `${lineas.join(', ').replace(/# /g, '')}. ${cif.ver}`);
+        b.onclick = () => abrir({ titulo: cif.titulo, origen: b, nodos: () => tema.centro(), desde: null });
         centro.addEventListener?.('click', () => b.onclick()); extra = [b];
       } else {
         // La frase se parte en dos renglones: donde diga la configuración (salto de línea) o por la mitad de las palabras.
@@ -174,6 +185,14 @@
       centro.append(svg('circle', { cx: C[0], cy: C[1] + 90, r: 6, class: 'kit-hero-punto' }));
       if (tema.centro) { const v = svg('text', { x: C[0], y: C[1] + 124, 'text-anchor': 'middle', class: 'kit-serv-centro-ver' }); v.textContent = 'Ver todos'; centro.append(v); }
       dibujo.append(centro);
+      // E64: las cifras del centro nunca se salen del círculo. Si un renglón es más ancho que la cuerda del círculo a su
+      // altura (con margen), se reduce su letra hasta que quepa.
+      // Todos los renglones toman el mismo tamaño (el del que más necesita reducirse).
+      const ajustar = () => { const ts = [...(centro.querySelectorAll?.('.kit-serv-centro-frase') || [])].filter(t => t.getComputedTextLength); if (!ts.length) return;
+        ts.forEach(t => { t.style.fontSize = ''; });
+        const f = Math.min(1, ...ts.map(t => { const dy = Number(t.getAttribute('y')) - C[1] - 10, cuerda = 2 * Math.sqrt(Math.max(0, 158 * 158 - dy * dy)) * .86; return cuerda / (t.getComputedTextLength() || 1); }));
+        if (f < 1) ts.forEach(t => { t.style.fontSize = (parseFloat(root.getComputedStyle(t).fontSize) * f).toFixed(1) + 'px'; }); };
+      root.requestAnimationFrame?.(() => root.requestAnimationFrame(ajustar)); root.document.fonts?.ready?.then(ajustar);
       diagrama.replaceChildren(dibujo, el('p', tema.centro ? lineas.join(', ') : tema.frase.replace('\n', ' '), 'solo-lectores'), titulos, ...extra);
       diagrama.classList?.remove('recarga'); void diagrama.offsetWidth; diagrama.classList?.add('recarga');
     }
@@ -234,8 +253,12 @@
     const nombreCliente = e => e.nombre || ('Empresa del sector ' + String(e.sector || '').replace(/^Sector /, '').toLowerCase());
     function celdaCaso(e, conNombre = false) {
       const b = el('button', null, 'kit-logo-celda' + (conNombre ? ' con-nombre' : '')); b.type = 'button';
-      if (e.logo) { const img = el('img'); img.src = e.logo; img.alt = ''; b.append(img); } else b.append(el('span', e.sigla || e.sector, 'kit-logo-sigla'));
-      if (conNombre || !e.logo) b.append(el('span', e.nombre || e.sector, 'kit-mono'));
+      // 9-nov (Felipe): recuadro blanco cuadrado con el logo grande, nombre debajo y pastilla (referencia de directorio).
+      const caja = el('span', null, 'kit-logo-caja');
+      if (e.logo) { const img = el('img'); img.src = e.logo; img.alt = ''; caja.append(img); } else caja.append(el('span', e.sigla || e.sector, 'kit-logo-sigla'));
+      if (e.caso) caja.append(el('span', null, 'kit-logo-punto'));
+      b.append(caja, el('span', e.nombre || e.sector, 'kit-logo-nombre'));
+      if (e.caso) b.append(el('span', 'Caso', 'kit-logo-pastilla'));
       b.setAttribute('aria-label', `${nombreCliente(e)}. Abrir la ficha del cliente`);
       b.onclick = () => abrir({ titulo: e.nombre || e.sigla || e.sector, clase: 'kit-ficha-experiencia', origen: b, nodos: () => fichaCaso(e, clientes.indexOf(e)) });
       return b;
@@ -256,7 +279,28 @@
       fila.append(cifra);
       return [cabeza({ icono: x.icono, sigla: x.clientes[0]?.sigla }, i, 'Sector ' + dos(i), x.sector),
         mono('¿Qué hemos hecho en este sector?', 'kit-ficha-sub'), caja(vistos.size ? hecho : el('p', 'Por confirmar.')),
-        mono('Clientes', 'kit-ficha-sub'), fila];
+        mono('Clientes', 'kit-ficha-sub'), fila, ...metodologiasSector(x)];
+    }
+    // 9-nov (Felipe): cada sector se relaciona con sus estándares sectoriales (Metodologías). Si no hay uno específico,
+    // el botón lleva directamente a las metodologías con las que trabajamos.
+    function metodologiasSector(x) {
+      const grupos = (met?.categorias || []).flatMap(c => c.grupos || []).filter(g => (g.sectores || []).includes(x.sector));
+      const salida = [mono('Metodologías del sector', 'kit-ficha-sub')];
+      if (grupos.length) {
+        const fila = el('div', null, 'kit-sector-metodologias');
+        grupos.forEach(g => g.estandares.forEach(e => {
+          const b = el('button', null, 'kit-est-tarjeta kit-sector-estandar'); b.type = 'button';
+          b.append(el('span', e.sigla || e.nombre, 'kit-est-tarjeta-sigla'), el('span', g.nombre, 'kit-est-tarjeta-tipo'));
+          b.setAttribute('aria-label', `${e.sigla}: ${e.nombre}. Abrir la ficha`);
+          b.onclick = () => abrir({ titulo: e.sigla || e.nombre, clase: 'kit-ficha-metodologias', origen: b, nodos: () => fichaEstandar(e, 0) });
+          fila.append(b);
+        }));
+        salida.push(fila);
+      } else salida.push(el('p', 'No hay un estándar específico para este sector: aplican las metodologías generales.', 'nota'));
+      const todas = el('button', grupos.length ? 'Ver todas las metodologías →' : 'Ir a las metodologías →', 'kit-sector-ir-met'); todas.type = 'button';
+      todas.onclick = () => abrir({ titulo: 'Metodologías por enfoque', origen: todas, nodos: () => fichaTodasMetodologias() });
+      salida.push(todas);
+      return salida;
     }
     // Listado de clientes: todos por sector (desde el centro) o solo los de un sector (desde su ficha).
     function fichaClientes(solo) {
@@ -305,6 +349,57 @@
       }
       const g = el('div', null, 'kit-caso-rejilla'); if (g.style) g.style.setProperty?.('--caso-color', e.color || COLORES[i % COLORES.length]);
       g.append(logoCaso, cuerpo); return [g];
+    }
+    // E64: ficha de una categoría de Metodologías (Muñeca Rusa): cada estándar abre su propia ficha.
+    function fichaCategoria(c, i) {
+      const bloques = c.grupos ? c.grupos : [{ estandares: c.estandares || [] }], salida = [cabeza({ icono: c.icono }, i, 'Enfoque ' + dos(i), c.nombre), caja(el('p', c.descripcion || ''))];
+      // 9-nov (Felipe): mismo modelo que la ventana Estándares de la Metodología: portadas en carrusel con flechas.
+      bloques.forEach((g, k) => {
+        if (g.nombre) salida.push(mono(g.nombre, 'kit-ficha-sub'));
+        const pista = el('ul', null, 'kit-est-pista');
+        g.estandares.forEach((e, j) => {
+          const port = el('span', null, 'kit-est-portada kit-est-portada-tipo'); port.setAttribute('aria-hidden', 'true');
+          port.style?.setProperty?.('--color', e.color || COLORES[(j + k) % COLORES.length]);
+          port.append(el('span', e.sigla || e.nombre, 'kit-est-portada-sigla'), el('span', e.emisor || '', 'kit-est-portada-emisor'));
+          const b = el('button', null, 'kit-est-tarjeta'); b.type = 'button';
+          b.append(port, el('span', e.sigla || e.nombre, 'kit-est-tarjeta-sigla'), el('span', e.tipo || '', 'kit-est-tarjeta-tipo'));
+          b.setAttribute('aria-label', `${e.sigla}: ${e.nombre}. Abrir la ficha`);
+          b.onclick = () => abrir({ titulo: e.sigla || e.nombre, clase: 'kit-ficha-metodologias', origen: b, nodos: () => fichaEstandar(e, i) });
+          const li = el('li'); li.style?.setProperty?.('--i', j); li.append(b); pista.append(li);
+        });
+        const mover = d => () => pista.scrollBy?.({ left: d * (pista.clientWidth || 600) * .8, behavior: sinMovimiento() ? 'auto' : 'smooth' });
+        const flecha = (t, r, d) => { const f = el('button', null, 'kit-est-flecha'); f.type = 'button'; f.append(el('span', t)); f.setAttribute('aria-label', r); f.onclick = mover(d); return f; };
+        const carrusel = el('div', null, 'kit-est-carrusel kit-met-carrusel');
+        carrusel.append(flecha('←', 'Ver los estándares anteriores', -1), pista, flecha('→', 'Ver más estándares', 1));
+        salida.push(carrusel);
+      });
+      salida.push(el('p', `${plural(estandaresDe(c).length, 'estándar', 'estándares')}. Toque una portada para ver su ficha.`, 'nota kit-met-carrusel-nota'));
+      return salida;
+    }
+    // E64: desde el centro, todas las metodologías por categoría (cada una abre su ficha).
+    function fichaTodasMetodologias() {
+      const cuerpo = el('div', null, 'kit-clientes-listado'), cats = met?.categorias || [];
+      const cab = el('ul', null, 'kit-datos kit-clientes-cifras');
+      [[cats.flatMap(estandaresDe).length, 'metodologías'], [cats.length, 'enfoques']]
+        .forEach(([n, t]) => { const li = el('li'); li.append(el('span', '# ' + n, 'kit-dato-cifra'), el('span', t, 'kit-dato-texto')); cab.append(li); });
+      cuerpo.append(mono('Metodologías', 'kit-ficha-sub'), el('h3', 'Metodologías por enfoque', 'kit-clientes-titulo'), cab);
+      cats.forEach((c, i) => { const g = el('section', null, 'kit-clientes-grupo'); g.append(...fichaCategoria(c, i).slice(2)); g.prepend(mono(c.nombre, 'kit-ficha-sub')); cuerpo.append(g); });
+      return [cuerpo];
+    }
+    function fichaEstandar(e, i) {
+      const cuerpo = [cabeza({ sigla: e.sigla }, i, e.tipo || 'Estándar', e.nombre), caja(el('p', e.que_es || ''))];
+      const datos = el('ul', null, 'kit-datos');
+      [[e.emisor, 'emitido por'], [e.anio, 'año de la versión']].filter(([v]) => v).forEach(([v, t]) => { const li = el('li'); li.append(el('span', v, 'kit-dato-cifra kit-met-estandar-dato'), el('span', t, 'kit-dato-texto')); datos.append(li); });
+      if (datos.children?.length) cuerpo.push(datos);
+      if (e.usados) cuerpo.push(mono('Qué usamos', 'kit-ficha-sub'), el('p', e.usados));
+      if ((e.modulos || []).length) {
+        cuerpo.push(mono('En el Kit', 'kit-ficha-sub'));
+        const ul = el('ul', null, 'kit-caso-entregables');
+        e.modulos.forEach(m => { const li = el('li'); li.append(el('span', m.por_que || '', 'kit-caso-hito-texto')); const a = el('a', '# ' + (nombreModulo[m.modulo] || 'Kit'), 'kit-caso-enlace'); a.href = '#/' + m.modulo; li.append(a); ul.append(li); });
+        cuerpo.push(ul);
+      }
+      if (e.enlace) { const w = el('a', (e.enlace_texto || 'Ir a la fuente') + ' ↗', 'kit-aliado-sitio'); w.href = e.enlace; w.target = '_blank'; w.rel = 'noopener noreferrer'; cuerpo.push(w); }
+      return cuerpo;
     }
     function fichaPersona(p, i) { return [cabeza({ foto: p.foto, sigla: p.nombre }, i, p.cargo || 'Equipo', p.nombre), caja(el('p', p.experiencia || ''))]; }
     // Ficha del aliado (boceto, 6-nov): Logo | nombre, descripción y datos resaltados con #; cada dato lleva a Experiencia.

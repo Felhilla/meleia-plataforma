@@ -6,9 +6,10 @@ import {preparar} from '../scripts/kit-materialidad-registros.mjs';
 import M from '../public/kit-vista-materialidad-motor.js';
 const listas=await preparar(new URL('fixtures/materialidad-publicada-muestra.json',import.meta.url));
 const vista=(sub='resultados',editar=true,extra={},opts={})=>montar('materialidad/'+sub,editar,{...structuredClone(listas),...extra},opts);
-const puntos=m=>m.contenedor.querySelectorAll('.mat-punto');
+const top=m=>m.contenedor.querySelector('.mat-top').querySelectorAll('button');
+const cuadrantes=m=>m.contenedor.querySelectorAll('.ka-cuadrante-boton');
 const cambiar=(m,t)=>{const s=m.contenedor.querySelector('select');s.value=t;s.onchange();};
-const abrir=m=>puntos(m)[0].onkeydown({key:'Enter',preventDefault(){}});
+const abrir=m=>top(m)[0].onclick();
 test('E30: esquema completo y vínculo validado/tema_id',()=>{
  const s=json('config/esquemas/materialidad-aspectos.json'),a=listas['materialidad-aspectos'][0];
  assert.equal(Object.keys(s.campos).length,20);
@@ -29,37 +30,66 @@ test('E30: cifras, plurales, niveles y orden independiente del arreglo de entrad
  assert.deepEqual([4.26,2.5,0].map(x=>M.nivel(x).etiqueta),['Alto','Medio','Nulo']);
  assert.deepEqual([4.26,2.5,0].map(x=>M.nivel(x).color),['naranja','ambar','gris']);
 });
-test('E30: tres consultas exactas, cifras, fuente y selector sin recargar',async()=>{
+test('E66: tres consultas, fuente, selector sin recargar, top 10 y un círculo por dimensión en cada cuadrante',async()=>{
  const m=await vista();
  assert.deepEqual(m.consultas.map(x=>x[1]),M.colecciones);assert.ok(m.consultas.every(x=>x[0]==='empresa-1'));
- assert.ok(!m.contenedor.querySelector('.mat-cifras')); // Felipe, 28-oct: sin banda de cifras en el Módulo III
+ assert.ok(!m.contenedor.querySelector('.mat-cifras'));
  assert.match(m.contenedor.textContent,/Fuente: Informe de muestra de Empresa Aurora/);
+ const rs=listas['materialidad-aspectos'],resumen=listas['materialidad-resumen'][0];
  for(const tipo of ['doble','impacto','financiera']){
   cambiar(m,tipo);
-  assert.equal(m.contenedor.querySelector('h2').textContent,({doble:'Doble materialidad',impacto:'Materialidad de impacto',financiera:'Materialidad financiera'})[tipo]);
-  assert.equal(m.contenedor.querySelector('h2').tabIndex,-1);
-  assert.equal(puntos(m).length,28);
-  const botones=m.contenedor.querySelector('ol').querySelectorAll('button'),top=M.top(listas['materialidad-aspectos'],tipo);
-  assert.deepEqual(botones.map(b=>b.dataset.aspecto),top.map(a=>a.id));
-  botones.forEach(b=>{const p=puntos(m).find(n=>n.attrs['data-aspecto']===b.dataset.aspecto);assert.equal(p.attrs['data-numero'],b.dataset.numero);assert.equal(p.attrs.tabindex,'0');assert.equal(p.attrs.role,'button');});
-  assert.equal(m.contenedor.querySelector('tbody').children.length,28);
-  assert.match(m.contenedor.querySelector('svg').textContent,tipo==='financiera'?/Probabilidad/:tipo==='impacto'?/Probabilidad/:/Materialidad financiera/);
+  const h=m.contenedor.querySelector('.mat-resultado').querySelector('h2');
+  assert.equal(h.textContent,({doble:'Doble materialidad',impacto:'Materialidad de impacto',financiera:'Materialidad financiera'})[tipo]);assert.equal(h.tabIndex,-1);
+  assert.deepEqual(top(m).map(b=>b.dataset.aspecto),M.top(rs,tipo).map(a=>a.id));
+  const [[x],[y]]=M.variables[tipo],[u,v]=M.umbrales(resumen,rs,tipo),cs=cuadrantes(m);assert.equal(cs.length,4);
+  const total=cs.reduce((t,c)=>t+ +c.attrs['aria-label'].match(/: (\d+) aspecto/)[1],0);assert.equal(total,28);
+  const dobleAlta=rs.filter(a=>a[x]>u&&a[y]>v).length;assert.ok(cs[1].attrs['aria-label'].includes(`: ${dobleAlta} aspecto`));
+  assert.deepEqual(m.contenedor.querySelector('.ka-general').querySelectorAll('.ka-eje-nombre').map(n=>n.textContent),M.variables[tipo].map(v=>v[1]+' →'));
+  const texto=m.contenedor.querySelector('.mat-umbrales').textContent;
+  for(const n of [u,v])assert.ok(texto.includes(new Intl.NumberFormat('es-CO',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n)));
+  boton(m.contenedor,'Matriz de materialidad').onclick();const t=panel(m);
+  assert.deepEqual(t.querySelector('tbody').children.map(n=>n.children[0].textContent),M.ordenados(rs,tipo).map(a=>a.nombre));
+  t.querySelector('[aria-label="Cerrar"]').onclick();assert.equal(panel(m),undefined);
  }
  assert.equal(m.consultas.length,3);
+});
+test('E66: zoom del cuadrante con resumen, posición real, 7 burbujas y puntos pequeños',async()=>{
+ const m=await vista();const rs=listas['materialidad-aspectos'],[u,v]=M.umbrales(listas['materialidad-resumen'][0],rs,'doble');
+ const c=cuadrantes(m).find(n=>n.attrs['aria-label'].startsWith('Doble materialidad:'));c.listeners.click();
+ const z=panel(m),lista=rs.filter(a=>a.financiera>u&&a.importancia>v);assert.ok(lista.length>7);
+ assert.match(z.textContent,new RegExp(lista.length+'\\s+Aspectos en el cuadrante'));
+ for(const d of ['Ambiental','Social','Gobernanza'])assert.match(z.textContent,new RegExp(lista.filter(a=>a.dimension===d).length+'\\s+'+d));
+ const grandes=z.querySelectorAll('.ka-burbuja'),chicos=z.querySelectorAll('.ka-punto-chico');
+ assert.equal(grandes.length,Math.min(7,lista.length));assert.equal(grandes.length+chicos.length,lista.length);
+ assert.deepEqual(grandes.map(g=>g.attrs['data-id']),M.ordenados(lista,'doble').slice(0,7).map(a=>a.id));
+ assert.ok(chicos.every(n=>!n.querySelectorAll('text').length));
+ assert.match(z.textContent,/Doble materialidad/);assert.doesNotMatch(z.textContent,/validado/i);
+ grandes[0].listeners.click();const f=m.document.body.querySelectorAll('[role="dialog"]').at(-1);assert.ok(f.className.includes('mat-ficha'));
+ m.document.eventos.keydown({key:'Escape',preventDefault(){}});assert.ok(panel(m),'Escape cierra solo la ficha de arriba');
+ m.salir();assert.equal(panel(m),undefined);
+});
+test('E66: Vista por dimensión y Filtro por resultado de doble materialidad',async()=>{
+ const m=await vista(),[,vista_,filtro]=m.contenedor.querySelectorAll('select'),rs=listas['materialidad-aspectos'];
+ assert.deepEqual(vista_.children.map(o=>o.textContent),['General',...['Ambiental','Social','Gobernanza'].filter(d=>rs.some(a=>a.dimension===d))]);
+ assert.equal(filtro.children[0].textContent,'Todas las clasificaciones');
+ vista_.value='Social';vista_.onchange();
+ const total=cuadrantes(m).reduce((t,c)=>t+ +c.attrs['aria-label'].match(/: (\d+) aspecto/)[1],0);assert.equal(total,rs.filter(a=>a.dimension==='Social').length);
+ vista_.value='';filtro.value='Doble';filtro.onchange();
+ assert.equal(cuadrantes(m).reduce((t,c)=>t+ +c.attrs['aria-label'].match(/: (\d+) aspecto/)[1],0),rs.filter(a=>a.cuadrante==='Doble').length);
 });
 test('E30: ficha por vista, tablas, Enter, Espacio, foco, inert y cierre',async()=>{
  const m=await vista();
  for(const tipo of ['doble','impacto','financiera']){
-  cambiar(m,tipo);const punto=puntos(m)[0];abrir(m);
+  cambiar(m,tipo);const punto=top(m)[0];abrir(m);
   const d=panel(m);assert.ok(d);assert.equal(m.contenedor.inert,true);
   const titulos=d.querySelectorAll('.dim-ficha-rotulo').map(n=>n.textContent);
   assert.equal(titulos.includes('Importancia'),tipo==='impacto');
   assert.equal(titulos.includes('Materialidad financiera'),tipo!=='impacto');
   assert.equal(d.querySelectorAll('table').length,tipo==='doble'?2:1);
-  assert.match(d.textContent,/Marco inventado/);
+  assert.match(d.textContent,/Marco inventado|Indicador inventado/);
   let previno=false;m.document.eventos.keydown({key:'Tab',preventDefault(){previno=true;}});assert.ok(previno);assert.equal(m.document.activeElement,d.querySelector('[aria-label=\"Cerrar\"]'));
   m.document.eventos.keydown({key:'Escape',preventDefault(){}});assert.equal(panel(m),undefined);assert.equal(m.document.activeElement,punto);assert.equal(m.contenedor.inert,false);
-  punto.onkeydown({key:' ',preventDefault(){}});panel(m).querySelector('[aria-label=\"Cerrar\"]').onclick();assert.equal(m.document.activeElement,punto);
+  punto.onclick();panel(m).querySelector('[aria-label=\"Cerrar\"]').onclick();assert.equal(m.document.activeElement,punto);
  }
  abrir(m);m.salir();assert.equal(panel(m),undefined);assert.equal(m.document.eventos.keydown,undefined);
 });
@@ -75,8 +105,9 @@ test('E30: descripción e indicadores validados, sustitución y texto seguro',as
 });
 test('E30: permisos, botón y estados vacíos',async()=>{
  for(const editar of [true,false]){
-  const m=await vista('resultados',editar);assert.equal(m.contenedor.querySelectorAll('a').length,editar?1:0);
-  if(editar)assert.equal(m.contenedor.querySelector('a').href,'#/materialidad/empresa-1/alimentacion');
+  const m=await vista('resultados',editar);assert.equal(m.contenedor.querySelectorAll('a').length,editar?2:1);
+  assert.equal(m.contenedor.querySelector('.ka-met-tarjeta').href,'#/materialidad/empresa-1/metodologia');
+  if(editar)assert.equal(m.contenedor.querySelectorAll('a').at(-1).href,'#/materialidad/empresa-1/alimentacion');
   for(const coleccion of ['materialidad-resumen','materialidad-aspectos']){
    const v=await vista('resultados',editar,{[coleccion]:[]});assert.match(v.contenedor.textContent,/aún no tiene datos/);assert.equal(v.contenedor.querySelectorAll('a').length,editar?1:0);
   }
@@ -128,31 +159,6 @@ test('E35: ficha comparte cabecera, antetítulo y panel de calificación con el 
  assert.ok(cab.querySelector('.dim-ficha-calif').className.includes('sem-fondo-'+M.nivel(a.importancia).color));
 });
 
-test('E30b: el mapa adapta viewBox al contenedor y desconecta el observador al salir',async()=>{
- const m=await vista();m.limpiar();m.contenedor.replaceChildren();
- let callback,render,desconectado=false;
- m.root.ResizeObserver=class {
-  constructor(fn){callback=fn;}
-  observe(n){assert.equal(n.className,'mat-resultado');}
-  disconnect(){desconectado=true;}
- };
- m.root.App.registrarVista=(_,v)=>{render=v.render;};
- vm.runInNewContext(read('kit-vista-materialidad.js'),m.root);
- const limpiar=await render(m.contenedor,null,{empresa:'empresa-1',puedeEditar:false,vigente:()=>true});
- for(const ancho of [310,780]){
-  const anterior=m.contenedor.querySelector('.mat-mapa');
-  anterior.replaceWith=function(n){const padre=this.parentNode;padre.children[padre.children.indexOf(this)]=n;n.parentNode=padre;};
-  callback([{contentRect:{width:ancho}}]);
-  const mapa=m.contenedor.querySelector('.mat-mapa');
-  assert.equal(mapa.attrs.viewBox,`0 0 ${ancho} ${Math.min(640,ancho+40)}`);
-  assert.equal(mapa.querySelectorAll('.mat-numero').length,10);
-  assert.ok(mapa.querySelectorAll('.mat-forma').filter(n=>n.tagName==='CIRCLE').every(n=>+n.attrs.r*2>=20));
- }
- assert.equal(m.consultas.length,6); // Dos montajes; redimensionar no consulta.
- limpiar();assert.equal(desconectado,true);
-});
-
-
 test('E31: top 10 por promedio de los dos ejes, desempate por orden y sin filtrar validación',()=>{
  const campos={doble:['financiera','importancia'],impacto:['probabilidad','importancia'],financiera:['probabilidad','financiera']};
  const rs=Array.from({length:28},(_,i)=>({id:String(i),orden:28-i,financiera:i%6,importancia:(i*3)%6,probabilidad:(i*5)%6,validado:'No'}));
@@ -174,41 +180,6 @@ test('E31: probabilidad opcional 0–5, umbral explícito incluido cero y respal
   for(const valor of [0,3.05])assert.equal(M.umbrales({...r,umbral_probabilidad:valor},rs,tipo)[0],valor);
  }
 });
-test('E31: ejes, dos umbrales y cuatro cuadrantes con geometría exacta en las tres vistas',async()=>{
- const campos={doble:['financiera','importancia'],impacto:['probabilidad','importancia'],financiera:['probabilidad','financiera']};
- for(const explicito of [undefined,0,3.05]){
-  const resumen={...listas['materialidad-resumen'][0]};
-  if(explicito!==undefined)resumen.umbral_probabilidad=explicito;
-  const rs=listas['materialidad-aspectos'],promedio=rs.reduce((s,a)=>s+a.probabilidad,0)/rs.length;
-  const m=await vista('resultados',true,{'materialidad-resumen':[resumen]});
-  for(const [tipo,[x,y]] of Object.entries(campos)){
-   cambiar(m,tipo);
-   const mapa=m.contenedor.querySelector('.mat-mapa'),u=tipo==='doble'?resumen.umbral_financiero:explicito??promedio,v=tipo==='financiera'?resumen.umbral_financiero:resumen.umbral_impacto;
-   const d0=[...rs.flatMap(a=>[a[x],a[y]]),u,v].every(n=>n>=1)?1:0,k=500/(5-d0),PX=n=>90+(n-d0)*k,PY=n=>550-(n-d0)*k;
-   const lineas=mapa.querySelectorAll('.mat-umbral');assert.equal(lineas.length,2);
-   assert.ok(Math.abs(+lineas[0].attrs.x1-PX(u))<1e-9);assert.equal(lineas[0].attrs.x1,lineas[0].attrs.x2);
-   assert.ok(Math.abs(+lineas[1].attrs.y1-PY(v))<1e-9);assert.equal(lineas[1].attrs.y1,lineas[1].attrs.y2);
-   for(const [clase,px,py,w,h] of [['base',d0,d0,u-d0,v-d0],['impacto',d0,v,u-d0,5-v],['financiera',u,d0,5-u,v-d0],['doble',u,v,5-u,5-v]]){
-    const r=mapa.querySelector('.mat-zona-'+clase);assert.equal(r.tagName,'RECT');
-    for(const [campo,valor] of Object.entries({x:PX(px),y:PY(py+h),width:w*k,height:h*k}))assert.ok(Math.abs(+r.attrs[campo]-valor)<1e-9);
-   }
-   assert.equal(mapa.querySelectorAll('.mat-cuadrante').length,tipo==='doble'?4:0);
-   assert.deepEqual(mapa.querySelectorAll('.mat-eje').slice(-2).map(n=>n.textContent),M.variables[tipo].map(v=>v[1]));
-   const texto=m.contenedor.querySelector('.mat-umbrales').textContent;
-   for(const n of [u,v])assert.ok(texto.includes(new Intl.NumberFormat('es-CO',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n)));
-   assert.equal(m.contenedor.querySelector('.antetitulo').textContent,'Top 10 · '+({doble:'doble materialidad',impacto:'materialidad de impacto',financiera:'materialidad financiera'})[tipo]);
-   const top=M.top(rs,tipo),ps=puntos(m);assert.deepEqual(ps.slice(-10).map(p=>+p.attrs['data-numero']),[10,9,8,7,6,5,4,3,2,1]);
-   for(const p of ps){
-    const a=rs.find(a=>a.id===p.attrs['data-aspecto']),centro=p.querySelector('.mat-toque');
-    assert.ok(Math.abs(+centro.attrs.cy-PY(a[y]))<1e-9);
-    const iguales=top.filter(b=>b[x]===a[x]&&b[y]===a[y]);
-    const corrimiento=Math.abs((+centro.attrs.cx-90)/k+d0-a[x]);
-    assert.ok(corrimiento<1e-9||(p.attrs['data-numero']&&iguales.length>1&&corrimiento<=.06*Math.ceil((iguales.length-1)/2)+1e-9));
-   }
-   assert.deepEqual(m.contenedor.querySelector('tbody').children.map(n=>n.children[0].textContent),M.ordenados(rs,tipo).map(a=>a.nombre));
-  }
- }
-});
 test('E31: solo empates exactos admiten corrimiento horizontal fijo y acotado',()=>{
  const originales=[[3,3],[3.001,3],[3,3],[3,3],[0,0],[0,0],[5,5],[5,5]];
  const copia=structuredClone(originales),ps=M.posiciones(originales);
@@ -219,8 +190,8 @@ test('E31: solo empates exactos admiten corrimiento horizontal fijo y acotado',(
 test('E31: estado por vista y sin validado visible en lista ni ficha',async()=>{
  const m=await vista();
  for(const tipo of ['doble','impacto','financiera']){
-  cambiar(m,tipo);assert.doesNotMatch(m.contenedor.querySelector('ol').textContent,/validado/i);
-  for(const b of m.contenedor.querySelector('ol').querySelectorAll('button')){
+  cambiar(m,tipo);assert.doesNotMatch(m.contenedor.querySelector('.mat-top').textContent,/validado/i);
+  for(const b of top(m)){
    b.onclick();const d=panel(m),a=listas['materialidad-aspectos'].find(a=>a.id===b.dataset.aspecto);
    assert.doesNotMatch(d.textContent,/validado/i);
    assert.equal(d.querySelector('.mat-estado').textContent,M.estado(a,tipo,M.umbrales(listas['materialidad-resumen'][0],listas['materialidad-aspectos'],tipo)));

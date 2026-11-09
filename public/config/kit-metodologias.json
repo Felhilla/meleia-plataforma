@@ -1,0 +1,320 @@
+{
+  "_nota": "E64 (9-nov): pestaña Metodologías de Credenciales. Estándares con los que Meleia ha trabajado, por categoría. Si un id ya tiene ficha en kit-metodologia.json, la ficha se toma de allí (y se dice en qué módulo del Kit se usa). Textos de las fichas nuevas: propuesta de Claude, por validar con Felipe.",
+  "tema": {
+    "nombre": "Metodologías",
+    "titular": "Los estándares con los que trabajamos, por enfoque."
+  },
+  "categorias": [
+    {
+      "id": "reporte",
+      "nombre": "Reporte",
+      "icono": "sostenibilidad",
+      "descripcion": "Estándares para contar qué es la organización y cuáles son sus temas materiales.",
+      "estandares": [
+        {
+          "id": "gri2"
+        },
+        {
+          "id": "gri3"
+        }
+      ]
+    },
+    {
+      "id": "financieros",
+      "nombre": "Financieros",
+      "icono": "transformacion",
+      "descripcion": "Estándares que conectan la sostenibilidad con el desempeño financiero y la inversión.",
+      "estandares": [
+        {
+          "id": "sasb",
+          "usados": "Normas de petróleo y gas, y de textiles."
+        },
+        {
+          "id": "taxonomia-verde",
+          "sigla": "TVC",
+          "nombre": "Taxonomía Verde de Colombia",
+          "emisor": "Gobierno de Colombia",
+          "anio": "2022",
+          "tipo": "Clasificación de actividades sostenibles",
+          "que_es": "Sistema de clasificación de las actividades económicas que contribuyen a objetivos ambientales. Lo usan las empresas y las entidades financieras para identificar inversiones y créditos verdes.",
+          "enlace": "https://www.taxonomiaverde.gov.co/",
+          "enlace_texto": "Sitio oficial de la Taxonomía Verde de Colombia"
+        }
+      ]
+    },
+    {
+      "id": "sectoriales",
+      "nombre": "Sectoriales",
+      "icono": "sector-mineroenergetico",
+      "descripcion": "Estándares propios de cada sector en el que hemos trabajado.",
+      "grupos": [
+        {
+          "nombre": "Petróleo, gas y GLP",
+          "icono": "sector-mineroenergetico",
+          "estandares": [
+            {
+              "id": "ipieca"
+            },
+            {
+              "id": "gri11",
+              "sigla": "GRI 11",
+              "nombre": "GRI 11: Sector Petróleo y Gas 2021",
+              "emisor": "Global Reporting Initiative (GRI)",
+              "anio": "2021",
+              "tipo": "Estándar sectorial de reporte",
+              "que_es": "Temas que probablemente son materiales para las empresas de petróleo y gas, con lo que se espera que reporten sobre cada uno.",
+              "enlace": "https://www.globalreporting.org/standards/standards-development/sector-standard-for-oil-and-gas/",
+              "enlace_texto": "Página del estándar (GRI)"
+            }
+          ],
+          "sectores": [
+            "Mineroenergético y energía"
+          ]
+        },
+        {
+          "nombre": "Minería",
+          "icono": "sector-mineroenergetico",
+          "estandares": [
+            {
+              "id": "gri14",
+              "sigla": "GRI 14",
+              "nombre": "GRI 14: Sector Minería 2024",
+              "emisor": "Global Reporting Initiative (GRI)",
+              "anio": "2024",
+              "tipo": "Estándar sectorial de reporte",
+              "que_es": "Temas que probablemente son materiales para las empresas mineras, con lo que se espera que reporten sobre cada uno.",
+              "enlace": "https://www.globalreporting.org/standards/standards-development/sector-standard-for-mining/",
+              "enlace_texto": "Página del estándar (GRI)"
+            },
+            {
+              "id": "copper-mark",
+              "sigla": "Copper Mark",
+              "nombre": "Criterios de Garantía de Producción Responsable (RRA) v3.0",
+              "emisor": "The Copper Mark",
+              "anio": "2023",
+              "tipo": "Marco de garantía sectorial",
+              "que_es": "Criterios con los que se evalúa la producción responsable de cobre y otros metales: ambiente, derechos humanos, trabajo, comunidades y gobierno.",
+              "enlace": "https://coppermark.org/",
+              "enlace_texto": "Sitio de The Copper Mark"
+            },
+            {
+              "id": "rgmp",
+              "sigla": "RGMP",
+              "nombre": "Principios de Minería Responsable de Oro",
+              "emisor": "World Gold Council",
+              "anio": "2019",
+              "tipo": "Principios sectoriales",
+              "que_es": "Principios que el Consejo Mundial del Oro pide a sus miembros en gobierno, ambiente y temas sociales.",
+              "enlace": "https://www.gold.org/industry-standards/responsible-gold-mining",
+              "enlace_texto": "Página de los principios (World Gold Council)"
+            },
+            {
+              "id": "tsm",
+              "sigla": "TSM",
+              "nombre": "Hacia una Minería Sostenible (Towards Sustainable Mining)",
+              "emisor": "Mining Association of Canada",
+              "tipo": "Programa de desempeño sectorial",
+              "que_es": "Protocolos con indicadores para evaluar y mejorar el desempeño de las operaciones mineras en temas ambientales y sociales.",
+              "enlace": "https://mining.ca/towards-sustainable-mining/",
+              "enlace_texto": "Página del programa (Mining Association of Canada)"
+            },
+            {
+              "id": "cmsi",
+              "sigla": "CMSI",
+              "nombre": "Consolidated Mining Standard Initiative",
+              "emisor": "ICMM, Mining Association of Canada, World Gold Council y The Copper Mark",
+              "tipo": "Estándar sectorial unificado",
+              "que_es": "Iniciativa que une en un solo estándar los requisitos de responsabilidad de varios programas mineros.",
+              "enlace": "https://miningstandardinitiative.org/",
+              "enlace_texto": "Sitio de la iniciativa"
+            }
+          ],
+          "sectores": [
+            "Mineroenergético y energía"
+          ]
+        },
+        {
+          "nombre": "Textil",
+          "icono": "sector-textil",
+          "estandares": [
+            {
+              "id": "gots",
+              "sigla": "GOTS",
+              "nombre": "Global Organic Textile Standard",
+              "emisor": "Global Standard gGmbH",
+              "tipo": "Certificación sectorial",
+              "que_es": "Estándar para textiles hechos con fibras orgánicas, con criterios ambientales y sociales en toda la cadena de producción.",
+              "enlace": "https://global-standard.org/",
+              "enlace_texto": "Sitio oficial de GOTS"
+            },
+            {
+              "id": "ocde-textil",
+              "sigla": "OCDE textil",
+              "nombre": "Conducta empresarial responsable en el sector textil y del calzado",
+              "emisor": "OCDE",
+              "tipo": "Guía sectorial de debida diligencia",
+              "que_es": "Aplica la debida diligencia de la OCDE a las cadenas de suministro de prendas de vestir y calzado.",
+              "enlace": "https://www.oecd.org/en/topics/sub-issues/due-diligence-guidance-for-responsible-business-conduct/responsible-garment-and-footwear-supply-chains.html",
+              "enlace_texto": "Página de la guía (OCDE)"
+            }
+          ],
+          "sectores": [
+            "Textil y confecciones"
+          ]
+        },
+        {
+          "nombre": "Agroindustria",
+          "icono": "sector-agroindustrial",
+          "estandares": [
+            {
+              "id": "ocde-agro",
+              "sigla": "OCDE-FAO",
+              "nombre": "Guía OCDE-FAO para las cadenas de suministro agrícola responsables",
+              "emisor": "OCDE y FAO",
+              "anio": "2016",
+              "tipo": "Guía sectorial de debida diligencia",
+              "que_es": "Aplica la debida diligencia a las cadenas de suministro agrícola, desde la producción hasta la venta.",
+              "enlace": "https://www.oecd.org/en/topics/sub-issues/due-diligence-guidance-for-responsible-business-conduct/responsible-agriculture-supply-chains.html",
+              "enlace_texto": "Página de la guía (OCDE)"
+            }
+          ],
+          "sectores": [
+            "Agroindustrial"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "relacionamiento",
+      "nombre": "Relacionamiento",
+      "icono": "dialogo",
+      "descripcion": "Estándares para relacionarse con los grupos de interés y garantizar la participación.",
+      "estandares": [
+        {
+          "id": "aa1000ses"
+        },
+        {
+          "id": "escazu",
+          "sigla": "Escazú",
+          "nombre": "Acuerdo de Escazú",
+          "emisor": "CEPAL",
+          "anio": "2018",
+          "tipo": "Tratado regional",
+          "que_es": "Acuerdo de América Latina y el Caribe sobre el acceso a la información, la participación pública y el acceso a la justicia en asuntos ambientales.",
+          "enlace": "https://www.cepal.org/es/acuerdodeescazu",
+          "enlace_texto": "Página del acuerdo (CEPAL)"
+        }
+      ]
+    },
+    {
+      "id": "ddhh",
+      "nombre": "Derechos humanos",
+      "icono": "impacto-social",
+      "descripcion": "Marcos para identificar, prevenir y responder por los impactos en los derechos humanos.",
+      "estandares": [
+        {
+          "id": "prnu"
+        },
+        {
+          "id": "ocde"
+        },
+        {
+          "id": "oit"
+        },
+        {
+          "id": "pidesc"
+        },
+        {
+          "id": "chrb",
+          "sigla": "CHRB",
+          "nombre": "Corporate Human Rights Benchmark",
+          "emisor": "World Benchmarking Alliance",
+          "tipo": "Indicadores de desempeño",
+          "que_es": "Indicadores con los que se compara públicamente el desempeño de las empresas en derechos humanos: compromiso, debida diligencia, reclamaciones y participación de los grupos de interés.",
+          "enlace": "https://www.worldbenchmarkingalliance.org/corporate-human-rights-benchmark/",
+          "enlace_texto": "Página del indicador (World Benchmarking Alliance)"
+        },
+        {
+          "id": "ods5"
+        },
+        {
+          "id": "pna"
+        }
+      ]
+    },
+    {
+      "id": "desempeno",
+      "nombre": "Desempeño socioambiental",
+      "icono": "clima",
+      "descripcion": "Normas de la banca multilateral para gestionar riesgos e impactos de los proyectos.",
+      "estandares": [
+        {
+          "id": "ifc-nd1"
+        },
+        {
+          "id": "ifc-nd5",
+          "sigla": "IFC ND5",
+          "nombre": "Norma de Desempeño 5: Adquisición de tierras y reasentamiento involuntario",
+          "emisor": "Corporación Financiera Internacional (IFC)",
+          "anio": "2012",
+          "tipo": "Norma de desempeño",
+          "que_es": "Requisitos para evitar o reducir el desplazamiento por la adquisición de tierras y, cuando no se puede evitar, restablecer los medios de vida de las personas afectadas.",
+          "enlace": "https://www.ifc.org/en/insights-reports/2012/ifc-performance-standard-5",
+          "enlace_texto": "Página de la norma (IFC)"
+        },
+        {
+          "id": "bid-op710",
+          "sigla": "BID OP-710",
+          "nombre": "Política operativa sobre reasentamiento involuntario",
+          "emisor": "Banco Interamericano de Desarrollo (BID)",
+          "anio": "1998",
+          "tipo": "Política operativa",
+          "que_es": "Política del BID para minimizar el reasentamiento involuntario en los proyectos que financia y asegurar que las personas afectadas reciban un trato justo.",
+          "enlace": "https://www.iadb.org/es",
+          "enlace_texto": "Sitio del BID"
+        }
+      ]
+    },
+    {
+      "id": "normativa",
+      "nombre": "Normativa y gestión",
+      "icono": "reputacion",
+      "descripcion": "Normas colombianas y sistemas de gestión que acompañan la implementación.",
+      "estandares": [
+        {
+          "id": "bic",
+          "sigla": "BIC",
+          "nombre": "Sociedades de Beneficio e Interés Colectivo (Ley 1901 de 2018 y Decreto 2046 de 2019)",
+          "emisor": "Congreso y Gobierno de Colombia",
+          "anio": "2018",
+          "tipo": "Ley",
+          "que_es": "Crea la condición BIC para las empresas que, además de su objeto económico, se comprometen con el interés colectivo y el ambiente, y reportan su gestión cada año.",
+          "enlace": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=86982",
+          "enlace_texto": "Texto de la ley (Función Pública)"
+        },
+        {
+          "id": "sst",
+          "sigla": "SST",
+          "nombre": "Decreto 1072 de 2015, Sistema de Gestión de Seguridad y Salud en el Trabajo",
+          "emisor": "Ministerio del Trabajo de Colombia",
+          "anio": "2015",
+          "tipo": "Decreto",
+          "que_es": "Decreto único del sector trabajo. Incluye las reglas del sistema de gestión de seguridad y salud en el trabajo que deben tener las empresas.",
+          "enlace": "https://www.funcionpublica.gov.co/eva/gestornormativo/norma.php?i=72173",
+          "enlace_texto": "Texto del decreto (Función Pública)"
+        },
+        {
+          "id": "iso28000",
+          "sigla": "ISO 28000",
+          "nombre": "NTC-ISO 28000: Sistemas de gestión de la seguridad para la cadena de suministro",
+          "emisor": "ISO e ICONTEC",
+          "tipo": "Sistema de gestión",
+          "que_es": "Requisitos de un sistema de gestión para identificar y controlar los riesgos de seguridad en la cadena de suministro.",
+          "enlace": "https://www.iso.org/standard/79612.html",
+          "enlace_texto": "Página de la norma (ISO)"
+        }
+      ]
+    }
+  ],
+  "_nota_sectores": "9-nov (Felipe): cada grupo sectorial dice a qué sectores de Experiencia aplica (campo sectores). Los sectores sin estándar específico llevan a las metodologías generales."
+}

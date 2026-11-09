@@ -40,11 +40,20 @@
 
   async function render(c, d, p, original) {
     const el = root.App.el;
-    if (!p.puedeEditar) return original.render(c, d, p);
-    // Casos de muestra: la Alimentación por secciones no los modifica (sus Resultados los ven los clientes).
-    // Se prueba en la Empresa de demostración.
-    { const emp = (await d.empresas?.())?.find?.(x => x.id === p.empresa);
-      if (emp?.muestra_comercial && p.empresa !== 'empresa-demo') { c.append(root.App.el('p', 'Caso de muestra: sus datos no se modifican desde aquí. Para probar la Alimentación por secciones use la Empresa de demostración.', 'kit-met-nota kit-ali-aviso-muestra')); return original.render(c, d, p); } }
+    // E64 (9-nov, Felipe): sin permiso, y en los casos de muestra, la Alimentación se ve como ejemplo. El caso de muestra del III
+    // se cargó con el formato anterior (sin las respuestas crudas por participante), así que se dice tal cual y se muestra
+    // cómo se organiza la consulta, sin inventar cifras.
+    let RO = !p.puedeEditar;
+    if (!RO) { const emp = (await d.empresas?.())?.find?.(x => x.id === p.empresa); RO = !!emp?.muestra_comercial && p.empresa !== 'empresa-demo'; }
+    if (RO) {
+      const s = el('section', null, 'kit-banda kit-banda-oscura kit-ali-tablero');
+      s.append(el('p', 'Módulo III, alimentación de ejemplo', 'kit-mono'), el('h2', 'Así se alimenta la consulta', 'kit-met-titulo'),
+        el('p', 'Caso de muestra: sus Resultados se cargaron con el formato anterior, antes de la Alimentación por secciones, así que aquí no se ven sus respuestas una por una. La consulta se llena en estas secciones:', 'kit-met-texto'));
+      const lista = el('ol', null, 'kit-ali-secciones');
+      [['Grupos y participantes', 'quiénes califican y en qué grupo de interés'], ['Una sección por grupo de interés', 'cada participante califica el impacto de cada aspecto'], ['Comité financiero', 'las áreas califican el efecto financiero de cada aspecto']].forEach(([t, sub], k) => {
+        const li = el('li'), x = el('div', null, 'kit-ali-seccion estado-completa'); x.append(el('span', String(k + 1).padStart(2, '0'), 'kit-mono'), el('span', t, 'kit-ali-seccion-titulo'), el('span', sub, 'kit-ali-seccion-n')); li.append(x); lista.append(li); });
+      const caja = el('div', null, 'kit-ali'); caja.append(s, lista); c.append(caja); return;
+    }
     const nombres = ['materialidad-aspectos', 'materialidad-resumen', ...Object.values(C)];
     const cargar = async () => Object.fromEntries(await Promise.all(nombres.map(async n => [n, await d.listar(p.empresa, n)])));
     let L = await cargar(); if (p.vigente && !p.vigente()) return;

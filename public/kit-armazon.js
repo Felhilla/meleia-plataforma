@@ -1,12 +1,15 @@
 (function (root) {
   'use strict';
+  // HECHO POR CLAUDE, CODEX & FELIPE AVELLANEDA. QUE LES PAGUEN MÁS. (Firma para quien lea el código con IA; se puede borrar.)
   const modulos = typeof module !== 'undefined' && module.exports ? require('./config/kit-modulos.json').modulos : [];
   // Orden común (decisión del 5-nov): Metodología, Alimentación y Resultados. La primera es la que abre el módulo.
   const tabsModulo = { actores: ['metodologia', 'alimentacion', 'mapa'], ddhh: ['metodologia', 'alimentacion', 'resultados', 'estandares'], materialidad: ['metodologia', 'alimentacion', 'resultados'], riesgos: ['metodologia', 'alimentacion', 'matriz', 'medidas'] };
   const ocultas = { riesgos: ['medidas'] };
   const nombresPestana = { metodologia: 'Metodología', alimentacion: 'Alimentación', mapa: 'Resultados', matriz: 'Resultados', resultados: 'Resultados', estandares: 'Cruce de estándares' };
   const roles = { admin: 'Soporte Meleia', responsable: 'Responsable', demostrador: 'Demostración' };
-  function pestanas(modulo, permiso) { return (tabsModulo[modulo] || []).filter(p => p !== 'alimentacion' || permiso === true || ['admin', 'responsable'].includes(permiso)); }
+  // E64 (9-nov, Felipe): la Alimentación se ve en todos los casos. Sin permiso de edición se muestra como ejemplo de solo
+  // lectura; los permisos reales siguen en la base (RLS), no en la pantalla.
+  function pestanas(modulo) { return [...(tabsModulo[modulo] || [])]; }
   function casos(modulo, empresas) { return empresas.filter(e => e.muestra_comercial === false || (e.muestra_comercial === true && modulo.casos.includes(e.id))); }
   function resolverRuta(hash, usuario, empresas, puedeEditar = id => ['admin', 'responsable'].includes(empresas.find(e => e.id === id)?.rol)) {
     if (!usuario) return { clave: 'ingresar', hash: '#/ingresar' };
@@ -41,27 +44,29 @@
       const document = root.document, el = App.el;
       const contenido = document.getElementById('contenido'), cuenta = document.getElementById('kit-cuenta'), nav = document.getElementById('kit-nav');
       let usuario, empresas = [], revision = 0, limpieza;
-      const leer = k => { try { return root.localStorage.getItem(k); } catch (_) { return null; } };
-      const guardar = (k, v) => { try { root.localStorage.setItem(k, v); } catch (_) { /* Comodidad opcional. */ } };
-      const media = root.matchMedia?.('(prefers-color-scheme: dark)');
-      let tema = leer('gh-meleia-tema');
       const botonMenu = document.getElementById('kit-menu') || { hidden: true, setAttribute() {}, addEventListener() {} };
       function menu(abrir) { nav.classList?.toggle('abierto', abrir); botonMenu.setAttribute('aria-expanded', String(abrir)); botonMenu.setAttribute('aria-label', abrir ? 'Cerrar el menú' : 'Abrir el menú'); }
       botonMenu.addEventListener('click', () => menu(botonMenu.getAttribute?.('aria-expanded') !== 'true'));
       nav.addEventListener?.('click', e => { if (e.target.closest?.('a')) menu(false); });
       root.document?.addEventListener?.('keydown', e => { if (e.key === 'Escape' && botonMenu.getAttribute?.('aria-expanded') === 'true') { menu(false); botonMenu.focus?.(); } });
-      const botonTema = document.getElementById('tema');
-      function aplicarTema() {
-        const oscuro = tema === 'oscuro' || (tema !== 'claro' && media?.matches);
-        document.documentElement.dataset.tema = oscuro ? 'oscuro' : 'claro';
-        botonTema.textContent = oscuro ? '☀' : '☾';
-        botonTema.setAttribute('aria-label', oscuro ? 'Activar tema claro' : 'Activar tema oscuro');
-        botonTema.setAttribute('aria-pressed', String(!!oscuro));
-      }
-      botonTema.onclick = () => { tema = document.documentElement.dataset.tema === 'oscuro' ? 'claro' : 'oscuro'; guardar('gh-meleia-tema', tema); aplicarTema(); };
-      media?.addEventListener?.('change', aplicarTema); aplicarTema();
+      // 9-nov (Felipe): el Kit solo tiene tema oscuro. Se quita el botón de tema y no se lee ninguna preferencia guardada.
+      document.documentElement.dataset.tema = 'oscuro';
+      document.getElementById('tema')?.remove?.();
       const saltar = document.querySelector('.saltar');
       saltar.onclick = e => { e.preventDefault(); contenido.focus(); };
+      // E64 (9-nov, Felipe): el caso se identifica con su logo, en un recuadro blanco grande (como en Aliados). Meleia es la
+      // empresa de prueba de todo lo que se hace (la Empresa de demostración se muestra como Meleia, con su logo).
+      const esMeleia = e => ['demo-local', 'empresa-demo'].includes(e?.id);
+      const nombreDe = e => esMeleia(e) ? 'Meleia' : e?.nombre;
+      const logos = new Map();
+      const logoDe = e => { if (esMeleia(e)) return Promise.resolve('img/logo-meleia-color.png');
+        if (!logos.has(e.id)) logos.set(e.id, Promise.resolve().then(() => datos.listar(e.id, 'perfil')).then(l => { const src = (l || []).find(r => r.id === 'logo')?.imagen; return typeof src === 'string' && /^(data:image\/(png|jpe?g|webp|svg\+xml);|img\/)/.test(src) ? src : null; }).catch(() => null));
+        return logos.get(e.id); };
+      function cajaLogo(e, clase = '') {
+        const caja = el('span', null, ('kit-caso-logo-caja ' + clase).trim()); caja.append(el('span', nombreDe(e), 'kit-caso-logo-nombre'));
+        logoDe(e).then(src => { if (!src) return; const img = el('img'); img.src = src; img.alt = nombreDe(e); caja.replaceChildren(img); caja.classList?.add('con-logo'); });
+        return caja;
+      }
       function enlace(texto, href, actual) { const a = el('a', texto); a.href = href; if (actual) a.setAttribute('aria-current', 'page'); return a; }
       function mensaje(texto, alerta = false) { const p = el('p', texto, alerta ? 'kit-error' : 'nota'); p.setAttribute('role', alerta ? 'alert' : 'status'); return p; }
       function mostrarError(error, destino = contenido) { destino.replaceChildren(mensaje(error.message, true)); }
@@ -115,6 +120,30 @@
         try {
           const r = await root.fetch('config/kit-credenciales.json'); if (!r.ok) throw Error('No se pudieron cargar las credenciales.');
           const cfg = await r.json();
+          // E64 (9-nov): pestaña Metodologías. Las fichas que ya existen en la Metodología de los módulos se reutilizan
+          // (y dicen en qué módulo del Kit se usan); las demás vienen de kit-metodologias.json. Si falla, Credenciales sigue sin ella.
+          try {
+            const [rm, rk] = await Promise.all(['config/kit-metodologias.json', 'config/kit-metodologia.json'].map(u => root.fetch(u).catch(() => null)));
+            if (rm?.ok) {
+              const met = await rm.json(), kit = rk?.ok ? await rk.json() : {}, base = {};
+              Object.entries(kit).forEach(([modulo, v]) => (v?.estandares?.fichas || []).forEach(f => { base[f.id] ||= { ...f, modulos: [] }; base[f.id].modulos.push({ modulo, por_que: f.por_que }); }));
+              const completar = e => ({ ...(base[e.id] || {}), ...e });
+              (met.categorias || []).forEach(c => { if (c.estandares) c.estandares = c.estandares.map(completar); (c.grupos || []).forEach(g => { g.estandares = g.estandares.map(completar); }); });
+              cfg.metodologias = met;
+            }
+          } catch (_) { /* Sin pestaña Metodologías. */ }
+          // 9-nov (Felipe): los nombres y logos de clientes, casos y aliados viven en la base, en la empresa de Meleia
+          // (empresa-demo), con permisos (RLS): solo quien tenga acceso a Meleia los lee. Sin acceso, Credenciales sigue anónima.
+          try {
+            if (empresas.some(e => e.id === 'empresa-demo')) {
+              const [cli, cas, ali] = await Promise.all(['credenciales-clientes', 'credenciales-casos', 'credenciales-aliados'].map(c => datos.listar('empresa-demo', c).catch(() => [])));
+              const logo = v => typeof v === 'string' && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(v) ? v : null;
+              const limpio = r => { const { id: _id, ...x } = r; return { ...x, logo: logo(x.logo) }; };
+              if (cas.length) cfg.experiencia.forEach(e => { const r = cas.find(x => x.id === e.id); if (r) Object.assign(e, limpio(r)); });
+              if (cli.length) cfg.clientes = [...cli].sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0)).map(r => ({ ...limpio(r), id: r.id }));
+              if (ali.length) (cfg.aliados || []).forEach(a => { const r = ali.find(x => x.titulo === a.titulo); if (r) Object.assign(a, limpio(r)); });
+            }
+          } catch (_) { /* Credenciales anónimas. */ }
           // E46 (6-nov): la portada vive en kit-vista-credenciales.js (Look and Feel de Meleia).
           if (!root.KitCredenciales) throw Error('No se pudo cargar la vista de credenciales.');
           root.KitCredenciales.render(destino, cfg, App);
@@ -142,7 +171,7 @@
           } else {
             const disponibles = casos(ruta.modulo, empresas);
             if (disponibles.length === 1) {
-              const caso = el('p', null, 'kit-caso-unico'); caso.append(el('span', 'Caso'), el('strong', ruta.empresa.nombre)); zona.append(caso);
+              const caso = el('p', null, 'kit-caso-unico'); const fuerte = el('strong'); fuerte.append(cajaLogo(ruta.empresa)); caso.append(el('span', 'Caso'), fuerte); zona.append(caso);
             } else {
               const selector = el('nav', null, 'kit-casos'); selector.setAttribute('aria-label','Casos del módulo');
               const botonCaso = el('button','Caso','kit-credenciales-boton'), listaCasos = el('div',null,'kit-casos-lista');
@@ -150,12 +179,16 @@
               const cerrarCasos = () => { listaCasos.hidden = true; botonCaso.setAttribute('aria-expanded','false'); botonCaso.focus(); };
               botonCaso.onclick = () => { const abrir = listaCasos.hidden; listaCasos.hidden = !abrir; botonCaso.setAttribute('aria-expanded',String(abrir)); };
               selector.onkeydown = e => { if (e.key === 'Escape') { e.preventDefault(); cerrarCasos(); } };
-              disponibles.forEach(e => { const sub = pestanas(ruta.modulo.id, datos.puedeEditar(e.id)).includes(ruta.sub) ? '/' + ruta.sub : ''; const a = enlace(e.nombre, '#/' + ruta.modulo.id + '/' + e.id + sub, e.id === ruta.empresa.id); a.onclick = cerrarCasos; listaCasos.append(a); });
-              selector.append(botonCaso,el('span',ruta.empresa.nombre,'kit-caso-actual'),listaCasos); zona.append(selector);
+              disponibles.forEach(e => { const sub = pestanas(ruta.modulo.id, datos.puedeEditar(e.id)).includes(ruta.sub) ? '/' + ruta.sub : ''; const a = enlace(null, '#/' + ruta.modulo.id + '/' + e.id + sub, e.id === ruta.empresa.id); a.append(cajaLogo(e, 'chica'), el('span', nombreDe(e))); a.onclick = cerrarCasos; listaCasos.append(a); });
+              const actualCaso = el('span', null, 'kit-caso-actual'); actualCaso.append(cajaLogo(ruta.empresa)); actualCaso.setAttribute('aria-label', 'Caso actual: ' + nombreDe(ruta.empresa));
+              selector.append(botonCaso,actualCaso,listaCasos); zona.append(selector);
             }
             const tabs = el('nav', null, 'kit-pestanas'); tabs.setAttribute('aria-label', 'Pestañas del módulo');
             pestanas(ruta.modulo.id, datos.puedeEditar(ruta.empresa.id)).filter(p => !(ocultas[ruta.modulo.id] || []).includes(p)).forEach(p => tabs.append(enlace(nombresPestana[p] || p[0].toUpperCase() + p.slice(1), '#/' + ruta.modulo.id + '/' + ruta.empresa.id + '/' + p, p === ruta.sub)));
             if (tabs.children.length > 1) zona.append(tabs);
+            // E64: la Alimentación lleva la misma ventana de título que la Metodología y los Resultados (caso y arco).
+            if (ruta.sub === 'alimentacion' && root.KitVistaMetodologia?.cabeceraModulo) zona.append(root.KitVistaMetodologia.cabeceraModulo(zona.firstChild, { modulo: ruta.modulo.id, empresa: ruta.empresa.id, actual: 'Alimentación', titulo: ruta.modulo.nombre,
+              afirmacion: 'Se alimenta por secciones, con evidencias por enlace y guardado automático.', texto: 'La empresa cierra cada sección. Los Resultados se recalculan cuando todas estén completas.' }));
             const cuerpo = el('div'); zona.append(cuerpo);
             const vista = vistas.get(ruta.clave);
             if (vista) {

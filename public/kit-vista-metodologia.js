@@ -349,7 +349,7 @@
     const svg = (tag, attrs = {}) => { const n = doc.createElementNS(SVG, tag); Object.entries(attrs).forEach(([k, v]) => n.setAttribute(k, String(v))); return n; };
     const nav = el('nav', null, 'kit-met-selector'); nav.setAttribute('aria-label', 'Secciones del módulo');
     const base = extra.empresa ? `#/${extra.modulo}/${extra.empresa}/` : '';
-    const ops = [['Metodología', base && base + 'metodologia'], ['Alimentación', extra.puedeEditar && base && base + 'alimentacion'], ['Resultados', base && base + (extra.resultados || { actores: 'mapa', riesgos: 'matriz' }[extra.modulo] || 'resultados')]]
+    const ops = [['Metodología', base && base + 'metodologia'], ['Alimentación', base && base + 'alimentacion'], ['Resultados', base && base + (extra.resultados || { actores: 'mapa', riesgos: 'matriz' }[extra.modulo] || 'resultados')]]
       .map(([n, h]) => [n, h, n === actual]).filter(o => o[2] || o[1]);
     const C = [-120, 180], R = 300, p = g => [C[0] + R * Math.cos(g * Math.PI / 180), C[1] + R * Math.sin(g * Math.PI / 180)];
     const angulos = ops.length === 3 ? [-24, 0, 24] : ops.length === 2 ? [-12, 12] : [0];
@@ -367,6 +367,26 @@
       li.append(a); ul.append(li);
     });
     nav.append(dibujo, ul); return nav;
+  }
+
+  // E64 (9-nov, Felipe): el caso es el contexto de Metodología, Alimentación y Resultados. El botón Caso del armazón
+  // pasa al panel, sobre el título, en lugar del rótulo "Módulo I, …".
+  function casoEnPanel(c) {
+    const slot = root.App.el('div', null, 'kit-res-caso');
+    const vista = c?.closest?.('.kit-vista'), sel = vista?.querySelector?.(':scope > .kit-casos, :scope > .kit-caso-unico');
+    if (sel) slot.append(sel);
+    return slot;
+  }
+  // Ventana de título común (la usa la Alimentación; la Metodología y los Resultados arman la suya con las mismas piezas).
+  function cabeceraModulo(c, { modulo, empresa, actual, titulo, afirmacion, texto }) {
+    const el = root.App.el;
+    const s = el('section', null, 'kit-banda kit-banda-oscura kit-met-portada kit-ali-portada');
+    const panel = el('div', null, 'kit-met-panel'), tx = el('div', null, 'kit-met-panel-texto'), marca = el('div', null, 'kit-met-marca');
+    marca.append(casoEnPanel(c));
+    const desc = el('div', null, 'kit-met-descripcion'); desc.append(el('p', afirmacion, 'kit-met-afirmacion'));
+    if (texto) desc.append(el('p', texto, 'kit-met-texto'));
+    tx.append(marca, el('h2', titulo, 'kit-met-titulo'), desc);
+    panel.append(tx, selectorArco({ modulo, empresa }, actual)); s.append(panel); return s;
   }
 
   function pintar(c, m, extra = {}) {
@@ -470,10 +490,11 @@
     portada = el('section', null, 'kit-banda kit-banda-oscura kit-met-portada');
     const panel = el('div', null, 'kit-met-panel'), texto = el('div', null, 'kit-met-panel-texto');
     const marca = el('div', null, 'kit-met-marca');
-    marca.append(mono('Módulo ' + m.romano + ', metodología'));
+    marca.append(casoEnPanel(c));
     if (m.estado === 'borrador') marca.append(el('span', 'Borrador en revisión', 'kit-met-estado'));
     const desc = el('div', null, 'kit-met-descripcion');
     desc.append(el('p', m.afirmacion, 'kit-met-afirmacion'), el('p', m.resumen, 'kit-met-texto'), el('p', m.cuando, 'kit-met-texto kit-met-cuando'));
+    if (extra.caso?.contexto) { const cc = el('div', null, 'kit-met-caso'); cc.append(mono('En este caso'), el('p', extra.caso.contexto, 'kit-met-texto')); desc.append(cc); }
     texto.append(marca, el('h2', m.nombre, 'kit-met-titulo'), desc);
     panel.append(texto, selectorArco(extra));
 
@@ -487,7 +508,7 @@
       const li = el('li'); li.append(b); tiles.append(li); if (!t.icono) contar(cifra, t.n);
     });
     portada.append(panel, tiles);
-    if (extra.empresa && extra.puedeEditar) {
+    if (extra.empresa) {
       const pie = el('div', null, 'kit-met-portada-pie'), a = el('a', 'Ir a Alimentación', 'kit-met-pastilla');
       a.href = `#/${extra.modulo}/${extra.empresa}/alimentacion`; pie.append(a); portada.append(pie);
     }
@@ -863,7 +884,7 @@
           b.onclick = () => vz.abre(!vz.abierto());
           const li = el('li'); li.append(vz.caja); grupos.append(li);
         });
-        const destino = extra.empresa && extra.puedeEditar ? `#/${extra.modulo}/${extra.empresa}/alimentacion` : C.plantilla;
+        const destino = extra.empresa ? `#/${extra.modulo}/${extra.empresa}/alimentacion` : C.plantilla;
         // Sin permiso de edición y sin plantilla (Módulo III), la tarjeta solo muestra las reglas.
         const a = destino ? el('a', null, 'kit-cri-alimentacion') : boton('kit-cri-alimentacion');
         if (destino) a.href = destino;
@@ -946,14 +967,28 @@
     if (modulo === 'materialidad') return datosMaterialidad(f[0], { temas: f[1], impacto: f[2], financiera: f[3], participacion: f[4] }, m);
     return datosRiesgos(f[0], { riesgos: f[1], calificacion: f[2], validaciones: f[3], medidas: f[4] }, m, f[5], f[6]);
   }
+  // E64 (9-nov, Felipe): la Metodología muestra la capa de cada caso. La teoría del módulo es de Meleia; cada caso suma
+  // los estándares que usó y su contexto. Vive en la base, colección metodologia-caso (un registro por módulo, id = módulo),
+  // con los permisos de la empresa. Sin registro, se ve la Metodología común.
+  async function capaCaso(todo, modulo, m, datos, empresa) {
+    let caso = null;
+    try { caso = (await datos?.listar?.(empresa, 'metodologia-caso') || []).find(r => r.id === modulo) || null; } catch (_) { caso = null; }
+    if (!caso || !Array.isArray(caso.estandares) || !caso.estandares.length) return { m, caso };
+    let catalogo = [];
+    try { const met = await cargar('config/kit-metodologias.json'); catalogo = (met.categorias || []).flatMap(c => c.estandares || (c.grupos || []).flatMap(g => g.estandares)); } catch (_) { catalogo = []; }
+    const todas = Object.values(todo).flatMap(x => fichasDe(x));
+    const fichas = caso.estandares.map(id => fichasDe(m).find(f => f.id === id) || todas.find(f => f.id === id) || catalogo.find(f => f.id === id)).filter(Boolean)
+      .map(f => ({ ...f, por_que: caso.por_que?.[f.id] || f.por_que || 'Estándar aplicado en este caso.', cruces: (f.cruces || []).filter(x => caso.estandares.includes(x.con)) }));
+    return { m: { ...m, estandares: { ...(m.estandares || {}), fichas } }, caso };
+  }
   const vista = modulo => ({
-    async render(c, _, p) {
-      const todo = await cargar('config/kit-metodologia.json'), m = todo[modulo], d = await datos(modulo, m);
+    async render(c, datosKit, p) {
+      const todo = await cargar('config/kit-metodologia.json'), { m, caso } = await capaCaso(todo, modulo, todo[modulo], datosKit, p?.empresa), d = await datos(modulo, m);
       if (p?.vigente && !p.vigente()) return;
-      return pintar(c, m, { datos: d, modulo, empresa: p?.empresa, puedeEditar: p?.puedeEditar });
+      return pintar(c, m, { datos: d, modulo, empresa: p?.empresa, puedeEditar: p?.puedeEditar, caso });
     }
   });
-  const api = { pintar, vista, datos, selectorArco, ICONOS, datosDdhh, datosActores, datosMaterialidad, datosRiesgos, FUENTES };
+  const api = { pintar, vista, datos, capaCaso, selectorArco, casoEnPanel, cabeceraModulo, ICONOS, datosDdhh, datosActores, datosMaterialidad, datosRiesgos, FUENTES };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.KitVistaMetodologia = api;
   if (root.App) ['actores', 'ddhh', 'materialidad', 'riesgos'].forEach(m => root.App.registrarVista(m + '/metodologia', vista(m)));

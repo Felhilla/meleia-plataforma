@@ -155,57 +155,82 @@
     const span = el('span', `${formatoValor(org[campo])} · ${org.ajustado ? 'modificado' : 'promedio de ' + (org.actores.length === 1 ? '1 actor' : org.actores.length + ' actores')}`, 'ka-intensidad');
     span.dataset.valor = Math.round(org[campo]); return span;
   }
-  // E41 (boceto de Felipe del 5-nov): a la izquierda la vista, el resumen y las principales
-  // organizaciones; a la derecha la matriz impacto × influencia con un punto por organización.
-  const formas = { Favorable: 'circulo', Neutral: 'cuadrado', Desfavorable: 'triangulo' };
-  const SVG = 'http://www.w3.org/2000/svg';
-  function svg(tag, attrs = {}) { const n = root.document.createElementNS(SVG, tag); Object.entries(attrs).forEach(([k, v]) => n.setAttribute(k, v)); return n; }
-  function marca(pos, x, y) {
-    if (formas[pos] === 'cuadrado') return svg('rect', { x: x - 6.5, y: y - 6.5, width: 13, height: 13, rx: 2 });
-    if (formas[pos] === 'triangulo') return svg('path', { d: `M${x} ${y - 8}L${x + 8} ${y + 6}H${x - 8}Z` });
-    return svg('circle', { cx: x, cy: y, r: 7.5 });
-  }
-  // Desplazamiento fijo por organización para que los promedios iguales no se tapen.
-  function desplazamiento(id) { let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0; return [((h % 37) - 18) / 100, (((h >> 6) % 37) - 18) / 100]; }
+  // E65 (boceto de Felipe del 9-nov): resultados por grupo de interés.
+  // Matriz general: en cada cuadrante, un círculo por grupo de interés; su tamaño es el número de instituciones.
+  // Clic en un cuadrante: zoom con cada institución en su posición exacta, ícono de su grupo y punto de favorabilidad.
+  // Las 7 primeras (promedio de ejes) llevan burbuja y nombre; desde la 8.ª son puntos pequeños sin nombre.
+  // Si varias quedan en el mismo lugar (misma calificación o muy cerca), un punto negro marca la posición real
+  // y líneas punteadas llevan a cada institución.
+  const KC = root.KitCuadrantes;
   const slugNivel = n => n.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z]+/g, '-');
-  function matriz(ctx, lista, alAbrir) {
-    const A = 680, H = 420, m = { i: 56, d: 16, s: 16, b: 48 }, ancho = A - m.i - m.d, alto = H - m.s - m.b, borde = 42, corte = ctx.cfg.corte;
-    // E43 (pedido de Felipe del 5-nov): el corte se dibuja en el centro para que los cuatro cuadrantes
-    // midan lo mismo; de 1 al corte ocupa una mitad y del corte a 5 la otra (escala por tramos).
-    // El borde deja los valores 1 y 5 por dentro de las zonas, sin tapar los nombres de los cuadrantes.
-    const fraccion = v => corte > 1 && corte < 5 ? (v <= corte ? (v - 1) / (corte - 1) / 2 : 0.5 + (v - corte) / (5 - corte) / 2) : (v - 1) / 4;
-    const x = v => m.i + borde + fraccion(v) * (ancho - 2 * borde), y = v => m.s + borde + (1 - fraccion(v)) * (alto - 2 * borde);
-    const izqZona = m.i, derZona = m.i + ancho, arribaZona = m.s, abajoZona = m.s + alto;
-    // El desplazamiento que separa promedios iguales nunca cruza el corte, y un valor igual al corte
-    // se dibuja dentro del cuadrante alto en vez de encima de la línea.
-    const ubicar = (v, d) => { const r = Math.min(5, Math.max(1, v + d)); return v < corte && r > corte - 0.06 ? corte - 0.06 : v >= corte && r < corte + 0.06 ? corte + 0.06 : r; };
-    const g = svg('svg', { viewBox: `0 0 ${A} ${H}`, role: 'group', 'aria-label': `Matriz de impacto e influencia con ${orgs(lista.length)}` }); g.classList.add('ka-matriz-svg');
-    ctx.cfg.niveles.forEach(n => {
-      const izq = n.influencia === 'baja', arriba = n.impacto === 'alto';
-      g.append(svg('rect', { x: izq ? izqZona : x(corte), y: arriba ? arribaZona : y(corte), width: izq ? x(corte) - izqZona : derZona - x(corte), height: arriba ? y(corte) - arribaZona : abajoZona - y(corte), class: 'ka-zona ka-zona-' + slugNivel(n.nombre) }));
-      // Nombres largos en dos líneas para que quepan en las zonas angostas.
-      const palabras = n.nombre.split(' '), lineas = n.nombre.length > 16 && palabras.length > 1 ? [palabras[0], palabras.slice(1).join(' ')] : [n.nombre];
-      const tx = izq ? izqZona + 8 : derZona - 8, t = svg('text', { x: tx, y: arriba ? arribaZona + 18 : abajoZona - 10 - (lineas.length - 1) * 14, 'text-anchor': izq ? 'start' : 'end', class: 'ka-zona-nombre' });
-      lineas.forEach((l, i) => { const ts = svg('tspan', { x: tx, dy: i ? 14 : 0 }); ts.textContent = l; t.append(ts); }); g.append(t);
-    });
-    for (let v = 1; v <= 5; v++) {
-      const tx = svg('text', { x: x(v), y: H - m.b + 18, 'text-anchor': 'middle', class: 'ka-eje-valor' }); tx.textContent = v; g.append(tx);
-      const ty = svg('text', { x: m.i - 10, y: y(v) + 4, 'text-anchor': 'end', class: 'ka-eje-valor' }); ty.textContent = v; g.append(ty);
-    }
-    const ex = svg('text', { x: m.i + ancho / 2, y: H - 8, 'text-anchor': 'middle', class: 'ka-eje-nombre' }); ex.textContent = 'Influencia →'; g.append(ex);
-    const ey = svg('text', { x: 14, y: m.s + alto / 2, 'text-anchor': 'middle', transform: `rotate(-90 14 ${m.s + alto / 2})`, class: 'ka-eje-nombre' }); ey.textContent = 'Impacto →'; g.append(ey);
-    lista.filter(o => typeof o.influencia === 'number' && typeof o.impacto === 'number').forEach(o => {
-      const [dx, dy] = desplazamiento(o.id), punto = marca(o.posicion, x(ubicar(o.influencia, dx)), y(ubicar(o.impacto, dy)));
-      punto.setAttribute('class', 'ka-punto ka-' + String(o.posicion || 'neutral').toLowerCase()); punto.setAttribute('tabindex', '0'); punto.setAttribute('role', 'button');
-      const etiquetaPunto = `${o.nombre}. ${o.posicion || 'Sin posición'}. Influencia ${formatoValor(o.influencia)}, impacto ${formatoValor(o.impacto)}. ${o.cuadrante || ''}`;
-      punto.setAttribute('aria-label', etiquetaPunto); const titulo = svg('title'); titulo.textContent = etiquetaPunto; punto.append(titulo);
-      punto.addEventListener('click', () => alAbrir(o)); punto.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); alAbrir(o); } });
-      g.append(punto);
-    });
-    return g;
-  }
+  const COLORES_GI = { autoridades: '#2F5D7C', comunidades: '#B78D36', gremios: '#5C6B7A', academia: '#2E8A85', proveedores: '#9A6B4F', medios: '#6E5A8A' };
+  const COLORES_EXTRA = ['#7A8F3A', '#8A5A6E', '#4F7396', '#A0703A'];
   const puntaje = o => ((o.influencia || 0) + (o.impacto || 0)) / 2;
-  function principales(lista, cuantas = 5) { return [...lista].sort((a, b) => puntaje(b) - puntaje(a) || a.nombre.localeCompare(b.nombre, 'es')).slice(0, cuantas); }
+  const ordenar = lista => [...lista].sort((a, b) => puntaje(b) - puntaje(a) || a.nombre.localeCompare(b.nombre, 'es'));
+  function gruposDe(todas) {
+    const presentes = unicos(todas.map(o => o.categoria || 'Sin grupo'));
+    const conocidos = categorias.filter(c => presentes.includes(c[0])).map(c => ({ cat: c[0], nombre: c[1], slug: c[2], color: COLORES_GI[c[2]] }));
+    const otros = presentes.filter(p => !categorias.some(c => c[0] === p)).map((p, i) => ({ cat: p, nombre: p, slug: 'gremios', color: COLORES_EXTRA[i % COLORES_EXTRA.length] }));
+    return [...conocidos, ...otros].map(g => ({ ...g, icono: 'img/actores/' + g.slug + '.svg' }));
+  }
+  const grupoDe = (gis, o) => gis.find(g => g.cat === (o.categoria || 'Sin grupo')) || gis[0];
+  const nombreActor = (ctx, a) => a.nombre_servidor || (ctx.listas['actores-contactos'] || []).find(c => c.id === a.id)?.nombre || a.cargo || 'Sin nombre registrado';
+  function matrizGeneral(ctx, lista, gis, alZoom) {
+    return KC.general({ numero, ejeX: 'Influencia', ejeY: 'Impacto', etiqueta: `Matriz de actores por grupo de interés, con ${orgs(lista.length)}`, alZoom: c => alZoom(c.nivel),
+      cuadrantes: ctx.cfg.niveles.map(n => { const en = lista.filter(o => o.cuadrante === n.nombre); return { nivel: n, nombre: n.nombre, izq: n.influencia === 'baja', arriba: n.impacto === 'alto', clase: 'ka-zona-' + slugNivel(n.nombre), cuenta: orgs(en.length),
+        grupos: gis.map(gi => ({ ...gi, n: en.filter(o => grupoDe(gis, o) === gi).length })) }; }) });
+  }
+  function abrirZoom(ctx, nivel, lista, gis, abrir, descripcion) {
+    const p = ctx.dialogo(nivel.nombre, false, true); p.classList.add('ka-zoom', 'ka-zoom-' + slugNivel(nivel.nombre)); p.parentElement?.classList.add('ka-fondo-difuso');
+    const actoresN = lista.reduce((t, o) => t + o.actores.length, 0);
+    p.append(el('p', descripcion, 'ka-zoom-vista'), KC.resumen([[numero(lista.length), lista.length === 1 ? 'Institución en el cuadrante' : 'Instituciones en el cuadrante', 'total'], [numero(actoresN), actoresN === 1 ? 'Actor en el cuadrante' : 'Actores en el cuadrante', 'actores'],
+      ...posiciones.map((pos, i) => [numero(lista.filter(o => o.posicion === pos).length), `Inst. ${plurales[i].toLowerCase()}`, pos.toLowerCase()])], el));
+    if (!lista.length) { p.append(el('p', 'No hay instituciones en este cuadrante con la vista y el filtro elegidos.', 'nota')); return; }
+    const corte = ctx.cfg.corte;
+    p.append(KC.zoom({ numero, ejeX: 'Influencia', ejeY: 'Impacto', etiqueta: `${nivel.nombre}: ${orgs(lista.length)} en su posición`, abrir: o => abrir(o),
+      xr: nivel.influencia === 'alta' ? [corte, 5] : [1, corte], yr: nivel.impacto === 'alto' ? [corte, 5] : [1, corte],
+      puntos: ordenar(lista).map(o => { const gi = grupoDe(gis, o), pos = o.posicion || 'Neutral';
+        return { id: o.id, dato: o, nombre: o.nombre, x: o.influencia, y: o.impacto, color: gi.color, icono: gi.icono, clase: 'ka-fav-' + pos.toLowerCase(), etiqueta: `${o.nombre}. ${gi.nombre}. ${pos}. Influencia ${formatoValor(o.influencia)}, impacto ${formatoValor(o.impacto)}. Abrir ficha` }; }) }),
+      KC.leyenda(posiciones.map(pos => [pos === 'Neutral' ? 'Neutro' : pos, 'ka-fav-' + pos.toLowerCase()]), el));
+    p.append(el('p', `Cada institución está en su posición real (promedio de sus actores o resultado modificado). Las ${KC.GRANDES} de mayor promedio llevan su nombre; las demás son puntos pequeños. El punto negro marca una calificación compartida.`, 'nota ka-zoom-nota'));
+  }
+  function fichaActor(ctx, a, org, gis) {
+    if (!ctx.activo()) return;
+    const contacto = (ctx.listas['actores-contactos'] || []).find(c => c.id === a.id) || {}, nombre = nombreActor(ctx, a), p = ctx.dialogo(nombre, true);
+    p.classList.add('ka-ficha', 'ka-ficha-actor');
+    const h = el('h2', nombre, 'ka-franja-verde'); if (contacto.ejemplo === true) h.append(el('small', 'Dato de ejemplo', 'ka-ejemplo')); p.append(h);
+    texto(p, [a.cargo, grupoDe(gis, org).nombre, a.subgrupo, a.orden].filter(Boolean).join(' · '));
+    const ir = boton('Ver la institución: ' + org.nombre, () => fichaOrganizacion(ctx, org)); p.append(ir);
+    const cajas = el('div', null, 'ka-cajas ka-cajas-actor'), pos = el('div'); pos.append(el('strong', 'Posición'), etiqueta(a.posicion || 'Neutral')); cajas.append(pos);
+    ORDEN_EJES.forEach(c => { const caja = el('div'); caja.append(el('strong', ctx.esquema.campos[c]?.etiqueta || c), intensidad([a], c)); cajas.append(caja); }); p.append(cajas);
+    if (a.caracterizacion) p.append(el('p', a.caracterizacion, 'ka-caracterizacion'));
+    const correo = typeof contacto.correo === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contacto.correo) ? contacto.correo : '';
+    if (contacto.telefono || correo) texto(p, 'Contacto: ' + [contacto.telefono, correo].filter(Boolean).join(' · '));
+    p.append(el('p', NOTA_DATOS, 'ka-nota-datos'));
+  }
+  function matrizActores(ctx, lista, gis, abrir) {
+    const p = ctx.dialogo('Matriz de actores', false, true); p.classList.add('ka-matriz-dialogo');
+    const filas = gis.flatMap(gi => lista.filter(o => grupoDe(gis, o) === gi).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')).flatMap(o => o.actores.map(a => {
+      const inst = boton(o.nombre, () => abrir(o)); inst.className = 'ka-principal';
+      const nivel = el('div', K.nivelCalculado(a, ctx.cfg) || 'Sin calificar'); if (K.alerta(a, ctx.cfg)) nivel.append(el('strong', ' ⚠ Alerta'));
+      return [gi.nombre, a.orden, inst, a.subgrupo, nombreActor(ctx, a), a.cargo, etiqueta(a.posicion || 'Neutral'), intensidad([a], 'influencia'), intensidad([a], 'impacto'), intensidad([a], 'dependencia'), intensidad([a], 'tension'), intensidad([a], 'responsabilidad'), nivel];
+    })));
+    texto(p, `${numero(filas.length)} ${filas.length === 1 ? 'actor' : 'actores'} en ${orgs(lista.length)}, con la vista y el filtro elegidos.`);
+    tablaFicha(p, [['Grupo de interés'], ['Orden'], ['Institución'], ['Subgrupo'], ['Actor'], ['Cargo'], ['Posición'], ['Influencia', 'influencia'], ['Impacto', 'impacto'], ['Dependencia', 'dependencia'], ['Tensión', 'tension'], ['Responsabilidad', 'responsabilidad'], ['Nivel']], filas, ctx);
+    p.lastChild.append(el('p', NOTA_DATOS, 'ka-nota-datos'));
+  }
+  function filaResumen(simbolo, cifra, rotulo, clase) {
+    const d = el('details', null, 'ka-res-fila ' + clase), s = el('summary');
+    s.append(el('span', simbolo, 'ka-res-icono'), el('strong', cifra), el('span', rotulo, 'ka-res-rotulo')); d.append(s); return d;
+  }
+  function chipsPorGrupo(n, gis, lista, chips) {
+    gis.forEach(gi => {
+      const deGrupo = lista.filter(o => grupoDe(gis, o) === gi); if (!deGrupo.length) return;
+      const sec = el('div', null, 'ka-res-grupo'), cab = el('div', null, 'ka-res-grupo-cabeza'), img = el('img'); img.src = 'img/actores/' + gi.slug + '.svg'; img.alt = ''; img.className = 'ka-res-grupo-icono';
+      cab.style.setProperty('--gi', gi.color); cab.append(img, el('span', gi.nombre)); const lista2 = el('div', null, 'ka-chips'); chips(deGrupo, lista2);
+      sec.append(cab, lista2); n.append(sec);
+    });
+  }
   async function mapa(contenedor, datos, params) {
     const ctx = await preparar(contenedor, datos, params); if (!ctx) return;
     await ctx.cargar(['actores-contactos', 'actores-resumen', 'actores-organizaciones']); if (!ctx.activo()) return ctx.limpiar;
@@ -214,32 +239,41 @@
     const todas = K.organizaciones(ctx.listas.actores, ctx.listas['actores-organizaciones'], ctx.cfg).filter(o => o.actores.length);
     ctx.organizaciones = todas;
     if (!todas.length) { texto(contenedor, 'Esta empresa aún no tiene organizaciones registradas. Agrégalas desde Alimentación para construir el mapa.'); if (params.puedeEditar) enlace(contenedor, params.empresa); return ctx.limpiar; }
+    const gis = gruposDe(todas);
     const abrir = async o => { try { await ctx.logos(); } catch (_) {} fichaOrganizacion(ctx, o); };
     const raiz = el('div', null, 'ka-resultados'), lateral = el('aside', null, 'ka-lateral'), figura = el('figure', null, 'ka-matriz');
-    const etiquetaVista = el('label', 'Vista', 'ka-vista'), vista = el('select');
-    [['', 'General'], ...categorias.filter(c => todas.some(o => o.categoria === c[0]))].forEach(([valor, nombre]) => { const op = el('option', nombre); op.value = valor; vista.append(op); });
-    etiquetaVista.append(vista);
-    const resumen = el('section', null, 'ka-resumen-tarjeta'), lista = el('section', null, 'ka-principales'), convenciones = el('figcaption', null, 'ka-convenciones');
-    lateral.append(etiquetaVista, resumen, lista); raiz.append(lateral, figura); contenedor.append(raiz);
+    const vista = seleccionar(lateral, 'Vista', [{ id: '', nombre: 'General' }, ...gis.map(g => ({ id: g.cat, nombre: g.nombre }))]);
+    const filtro = seleccionar(lateral, 'Filtro', [{ id: '', nombre: 'Todas las posiciones' }, ...posiciones.map((p, i) => ({ id: p, nombre: plurales[i] }))]);
+    [...lateral.children].forEach(l => { l.className = 'ka-vista'; });
+    const resumen = el('section', null, 'ka-resumen-tarjeta');
+    const met = el('a', null, 'ka-met-tarjeta'); met.href = '#/actores/' + encodeURIComponent(params.empresa) + '/metodologia';
+    const icoMet = root.KitVistaMetodologia?.ICONOS?.balanza;
+    if (icoMet) { const ic = KC.svg('svg', { viewBox: '0 0 24 24', 'aria-hidden': 'true', class: 'ka-met-icono' }), path = KC.svg('path', { d: icoMet }); ic.append(path); met.append(ic); }
+    met.append(el('strong', 'Metodología'), el('span', 'AA1000SES: cómo se identificó y calificó a cada actor.'));
+    lateral.append(resumen, met);
+    const marco = el('div', null, 'ka-marco-oro'), leyenda = el('figcaption', null, 'ka-convenciones');
+    const verMatriz = el('button', 'Matriz de actores', 'ka-ver-matriz'); verMatriz.type = 'button';
+    figura.append(marco, leyenda, verMatriz); raiz.append(lateral, figura); contenedor.append(raiz);
+    const visiblesAhora = () => todas.filter(o => (!vista.value || o.categoria === vista.value) && (!filtro.value || o.posicion === filtro.value));
+    const descripcionVista = () => [vista.value ? gis.find(g => g.cat === vista.value).nombre : 'Todos los grupos de interés', filtro.value ? plurales[posiciones.indexOf(filtro.value)].toLowerCase() : 'todas las posiciones'].join(' · ');
+    verMatriz.onclick = () => matrizActores(ctx, visiblesAhora(), gis, abrir);
     function pintar() {
-      const cat = vista.value, visibles = cat ? todas.filter(o => o.categoria === cat) : todas, nombreVista = cat ? categorias.find(c => c[0] === cat)[1] : 'Todas las organizaciones';
-      resumen.replaceChildren(el('h2', 'Resumen'), el('p', nombreVista, 'nota'));
-      const ul = el('ul');
+      const visibles = visiblesAhora(), gruposVisibles = gis.filter(g => visibles.some(o => grupoDe(gis, o) === g)), actoresV = visibles.flatMap(o => o.actores.map(a => [a, o]));
+      resumen.replaceChildren(el('h2', 'Resumen'), el('p', descripcionVista(), 'nota'));
+      const fav = filaResumen('#', numero(visibles.length), 'Favorabilidad', 'ka-res-fav'), ul = el('ul');
       posiciones.forEach((pos, i) => { const li = el('li', null, 'ka-' + pos.toLowerCase()); li.append(el('strong', numero(visibles.filter(o => o.posicion === pos).length)), el('span', plurales[i])); ul.append(li); });
-      const total = el('li', null, 'ka-total'); total.append(el('strong', numero(visibles.length)), el('span', visibles.length === 1 ? 'Organización en total' : 'Organizaciones en total')); ul.append(total); resumen.append(ul);
-      lista.replaceChildren(el('h2', 'Principales organizaciones'), el('p', 'Las de mayor promedio entre impacto e influencia.', 'nota'));
-      (cat ? [[cat, nombreVista]] : categorias).forEach(([c, nombre]) => {
-        const grupo = principales(visibles.filter(o => o.categoria === c)); if (!grupo.length) return;
-        const sec = el('div', null, 'ka-principales-grupo'), ol = el('ol'); if (!cat) sec.append(el('h3', nombre));
-        grupo.forEach(o => { const li = el('li'), b = boton(o.nombre, () => abrir(o)); b.className = 'ka-principal'; li.append(b, etiqueta(o.posicion || 'Mixta')); ol.append(li); });
-        sec.append(ol); lista.append(sec);
-      });
-      convenciones.replaceChildren(el('span', cat ? `Vista: ${nombreVista}.` : 'Vista general.'));
-      posiciones.forEach(pos => { const s = el('span', pos, 'ka-conv ka-' + pos.toLowerCase()); s.dataset.forma = formas[pos]; convenciones.append(s); });
-      convenciones.append(el('span', `Cada punto es una organización, ubicada con el promedio de sus actores o con su resultado modificado. El nivel alto empieza en ${ctx.cfg.corte}.`, 'nota'));
-      figura.replaceChildren(matriz(ctx, visibles, abrir), convenciones);
+      fav.append(ul, el('p', 'Instituciones según su posición oficial.', 'nota'));
+      const gi = filaResumen('#', numero(gruposVisibles.length), gruposVisibles.length === 1 ? 'Grupo de interés' : 'Grupos de interés', 'ka-res-gi');
+      chipsPorGrupo(gi, gis, visibles, (lista, n) => lista.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')).forEach(o => { const b = boton(o.nombre, () => abrir(o)); b.className = 'ka-chip'; n.append(b); }));
+      const act = filaResumen('#', numero(actoresV.length), actoresV.length === 1 ? 'Actor' : 'Actores', 'ka-res-actores');
+      chipsPorGrupo(act, gis, visibles, (lista, n) => lista.flatMap(o => o.actores.map(a => [a, o])).forEach(([a, o]) => { const b = boton(nombreActor(ctx, a), () => fichaActor(ctx, a, o, gis)); b.className = 'ka-chip'; b.title = o.nombre; n.append(b); }));
+      resumen.append(fav, gi, act);
+      marco.replaceChildren(matrizGeneral(ctx, visibles, gis, nivel => abrirZoom(ctx, nivel, visibles.filter(o => o.cuadrante === nivel.nombre), gis, abrir, descripcionVista())));
+      leyenda.replaceChildren();
+      gruposVisibles.forEach(g => { const s = el('span', g.nombre, 'ka-conv-gi'); s.style.setProperty('--gi', g.color); leyenda.append(s); });
+      leyenda.append(el('span', 'El tamaño del círculo es el número de instituciones de cada grupo en el cuadrante. Haz clic en un cuadrante para ampliarlo.', 'nota'));
     }
-    vista.onchange = pintar; pintar();
+    vista.onchange = pintar; filtro.onchange = pintar; pintar();
     const fecha = ctx.listas['actores-resumen'].find(r => r.id === 'resumen')?.fecha_corte;
     const valida = typeof fecha === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(fecha) && !Number.isNaN(Date.parse(fecha)) && new Date(fecha).toISOString().slice(0,10) === fecha;
     texto(contenedor,'Metodología AA1000SES (AccountAbility).' + (valida ? ` Mapeo con corte a ${new Intl.DateTimeFormat('es-CO',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(fecha))}.` : ''));

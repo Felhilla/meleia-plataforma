@@ -42,30 +42,33 @@
 
   async function render(c, d, p, original) {
     const App = root.App, el = App.el;
-    if (!p.puedeEditar) return original.render(c, d, p);
-    // Casos de muestra: la Alimentación por secciones no los modifica (sus Resultados los ven los clientes).
-    // Se prueba en la Empresa de demostración.
-    { const emp = (await d.empresas?.())?.find?.(x => x.id === p.empresa);
-      if (emp?.muestra_comercial && p.empresa !== 'empresa-demo') { c.append(root.App.el('p', 'Caso de muestra: sus datos no se modifican desde aquí. Para probar la Alimentación por secciones use la Empresa de demostración.', 'kit-met-nota kit-ali-aviso-muestra')); return original.render(c, d, p); } }
+    // E64 (9-nov, Felipe): sin permiso, y en los casos de muestra, la Alimentación se ve como ejemplo de solo lectura con las
+    // respuestas del caso. No se guarda nada (y la base lo impide igual: RLS).
+    let RO = !p.puedeEditar;
+    if (!RO) { const emp = (await d.empresas?.())?.find?.(x => x.id === p.empresa); RO = !!emp?.muestra_comercial && p.empresa !== 'empresa-demo'; }
     const [cat, esquemasL, existentesL, borrador, avance] = await Promise.all([
       json('config/kit-ddhh-catalogo.json'), Promise.all(COLECCIONES.map(n => json('config/esquemas/' + n + '.json'))),
-      Promise.all(COLECCIONES.map(n => d.listar(p.empresa, n))), d.listar(p.empresa, BORRADOR), d.listar(p.empresa, AVANCE)]);
+      Promise.all(COLECCIONES.map(n => d.listar(p.empresa, n))), RO ? [] : d.listar(p.empresa, BORRADOR), RO ? [] : d.listar(p.empresa, AVANCE)]);
     if (p.vigente && !p.vigente()) return;
     const esquemas = Object.fromEntries(COLECCIONES.map((n, i) => [n, esquemasL[i]])), existentes = Object.fromEntries(COLECCIONES.map((n, i) => [n, existentesL[i]]));
     const niveles = (cat.estandares[0]?.escala?.niveles || []).slice().sort((a, b) => a.valor - b.valor);
     const nombresNivel = Object.fromEntries((cat.calificacion?.brechas?.niveles || []).map(n => [n.valor, n.nombre]));
+    // En el ejemplo se muestra la evaluación más reciente que tenga respuestas (una evaluación vacía no enseña nada).
+    if (RO) { const con = new Set((existentes['ddhh-indicadores'] || []).map(r => r.evaluacion)); existentes['ddhh-evaluaciones'] = (existentes['ddhh-evaluaciones'] || []).filter(e => con.has(e.id)); }
     let E = armar(cat, existentes, borrador, avance);
+    if (RO) { E.enProceso = true; E.meta = { nombre: 'Así se alimenta este caso', iniciada: '' }; cat.ejes.forEach(e => { E.secciones[e.id] = { estado: 'completa' }; }); }
     const zona = el('div', null, 'kit-ali'), otros = el('details', null, 'kit-ali-otros');
     otros.append(el('summary', 'Otras formas de cargar: plantilla de Excel y cuestionario de una sola sentada'));
     const cuerpoOriginal = el('div'); otros.append(cuerpoOriginal);
-    c.append(zona, otros);
-    const desmontar = await original.render(cuerpoOriginal, d, p);
-    const guardar = (col, reg) => d.guardar(p.empresa, col, reg.id, reg);
+    c.append(zona); if (!RO) c.append(otros);
+    const desmontar = RO ? undefined : await original.render(cuerpoOriginal, d, p);
+    const guardar = (col, reg) => RO ? Promise.resolve(reg) : d.guardar(p.empresa, col, reg.id, reg);
+    if (RO) root.KitAlimentacionRegistros?.soloLectura?.(zona);
 
     // ---------- Tablero ----------
     function tablero() {
       const s = el('section', null, 'kit-banda kit-banda-oscura kit-ali-tablero');
-      s.append(el('p', 'Módulo II, alimentación', 'kit-mono'));
+      s.append(el('p', RO ? 'Módulo II, alimentación de ejemplo' : 'Módulo II, alimentación', 'kit-mono'));
       if (!E.enProceso) {
         s.append(el('h2', 'Nueva evaluación', 'kit-met-titulo'),
           el('p', 'Se llena por secciones y se guarda sola. Puede hacerlo en varios días y desde cualquier equipo. Los Resultados se calculan cuando las 16 secciones estén completas.', 'kit-met-texto'));
@@ -82,7 +85,7 @@
         s.append(f); zona.replaceChildren(s); return;
       }
       const C = cifras(cat, E);
-      s.append(el('h2', E.meta.nombre, 'kit-met-titulo'), el('p', `En proceso desde ${String(E.meta.iniciada || '').slice(0, 10)}. Lo que se responde queda guardado de inmediato.`, 'kit-met-texto'));
+      s.append(el('h2', E.meta.nombre, 'kit-met-titulo'), el('p', RO ? 'Caso de muestra: puede recorrer las 16 secciones y ver cómo se respondió cada pregunta, con su calificación y su evidencia. Sus datos no se modifican desde aquí.' : `En proceso desde ${String(E.meta.iniciada || '').slice(0, 10)}. Lo que se responde queda guardado de inmediato.`, 'kit-met-texto'));
       const tiles = el('ul', null, 'kit-met-tiles');
       [[C.avance + ' %', 'Avance', `${num(C.cal)} de ${num(C.total)} preguntas calificadas`], [`${C.completas}/${C.secciones}`, 'Secciones completas', 'marcadas como completas por la empresa'],
         [num(C.sinEvidencia), 'Sin evidencia', 'preguntas sin documento ni enlace'], [num(C.enBlanco), 'En blanco', 'valdrán 0 al calcular']].forEach(([n, r, t]) => {

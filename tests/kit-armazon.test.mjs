@@ -33,11 +33,11 @@ test('casos: muestras configuradas y clientes reales visibles en todos los módu
   }
   assert.equal(App.resolverRuta('#/actores/' + casoDDHH, {}, muestras).hash, '#/');
 });
-test('Alimentación exige permiso sobre la empresa del caso', () => {
+test('E64: la Alimentación se ve en todos los casos (sin permiso, como ejemplo de solo lectura)', () => {
   for (const modulo of ['actores','ddhh','materialidad','riesgos']) {
-    assert.ok(!App.pestanas(modulo, 'demostrador').includes('alimentacion'));
-    assert.equal(resolver('#/' + modulo + '/dos/alimentacion').hash, '#/');
-    assert.equal(App.resolverRuta('#/' + modulo + '/uno/alimentacion', {}, empresas, () => false).hash, '#/');
+    assert.ok(App.pestanas(modulo, 'demostrador').includes('alimentacion'));
+    assert.equal(resolver('#/' + modulo + '/dos/alimentacion').clave, modulo + '/alimentacion');
+    assert.equal(App.resolverRuta('#/' + modulo + '/uno/alimentacion', {}, empresas, () => false).clave, modulo + '/alimentacion');
   }
 });
 test('entrada del Kit no carga el relato, conserva SDK fijo y orden defer', () => {
@@ -45,7 +45,7 @@ test('entrada del Kit no carga el relato, conserva SDK fijo y orden defer', () =
   assert.match(html, /<title>Meleia · Kit de sostenibilidad<\/title>/); assert.doesNotMatch(html, /GH Estudio|logo-gh/);
   assert.doesNotMatch(html, /src="vista-|caso\.json|src="app.js"|api-supabase.js/);
   const scripts = [...html.matchAll(/<script defer src="([^"]+)"/g)].map(m => m[1]);
-  assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'vendor/xlsx.full.min.js', 'kit-riesgos.js', 'kit-cuestionario.js', 'kit-actores.js', 'kit-carga-excel.js', 'kit-armazon.js', 'kit-vista-credenciales.js', 'kit-vista-carga-excel.js', 'kit-vista-riesgos.js', 'kit-vista-actores.js', 'kit-vista-metodologia.js', 'kit-vista-ddhh-modelo.js', 'kit-vista-ddhh-motor.js', 'kit-vista-ddhh-comun.js', 'kit-vista-ddhh.js', 'kit-vista-ddhh-cuestionario.js', 'kit-vista-materialidad-motor.js', 'kit-vista-materialidad.js', 'kit-vista-portada-resultados.js', 'kit-vista-alimentacion-ddhh.js', 'kit-vista-alimentacion-registros.js', 'kit-vista-alimentacion-materialidad.js']);
+  assert.deepEqual(scripts, ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js', 'config.js', 'kit-datos.js', 'kit-validacion.js', 'vendor/xlsx.full.min.js', 'kit-riesgos.js', 'kit-cuestionario.js', 'kit-actores.js', 'kit-carga-excel.js', 'kit-armazon.js', 'kit-vista-credenciales.js', 'kit-vista-carga-excel.js', 'kit-cuadrantes.js', 'kit-vista-riesgos.js', 'kit-vista-actores.js', 'kit-vista-metodologia.js', 'kit-vista-ddhh-modelo.js', 'kit-vista-ddhh-motor.js', 'kit-vista-ddhh-comun.js', 'kit-vista-ddhh.js', 'kit-vista-ddhh-cuestionario.js', 'kit-vista-materialidad-motor.js', 'kit-vista-materialidad.js', 'kit-vista-portada-resultados.js', 'kit-vista-alimentacion-ddhh.js', 'kit-vista-alimentacion-registros.js', 'kit-vista-alimentacion-materialidad.js']);
 });
 
 // DOM mínimo: prueba los flujos reales del armazón sin red ni dependencias de navegador.
@@ -88,12 +88,12 @@ test('DOM: portada global no consulta colecciones ni muestra selector global', a
   const m = await montar();
   assert.match(m.nodos.contenido.textContent, /Meleia/); assert.doesNotMatch(m.nodos.contenido.textContent, /GH Estudio/);
   assert.match(m.nodos.contenido.textContent, /laboratorio de ideas y soluciones para la sostenibilidad/i);
-  // E46 (6-nov): hero con cuatro botones; el semicírculo arranca cerrado y Equipo y Aliados viven en él.
+  // E46 (6-nov) y E64 (9-nov): hero con cinco botones (Metodologías nueva); el semicírculo arranca cerrado y Equipo y Aliados viven en él.
   const secciones = m.nodos.contenido.todos().filter(n => String(n.className).startsWith('kit-cred-seccion')).map(n => n.children[0].textContent);
   assert.deepEqual(secciones, ['Quiénes somos', '', 'Contacto']);
   // 6-nov: sin bloque de módulos en el Home; se llega a ellos por el menú.
   assert.ok(!m.nodos.contenido.todos().some(n => n.className === 'kit-modulo'));
-  assert.deepEqual(m.nodos.contenido.todos().filter(n => n.className === 'kit-tema-boton').map(n => n.textContent), ['Servicios', 'Experiencia', 'Equipo', 'Aliados']);
+  assert.deepEqual(m.nodos.contenido.todos().filter(n => n.className === 'kit-tema-boton').map(n => n.textContent), ['Servicios', 'Metodologías', 'Experiencia', 'Equipo', 'Aliados']);
   assert.equal(m.nodos.contenido.todos().find(n => n.id === 'kit-explorar').hidden, true);
   // E45: el correo provisional (dominio GH) solo aparece en Contacto, como enlace; nunca en las fichas del equipo.
   const correo = m.nodos.contenido.todos().find(n => String(n.href || '').startsWith('mailto:'));
@@ -131,7 +131,7 @@ test('DOM E46: temas en semicírculo, fichas flotantes y caso con entregables en
   await boton('equipo').onclick(); assert.equal(titulos().length, 4); titulos()[1].onclick(); assert.match(capa.textContent, /Felipe Hillón/);
   await boton('aliados').onclick(); assert.equal(titulos().length, 4); assert.equal(capa.hidden, true);
   // Sin logos confirmados, los casos siguen anonimizados (sin imágenes de clientes).
-  await boton('experiencia').onclick(); assert.ok(!todos().some(n => n.tag === 'image' || (n.tag === 'img' && /logo/.test(n.className || '') && !/hero/.test(n.className))));
+  await boton('experiencia').onclick(); assert.ok(!todos().some(n => (n.tag === 'image' && !/logo-meleia/.test(n.attrs?.href || '')) || (n.tag === 'img' && /logo/.test(n.className || '') && !/hero/.test(n.className))));
 });
 test('DOM E24: selector accesible con uno o varios casos y pestaña Mapa de actores', async () => {
   const una = await montar({ empresas: muestras, hash:'#/ddhh' });
@@ -150,7 +150,7 @@ test('DOM E24: selector accesible con uno o varios casos y pestaña Mapa de acto
   varias.root.location.hash = enlace.href; await varias.eventos.hashchange();
   assert.equal(varias.root.App.resolverRuta(varias.root.location.hash, {}, muestras).clave,'actores/metodologia');
   assert.equal(varias.nodos.contenido.todos().filter(n=>n.className==='kit-pestanas').length,1);
-  assert.doesNotMatch(varias.nodos.contenido.textContent, /Alimentación/);
+  assert.match(varias.nodos.contenido.textContent, /Alimentación/);
   assert.match(varias.nodos['kit-cuenta'].textContent, /Responsable/);
   varias.root.location.hash = '#/actores/' + casosActores[1]; varias.datos.puedeEditar = id => id === casosActores[1]; await varias.root.App.actualizarVista();
   assert.match(varias.nodos.contenido.textContent, /Alimentación/);
@@ -188,20 +188,25 @@ test('E22: el Módulo III ofrece exclusivamente el caso configurado y sus rutas'
   assert.deepEqual(App.casos(modulo,[...muestras,...casos]).map(e=>e.id),[casos[0].id]);
 });
 
-test('DOM E24b: el armazón no pide ni muestra logos de empresa', async () => {
+// E64 (9-nov, Felipe) reemplaza E24b (27-oct): el caso se identifica con su logo, leído de perfil/logo de su empresa.
+test('DOM E64: el caso muestra el logo de su empresa en un recuadro, y solo acepta imágenes', async () => {
   const m = await montar({hash:'#/actores/uno',listar:async () => [{id:'logo',imagen:'data:image/png;base64,YQ==',alt:'Empresa de prueba'}]});
-  assert.equal(m.consultas.filter(c => c[1] === 'perfil').length,0);
-  assert.ok(!m.nodos.contenido.todos().some(n => n.className === 'kit-empresa-logo'));
+  await new Promise(r => setTimeout(r, 0));
+  assert.ok(m.consultas.some(c => c[1] === 'perfil'));
+  assert.ok(m.nodos.contenido.todos().some(n => String(n.className).startsWith('kit-caso-logo-caja')));
+  const malo = await montar({hash:'#/actores/uno',listar:async () => [{id:'logo',imagen:'javascript:alert(1)'}]});
+  await new Promise(r => setTimeout(r, 0));
+  assert.ok(!malo.nodos.contenido.todos().some(n => n.tag === 'img' && String(n.src).startsWith('javascript')));
 });
 
-test('E40: Alimentación visible como pestaña con permiso y oculta sin él',async()=>{
+test('E40 y E64: Alimentación visible como pestaña con y sin permiso',async()=>{
  const m=await montar({hash:'#/ddhh/uno/alimentacion'});
  assert.equal(m.root.location.hash,'#/ddhh/uno/alimentacion');
  const tabs=m.nodos.contenido.todos().find(n=>n.className==='kit-pestanas');
  assert.deepEqual(tabs.children.map(n=>n.textContent),['Metodología','Alimentación','Resultados','Cruce de estándares']);
- m.datos.puedeEditar=()=>false;await m.root.App.actualizarVista();assert.equal(m.root.location.hash,'#/');
+ m.datos.puedeEditar=()=>false;await m.root.App.actualizarVista();assert.equal(m.root.location.hash,'#/ddhh/uno/alimentacion');
  const d=await montar({hash:'#/ddhh/dos/resultados'});
- assert.deepEqual(d.nodos.contenido.todos().find(n=>n.className==='kit-pestanas').children.map(n=>n.textContent),['Metodología','Resultados','Cruce de estándares']);
+ assert.deepEqual(d.nodos.contenido.todos().find(n=>n.className==='kit-pestanas').children.map(n=>n.textContent),['Metodología','Alimentación','Resultados','Cruce de estándares']);
 });
 
 test('E30 y E40: rutas anteriores convergen y todos los módulos muestran sus pestañas',async()=>{
@@ -210,13 +215,13 @@ test('E30 y E40: rutas anteriores convergen y todos los módulos muestran sus pe
   assert.equal(resolver('#/e/uno/materialidad/'+sub).clave,'materialidad/resultados');
  }
  assert.equal(resolver('#/materialidad/uno/alimentacion').clave,'materialidad/alimentacion');
- assert.equal(resolver('#/materialidad/dos/alimentacion').clave,'portada');
- for(const [hash,esperadas] of [['#/materialidad/uno/resultados',['Metodología','Alimentación','Resultados']],['#/materialidad/dos/resultados',['Metodología','Resultados']],['#/riesgos/uno/matriz',['Metodología','Alimentación','Resultados']],['#/riesgos/dos/matriz',['Metodología','Resultados']],['#/actores/uno/mapa',['Metodología','Alimentación','Resultados']]]){
+ assert.equal(resolver('#/materialidad/dos/alimentacion').clave,'materialidad/alimentacion');
+ for(const [hash,esperadas] of [['#/materialidad/uno/resultados',['Metodología','Alimentación','Resultados']],['#/materialidad/dos/resultados',['Metodología','Alimentación','Resultados']],['#/riesgos/uno/matriz',['Metodología','Alimentación','Resultados']],['#/riesgos/dos/matriz',['Metodología','Alimentación','Resultados']],['#/actores/uno/mapa',['Metodología','Alimentación','Resultados']]]){
   const m=await montar({hash});
   assert.deepEqual(m.nodos.contenido.todos().find(n=>n.className==='kit-pestanas').children.map(n=>n.textContent),esperadas);
  }
  for (const vista of ['matriz', 'medidas']) assert.equal(resolver('#/riesgos/uno/' + vista).clave, 'riesgos/' + vista);
- assert.equal(resolver('#/riesgos/dos/alimentacion').clave, 'portada');
+ assert.equal(resolver('#/riesgos/dos/alimentacion').clave, 'riesgos/alimentacion');
 });
 
 
@@ -430,6 +435,15 @@ test('E57: la portada de los Resultados calcula sus cifras con los datos de la e
   } finally { delete globalThis.fetch; delete globalThis.KitRiesgos; }
 });
 
+test('E59: la tabla de contactos solo deja insertar y leer a los administradores', () => {
+  const sql = readFileSync(new URL('../supabase/kit-02-contacto.sql', import.meta.url), 'utf8');
+  assert.match(sql, /alter table public\.contactos enable row level security/);
+  assert.match(sql, /revoke all on public\.contactos from anon, authenticated/);
+  assert.match(sql, /for select to authenticated using \(public\.es_admin\(\)\)/);
+  assert.doesNotMatch(sql, /grant (update|delete)|for (update|delete)/i, 'nadie edita ni borra mensajes desde la plataforma');
+  for (const c of ['nombre', 'correo', 'empresa', 'mensaje']) assert.match(sql, new RegExp(c + '\\s+text.*check'), c + ' con límite en la base');
+});
+
 test('E60: Alimentación del Módulo II por secciones (estado, avance, enlaces y "En proceso")', async () => {
   const req = (await import('node:module')).createRequire(import.meta.url);
   globalThis.KitCuestionarioDdhh = req('../public/kit-vista-ddhh-cuestionario.js');
@@ -508,11 +522,23 @@ test('E62: Alimentación del Módulo III calcula con el motor E38 y escribe lo q
   } finally { delete globalThis.KitMaterialidad; }
 });
 
-test('E59: la tabla de contactos solo deja insertar y leer a los administradores', () => {
-  const sql = readFileSync(new URL('../supabase/kit-02-contacto.sql', import.meta.url), 'utf8');
-  assert.match(sql, /alter table public\.contactos enable row level security/);
-  assert.match(sql, /revoke all on public\.contactos from anon, authenticated/);
-  assert.match(sql, /for select to authenticated using \(public\.es_admin\(\)\)/);
-  assert.doesNotMatch(sql, /grant (update|delete)|for (update|delete)/i, 'nadie edita ni borra mensajes desde la plataforma');
-  for (const c of ['nombre', 'correo', 'empresa', 'mensaje']) assert.match(sql, new RegExp(c + '\\s+text.*check'), c + ' con límite en la base');
+test('9-nov: Credenciales lee nombres y logos de la base solo con acceso a Meleia, y solo acepta imágenes seguras', async () => {
+  const png = 'data:image/png;base64,iVBORw0KGgo=';
+  const registros = { 'credenciales-clientes': [{ id: 'cli-x', nombre: 'Cliente Inventado', sector: 'Sector Inventado', icono_sector: 'dialogo', logo: png, orden: 1 }, { id: 'cli-y', nombre: 'Otro Inventado', sector: 'Sector Inventado', logo: 'data:image/svg+xml;base64,PHN2Zz4=' }],
+    'credenciales-casos': [{ id: 'caso-1', nombre: 'Caso Inventado', logo: 'https://example.test/logo.png' }], 'credenciales-aliados': [] };
+  const listar = async (e, c) => e === 'empresa-demo' ? registros[c] || [] : [];
+  const con = await montar({ listar, empresas: [...empresas, { id: 'empresa-demo', nombre: 'Empresa de demostración' }] });
+  const leidas = con.consultas.filter(c => c[0] === 'empresa-demo').map(c => c[1]);
+  assert.deepEqual(leidas.filter(c => c.startsWith('credenciales-')).sort(), ['credenciales-aliados', 'credenciales-casos', 'credenciales-clientes']);
+  const todos = () => con.nodos.contenido.todos();
+  await todos().find(n => n.className === 'kit-tema-boton' && n.dataset.tema === 'experiencia').onclick();
+  assert.match(con.nodos.contenido.textContent, /# 6 clientes/);
+  todos().find(n => n.className === 'kit-serv-centro-boton').onclick();
+  const capa = todos().find(n => n.className === 'kit-ficha-capa');
+  assert.match(capa.textContent, /Cliente Inventado/); assert.match(capa.textContent, /Caso Inventado/);
+  const fuentes = capa.todos().filter(n => n.tag === 'img').map(n => n.src);
+  assert.ok(fuentes.includes(png)); assert.ok(!fuentes.some(f => /svg|https:/.test(f)), 'ni SVG ni enlaces externos');
+  const sin = await montar({ listar });
+  assert.ok(!sin.consultas.some(c => String(c[1]).startsWith('credenciales-')), 'sin acceso a Meleia no se consulta');
+  const K = con.root.KitCredenciales; assert.ok(K);
 });

@@ -33,7 +33,7 @@ async function montar(vista = 'mapa', editar = true, extras = {}) {
   const root = { document, Intl, crypto: { randomUUID: () => 'nuevo' }, fetch: async p => ({ ok: true, json: async () => JSON.parse(read(p)) }), App: { el: (tag, txt, clase) => { const n = new Nodo(tag, document); if (txt != null) n.textContent = txt; n.className = clase; return n; }, registrarVista: (k, v) => { vistas[k] = v; }, actualizarVista() {} } };
   vm.runInNewContext(read('kit-armazon.js'), root);
   root.App.registrarVista = (k, v) => { vistas[k] = v; };
-  for (const f of ['kit-validacion.js', 'kit-actores.js', 'kit-vista-carga-excel.js', 'kit-vista-actores.js']) vm.runInNewContext(read(f), root);
+  for (const f of ['kit-validacion.js', 'kit-actores.js', 'kit-vista-carga-excel.js', 'kit-cuadrantes.js', 'kit-vista-actores.js']) vm.runInNewContext(read(f), root);
   let vigente = true; const params = { empresa: 'empresa-1', puedeEditar: editar, rol: editar ? 'responsable' : 'demostrador', vigente: () => vigente };
   const limpiar = await vistas['actores/' + vista].render(contenedor, datos, params);
   return { root, document, datos, contenedor, consultas, guardados, borrados, historial, limpiar, salir: () => { vigente = false; limpiar?.(); } };
@@ -80,8 +80,10 @@ test('Borrado requiere confirmación propia e historial filtra actores', async (
 });
 
 const escape = m => m.document.eventos.keydown({key:'Escape',preventDefault(){}});
-const puntos = m => m.contenedor.todos().filter(n => String(n.attrs.class || '').startsWith('ka-punto'));
-const principales = m => m.contenedor.todos().filter(n => n.className === 'ka-principal');
+const chips = m => m.contenedor.todos().filter(n => n.className === 'ka-chip');
+const cuadrante = (m, nombre) => m.contenedor.todos().find(n => n.attrs.role === 'button' && String(n.attrs['aria-label']).startsWith(nombre + ':'));
+const enZoom = m => panel(m).todos().filter(n => ['ka-burbuja'].includes(n.attrs.class) || String(n.attrs.class || '').startsWith('ka-punto-chico'));
+const selects = m => m.contenedor.todos().filter(n => n.tagName === 'SELECT');
 function muestra() {
   const base = {...actores()[1],influencia:4,impacto:2,categoria:'Instituciones gubernamentales'};
   return [
@@ -95,52 +97,76 @@ function muestra() {
     {...base,id:'h',institucion:'Organización Aula',categoria:'Academia',posicion:'Neutral'}
   ];
 }
+const nube = m => chips(m).find(n => n.textContent === 'Organización Nube');
 
-test('E41: resumen por posición oficial, total y un punto por organización con forma y nombre', async () => {
+test('E65: resumen desplegable (favorabilidad, grupos, actores) y un círculo por grupo en cada cuadrante', async () => {
   const m = await montar('mapa',false,{actores:muestra()});
   const resumen = m.contenedor.todos().find(n => n.className === 'ka-resumen-tarjeta');
-  assert.match(resumen.textContent,/1\s+Favorables/); assert.match(resumen.textContent,/3\s+Neutrales/); assert.match(resumen.textContent,/2\s+Desfavorables/); assert.match(resumen.textContent,/6\s+Organizaciones en total/);
-  const p = puntos(m); assert.equal(p.length,6);
-  const nube = p.find(n => n.attrs['aria-label'].startsWith('Organización Nube'));
-  assert.equal(nube.tagName,'PATH'); assert.match(nube.attrs['aria-label'],/Desfavorable\. Influencia 4,0, impacto 3,3/);
-  assert.equal(p.find(n => n.attrs['aria-label'].startsWith('Organización Local')).tagName,'RECT');
-  assert.equal(p.find(n => n.attrs['aria-label'].startsWith('Organización Internacional')).tagName,'CIRCLE');
-  assert.ok(m.contenedor.todos().some(n => n.className === 'ka-convenciones'));
+  assert.match(resumen.textContent,/1\s+Favorables/); assert.match(resumen.textContent,/3\s+Neutrales/); assert.match(resumen.textContent,/2\s+Desfavorables/);
+  assert.match(resumen.textContent,/6\s+Favorabilidad/); assert.match(resumen.textContent,/2\s+Grupos de interés/); assert.match(resumen.textContent,/8\s+Actores/);
+  assert.equal(resumen.todos().filter(n => n.tagName === 'DETAILS').length,3);
+  assert.ok(chips(m).some(n => n.textContent === 'Persona Inventada'), 'los actores se listan por grupo');
+  const activa = cuadrante(m,'Gestión activa'); assert.match(activa.attrs['aria-label'],/Autoridades 2, Academia 1/);
+  assert.equal(activa.todos().filter(n => n.attrs.class === 'ka-gi-circulo').length,2);
+  assert.match(cuadrante(m,'Seguimiento periférico').attrs['aria-label'],/2 organizaciones/);
+  assert.match(m.contenedor.textContent,/Matriz de actores/); assert.match(m.contenedor.textContent,/Metodología/);
 });
-test('E41: principales por grupo de interés ordenadas por promedio y vista por grupo', async () => {
+test('E65: Vista por grupo de interés y Filtro por favorabilidad', async () => {
   const m = await montar('mapa',false,{actores:muestra()});
-  const grupos = m.contenedor.todos().filter(n => n.className === 'ka-principales-grupo');
-  assert.deepEqual(grupos.map(g => g.children[0].textContent),['Autoridades','Academia']);
-  assert.deepEqual(grupos[0].todos().filter(n => n.className === 'ka-principal').map(n => n.textContent),['Organización Regional','Organización Nube','Organización Sin orden','Organización Local','Organización Internacional']);
-  const select = m.contenedor.todos().find(n => n.tagName === 'SELECT');
-  assert.deepEqual(select.children.map(o => o.textContent),['General','Autoridades','Academia']);
-  select.value = 'Academia'; select.onchange();
-  assert.equal(puntos(m).length,1); assert.match(m.contenedor.textContent,/1\s+Organización en total/); assert.match(m.contenedor.textContent,/Vista: Academia/);
+  const [vista, filtro] = selects(m);
+  assert.deepEqual(vista.children.map(o => o.textContent),['General','Autoridades','Academia']);
+  assert.deepEqual(filtro.children.map(o => o.textContent),['Todas las posiciones','Favorables','Neutrales','Desfavorables']);
+  vista.value = 'Academia'; vista.onchange(); assert.match(cuadrante(m,'Gestión activa').attrs['aria-label'],/1 organización \(Academia 1\)/);
+  vista.value = ''; filtro.value = 'Desfavorable'; filtro.onchange();
+  assert.match(m.contenedor.textContent,/2\s+Favorabilidad/); assert.match(cuadrante(m,'Seguimiento periférico').attrs['aria-label'],/0 organizaciones/);
 });
-test('E41: ficha de la organización con promedio, posición oficial, nombres, contactos y cierre común', async () => {
+test('E65: zoom del cuadrante con resumen, 7 burbujas con nombre y el resto como puntos pequeños', async () => {
+  const lista = Array.from({length:10},(_,i) => ({...actores()[1],id:'z'+i,institucion:'Institución '+i,categoria:'Comunidades y asociaciones',influencia:4,impacto:i < 4 ? 1 : 2,posicion:i % 2 ? 'Favorable' : 'Desfavorable'}));
+  const m = await montar('mapa',false,{actores:lista});
+  cuadrante(m,'Gestión activa').escuchas.click(); const z = panel(m);
+  assert.match(z.textContent,/10\s+Instituciones en el cuadrante/); assert.match(z.textContent,/10\s+Actores en el cuadrante/);
+  assert.match(z.textContent,/5\s+Inst\. favorables/); assert.match(z.textContent,/0\s+Inst\. neutrales/); assert.match(z.textContent,/5\s+Inst\. desfavorables/);
+  const nodos = enZoom(m); assert.equal(nodos.filter(n => n.attrs.class === 'ka-burbuja').length,7); assert.equal(nodos.filter(n => n.attrs.class !== 'ka-burbuja').length,3);
+  assert.ok(z.todos().some(n => n.attrs.class === 'ka-ancla'), 'las calificaciones compartidas llevan punto negro');
+  assert.ok(z.todos().some(n => n.attrs.class === 'ka-guia-punteada'));
+  const chico = nodos.find(n => n.attrs.class !== 'ka-burbuja'); assert.equal(chico.todos().filter(n => n.tagName === 'TEXT').length,0, 'los puntos pequeños no llevan nombre');
+  chico.escuchas.click(); await tick(); assert.ok(panel(m).todos().some(n => n.className === 'ka-ficha-cabecera'), 'el punto abre la ficha');
+});
+test('E65: ficha de la organización con promedio, posición oficial, nombres, contactos y cierre común', async () => {
   const m = await montar('mapa',true,{actores:muestra(),'actores-contactos':[{id:'b',nombre:'Persona de ejemplo',telefono:'000000',correo:'persona@example.test',ejemplo:true}]});
-  const origen = principales(m).find(n => n.textContent === 'Organización Nube'); origen.focus(); await origen.onclick(); await tick();
+  const origen = nube(m); origen.focus(); await origen.onclick(); await tick();
   const ficha = panel(m);
   assert.match(ficha.textContent,/3,3 · promedio de 3 actores/); assert.match(ficha.textContent,/4,0 · promedio de 3 actores/); assert.match(ficha.textContent,/Posición\s*Desfavorable/);
   assert.equal(ficha.textContent.split('Texto único').length-1,1);
   assert.match(ficha.textContent,/Persona Inventada/); assert.match(ficha.textContent,/Persona de ejemplo.*Dato de ejemplo/); assert.match(ficha.textContent,/Sin nombre registrado/); assert.match(ficha.textContent,/000000 persona@example.test/);
-  const detalle = ficha.todos().find(n => n.tagName === 'DETAILS'); assert.ok(!detalle.open); assert.match(detalle.textContent,/⚠ Alerta/); assert.doesNotMatch(detalle.textContent,/Ajustado/);
-  assert.equal(ficha.todos().filter(n => n.tagName === 'H2').length,1); assert.equal(ficha.todos().filter(n => n.tagName === 'H1').length,0);
+  const detalle = ficha.todos().find(n => n.tagName === 'DETAILS'); assert.ok(!detalle.open); assert.match(detalle.textContent,/⚠ Alerta/);
+  assert.equal(ficha.todos().filter(n => n.tagName === 'H2').length,1);
   const cerrar = ficha.todos().find(n => n.attrs['aria-label'] === 'Cerrar'); assert.equal(cerrar.className,'kit-cerrar'); assert.equal(m.document.activeElement,cerrar);
   cerrar.onclick(); assert.equal(panel(m),undefined); assert.equal(m.document.activeElement,origen);
+});
+test('E65: ficha del actor y Matriz de actores con toda la información', async () => {
+  const m = await montar('mapa',false,{actores:muestra()});
+  await chips(m).find(n => n.textContent === 'Persona Inventada').onclick(); const f = panel(m);
+  assert.match(f.textContent,/Cargo institucional · Autoridades · Educación · Nacional/); assert.match(f.textContent,/Ver la institución: Organización Nube/);
+  escape(m); buscar(m.contenedor,'Matriz de actores').onclick(); const t = panel(m);
+  assert.match(t.textContent,/8 actores en 6 organizaciones/);
+  const cab = t.todos().filter(n => n.tagName === 'TH').map(n => n.textContent);
+  assert.deepEqual(cab.slice(0,7),['Grupo de interés','Orden','Institución','Subgrupo','Actor','Cargo','Posición']);
+  assert.equal(t.todos().filter(n => n.tagName === 'TR').length,9);
 });
 test('E41: la modificación de la organización se muestra con autor, fecha y justificación', async () => {
   const org = { id:'org-organizacion-nube', nombre:'Organización Nube', categoria:'Instituciones gubernamentales', posicion:'Neutral', ajuste_influencia:2, ajuste_impacto:5, ajuste_justificacion:'Lidera la mesa.', ajuste_autor:'Persona Inventada', ajuste_fecha:'2026-11-05' };
   const m = await montar('mapa',true,{actores:muestra(),'actores-organizaciones':[org]});
-  assert.match(puntos(m).find(n => n.attrs['aria-label'].startsWith('Organización Nube')).attrs['aria-label'],/Neutral\. Influencia 2,0, impacto 5,0\. Gestión cautelosa/);
-  await principales(m).find(n => n.textContent === 'Organización Nube').onclick(); await tick();
+  cuadrante(m,'Gestión cautelosa').escuchas.click();
+  assert.match(enZoom(m).find(n => n.attrs['aria-label'].startsWith('Organización Nube')).attrs['aria-label'],/Neutral\. Influencia 2,0, impacto 5,0/);
+  escape(m); await nube(m).onclick(); await tick();
   assert.match(panel(m).textContent,/Resultado modificado por Persona Inventada el 2026-11-05: Lidera la mesa\./); assert.match(panel(m).textContent,/5,0 · modificado/);
 });
 test('E41: logos bajo demanda una sola vez y sin SVG ni URL externas', async () => {
   for (const imagen of ['data:image/svg+xml;base64,PHN2Zz4=','https://example.test/logo.png','data:image/png;base64,YQ==']) {
     const m = await montar('mapa',true,{actores:muestra(),'actores-logos':[{id:'organizacion-nube',institucion:'Organización Nube',imagen}]});
     assert.ok(!m.consultas.some(c => c[1] === 'actores-logos'));
-    const b = principales(m).find(n => n.textContent === 'Organización Nube'); await b.onclick(); await tick();
+    const b = nube(m); await b.onclick(); await tick();
     assert.equal(panel(m).todos().find(n => n.className === 'ka-logo').src,imagen.startsWith('data:image/png') ? imagen : 'img/actores/autoridades.svg');
     escape(m); await b.onclick(); await tick(); assert.equal(m.consultas.filter(c => c[1] === 'actores-logos').length,1);
   }
@@ -151,7 +177,8 @@ test('E41: fecha técnica, vacíos, demostrador y DOM seguro', async () => {
   for (const permiso of [true,false]) { const v = await montar('mapa',permiso,{actores:[]}); assert.match(v.contenedor.textContent,/aún no tiene organizaciones/); assert.equal(v.contenedor.todos().some(n => n.tagName === 'A'),permiso); }
   const a = await montar('alimentacion',false); assert.equal(a.consultas.length,0); assert.ok(!form(a.contenedor));
   const masivo = await montar('mapa',false,{actores:Array.from({length:180},(_,i) => ({...actores()[1],id:'a'+i,institucion:'<script>Ejemplo '+i+'</script>'}))});
-  assert.equal(puntos(masivo).length,180); assert.ok(!masivo.document.body.todos().some(n => n.tagName === 'SCRIPT'));
+  assert.equal(chips(masivo).filter(n => n.textContent.startsWith('<script>')).length,180); assert.ok(!masivo.document.body.todos().some(n => n.tagName === 'SCRIPT'));
+  cuadrante(masivo,'Gestión activa').escuchas.click(); assert.equal(enZoom(masivo).length,180);
 });
 test('E24: esquemas nuevos usan tipos existentes, límites y referencias', async () => {
   const { default: V } = await import('../public/kit-validacion.js');

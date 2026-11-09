@@ -9,6 +9,7 @@ class Nodo {
   append(...ns) { ns.forEach(n => { n.parent = this; this.children.push(n); }); }
   replaceChildren(...ns) { this.children.forEach(n => { n.parent = null; }); this.children = []; this.append(...ns); }
   setAttribute(k, v) { this.attrs[k] = v; }
+  addEventListener(k, fn) { (this.escuchas ||= {})[k] = fn; }
   get isConnected() { return this === this.doc.body || !!this.parent?.isConnected; }
   get options() { return this.children; }
   todos() { return this.children.flatMap(n => [n, ...n.todos()]); }
@@ -22,25 +23,26 @@ const r1 = { id: 'r-01', codigo: 'R-01', nombre: 'Afectación del derecho al agu
 const c1 = { id: 'r-01', riesgo: 'r-01', escala: 3, alcance: 2, irremediabilidad: 2, probabilidad: 'Alta', tipo_impacto: 'Potencial', vinculacion: 'Causa' };
 async function montar(vista = 'matriz', editar = true, extras = {}) {
   const document = { eventos: {}, addEventListener(k, fn) { this.eventos[k] = fn; }, removeEventListener(k) { delete this.eventos[k]; }, createElement(t) { return new Nodo(t, this); } };
+  document.createElementNS = (_, t) => new Nodo(t, document); document.querySelectorAll = () => [];
   document.body = new Nodo('body', document); const contenedor = new Nodo('main', document); document.body.append(contenedor);
   const consultas = [], guardados = [], borrados = [], historial = [], vistas = {};
   const registros = { riesgos: [r1], 'riesgos-calificacion': [c1], 'riesgos-medidas': [], 'riesgos-grupos': [{ id: 'g-1', nombre: 'Acueducto veredal' }, { id: 'g-2', nombre: 'Productores agrícolas' }, { id: 'g-3', nombre: 'Comerciantes' }], 'riesgos-validaciones': [{ id: 'r-01--g-1', riesgo: 'r-01', grupo: 'g-1', resultado: 'Confirma' }, { id: 'r-01--g-2', riesgo: 'r-01', grupo: 'g-2', resultado: 'Propone ajuste', propuesta_alcance: 3, comentario: '<script>Más familias afectadas</script>' }, { id: 'r-01--g-3', riesgo: 'r-01', grupo: 'g-3', resultado: 'Confirma' }], ...extras };
   const datos = { listar: async (empresa, c) => { consultas.push([empresa, c]); return structuredClone(registros[c]); }, guardar: async (...args) => { guardados.push(args); return args[3]; }, borrar: async (...args) => borrados.push(args), historial: async (...args) => { historial.push(args); return []; } };
   const root = { document, Intl, crypto: { randomUUID: () => 'nuevo' }, fetch: async p => ({ ok: true, json: async () => JSON.parse(read(p)) }), App: { el: (tag, txt, clase) => { const n = new Nodo(tag, document); if (txt != null) n.textContent = txt; n.className = clase; return n; }, registrarVista: (k, v) => { vistas[k] = v; }, actualizarVista() {} } };
-  for (const f of ['kit-riesgos.js', 'kit-validacion.js', 'kit-cuestionario.js', 'kit-vista-carga-excel.js', 'kit-vista-riesgos.js']) vm.runInNewContext(read(f), root);
+  for (const f of ['kit-riesgos.js', 'kit-validacion.js', 'kit-cuestionario.js', 'kit-vista-carga-excel.js', 'kit-cuadrantes.js', 'kit-vista-riesgos.js']) vm.runInNewContext(read(f), root);
   let vigente = true; const params = { empresa: 'empresa-1', puedeEditar: editar, rol: editar ? 'responsable' : 'demostrador', vigente: () => vigente };
   const limpiar = await vistas['riesgos/' + vista].render(contenedor, datos, params);
   return { root, document, contenedor, consultas, guardados, borrados, historial, limpiar, salir: () => { vigente = false; limpiar?.(); } };
 }
-const buscar = (n, texto) => n.todos().find(x => x.tagName === 'BUTTON' && x.textContent === texto);
+const buscar = (n, texto) => n.todos().find(x => x.tagName === 'BUTTON' && (x.textContent === texto || x.textContent.startsWith(texto + ' · ')));
 const campo = (n, nombre) => n.todos().find(x => x.name === nombre);
 const form = n => n.todos().find(x => x.tagName === 'FORM');
 const tick = async () => { for (let i = 0; i < 15; i++) await Promise.resolve(); };
 const panel = m => m.document.body.todos().find(x => x.attrs.role === 'dialog');
 test('Matriz coloca R-01 en Media|Alta y ficha muestra los tres grupos y propuesta sin cambiar oficial', async () => {
-  const m = await montar(); const celda = m.contenedor.todos().find(n => n.dataset.celda === 'Media|Alta');
-  assert.match(celda.textContent, /R-01/); assert.equal(m.consultas.length, 4);
-  const b = buscar(celda, 'R-01'); b.focus(); await b.onclick(); const p = panel(m);
+  const m = await montar(); const celda = m.contenedor.todos().find(n => n.attrs['data-celda'] === 'Media|Alta');
+  assert.match(celda.attrs['aria-label'], /1 riesgo \(Causa el impacto 1\)/); assert.equal(m.consultas.length, 4);
+  const b = buscar(m.contenedor, 'R-01'); b.focus(); await b.onclick(); const p = panel(m);
   assert.match(p.textContent, /2 de 3 grupos confirman/); assert.match(p.textContent, /Productores agrícolas/); assert.match(p.textContent, /2,67/); assert.match(p.textContent, /2,33/); assert.match(p.textContent, /<script>Más familias/); assert.ok(!p.todos().some(n => n.tagName === 'SCRIPT'));
   assert.equal(m.consultas.at(-1)[1], 'riesgos-grupos'); assert.equal(m.contenedor.inert, true);
   m.document.eventos.keydown({ key: 'Escape', preventDefault() {} }); assert.equal(panel(m), undefined); assert.equal(m.document.activeElement, b); assert.ok(!m.contenedor.inert);
@@ -108,7 +110,7 @@ test('Tab queda dentro del diálogo y al cerrar ficha de acción retorna al pila
 test('E33/E44: accesos al pie según permiso; Medidas regresa a la matriz y Alimentación (pestaña) no', async () => {
   for (const editar of [false, true]) {
     const m = await montar('matriz', editar);
-    const links = m.contenedor.todos().filter(n => n.tagName === 'A');
+    const links = m.contenedor.todos().filter(n => n.tagName === 'A' && n.className === 'boton secundario');
     assert.deepEqual(links.map(n => n.textContent), editar ? ['Medidas de gestión', 'Alimentación'] : ['Medidas de gestión']);
     assert.ok(links.every(n => n.className === 'boton secundario'));
     const secundaria = await montar('medidas', editar), regreso = secundaria.contenedor.children[0];
@@ -118,22 +120,21 @@ test('E33/E44: accesos al pie según permiso; Medidas regresa a la matriz y Alim
     assert.ok(!alim.contenedor.todos().some(n => n.textContent === '← Volver a la matriz'));
   }
 });
-test('E33: sin banda de cifras, ejes accesibles y cuatro filtros dentro de details cerrado', async () => {
+test('E33/E67: sin banda de cifras, celdas 3 × 3 con ejes y cuatro filtros en la Matriz de riesgos', async () => {
   const riesgos = [r1, ...[2, 3, 4].map(n => ({ ...r1, id: 'r-0' + n, codigo: 'R-0' + n, nombre: 'Riesgo ficticio ' + n, derecho_humano: 'Otro derecho', ambitos: ['Otro grupo'] }))];
   const m = await montar('matriz', true, { riesgos, 'riesgos-calificacion': [c1, { ...c1, riesgo: 'r-02', probabilidad: 'Media' }, { ...c1, riesgo: 'r-03', escala: 1, alcance: 1, irremediabilidad: 1, probabilidad: 'Baja' }] });
   const banda = m.contenedor.todos().find(n => n.className === 'kr-resumen');
   assert.equal(banda, undefined);
   assert.doesNotMatch(read('estilos-kit-riesgos.css'), /kr-resumen/);
-  const mapa = m.contenedor.todos().find(n => n.attrs.role === 'table');
-  assert.equal(mapa.todos().filter(n => n.attrs.role === 'cell').length, 9);
-  assert.deepEqual(mapa.todos().filter(n => n.attrs.role === 'rowheader').map(n => n.textContent), ['3 · Alta', '2 · Media', '1 · Baja']);
-  assert.deepEqual(mapa.todos().filter(n => n.attrs.role === 'columnheader').map(n => n.textContent), ['1 · Baja', '2 · Media', '3 · Alta']);
-  const lista = m.contenedor.todos().find(n => n.className === 'kr-lista');
-  assert.equal(lista.tagName, 'DETAILS'); assert.ok(!lista.open); assert.equal(lista.children[0].textContent, 'Ver lista de riesgos');
+  const mapa = m.contenedor.todos().find(n => String(n.attrs.class).includes('ka-general'));
+  assert.equal(mapa.todos().filter(n => n.attrs['data-celda']).length, 9);
+  assert.deepEqual(mapa.todos().filter(n => n.attrs.class === 'ka-eje-valor').map(n => n.textContent), ['Baja', 'Media', 'Alta', 'Alta', 'Media', 'Baja']);
+  assert.deepEqual(mapa.todos().filter(n => n.attrs.class === 'ka-eje-nombre').map(n => n.textContent), ['Probabilidad →', 'Gravedad →']);
+  buscar(m.contenedor, 'Matriz de riesgos').onclick(); const lista = panel(m);
   const filtros = lista.todos().filter(n => n.tagName === 'SELECT'); assert.equal(filtros.length, 4);
   for (const [i, valor, esperado] of [[0, 'Derecho a la salud', 'R-01'], [1, 'Operación propia', 'R-01'], [2, 'Media', 'R-02'], [2, 'Sin calificación', 'R-04'], [3, 'Todos confirman', null], [3, 'Con ajustes', 'R-01']]) {
     filtros.forEach(n => { n.value = ''; }); filtros[i].value = valor; filtros[i].onchange();
-    const botones = lista.todos().filter(n => n.tagName === 'BUTTON');
+    const botones = lista.todos().filter(n => n.tagName === 'BUTTON' && n.className === 'ka-principal');
     assert.equal(botones.length, esperado ? 1 : 0);
     if (esperado) assert.ok(botones[0].textContent.startsWith(esperado));
   }
@@ -196,4 +197,22 @@ test('E35: tabla técnica conserva bordes y fondos por nivel en ambos temas',()=
  assert.match(css,/\.kit-ficha \.kr-tecnica th, \.kit-ficha \.kr-tecnica td \{ border:1px solid var\(--borde\); font-weight:700/);
  for(const nivel of ['alta','media','baja'])assert.ok(css.includes('.kr-'+nivel+' { background: var(--'+nivel+'-fondo); color: var(--'+nivel+'); }'));
  assert.doesNotMatch(css,/kr-criterio|kr-resumen/);
+});
+
+test('E67: zoom de la celda con resumen, gravedad real y tipo de impacto; Vista por relación y Filtro por tipo', async () => {
+  const r2 = { ...r1, id: 'r-02', codigo: 'R-02', nombre: 'Riesgo ficticio dos' };
+  const m = await montar('matriz', false, { riesgos: [r1, r2], 'riesgos-calificacion': [c1, { ...c1, id: 'r-02', riesgo: 'r-02', vinculacion: 'Contribuye', tipo_impacto: 'Manifestado' }],
+    'riesgos-medidas': [{ codigo: 'A-01', titulo: 'Medida ficticia', componente: 'componente-1', estado: 'Cumplida', riesgos: ['r-01'] }] });
+  const celda = m.contenedor.todos().find(n => n.attrs['data-celda'] === 'Media|Alta');
+  assert.match(celda.attrs['aria-label'], /Prioridad alta: 2 riesgos \(Causa el impacto 1, Contribuye al impacto 1\)/);
+  celda.escuchas.click(); const z = panel(m);
+  assert.match(z.textContent, /2\s+Riesgos en la celda/); assert.match(z.textContent, /1\s+Medidas asociadas/); assert.match(z.textContent, /1\s+Medidas cumplidas/);
+  assert.match(z.textContent, /1\s+Impactos potenciales/); assert.match(z.textContent, /1\s+Impactos manifestados/);
+  const burbujas = z.todos().filter(n => n.attrs.class === 'ka-burbuja'); assert.equal(burbujas.length, 2);
+  assert.ok(z.todos().some(n => n.attrs.class === 'ka-fav ka-tip-manifestado'));
+  assert.ok(z.todos().some(n => n.attrs.class === 'ka-ancla'), 'misma gravedad: punto negro y líneas punteadas');
+  const [vista, filtro] = m.contenedor.todos().filter(n => n.tagName === 'SELECT');
+  vista.value = 'Contribuye'; vista.onchange(); assert.match(m.contenedor.todos().find(n => n.attrs['data-celda'] === 'Media|Alta').attrs['aria-label'], /1 riesgo \(Contribuye al impacto 1\)/);
+  vista.value = ''; filtro.value = 'Potencial'; filtro.onchange(); assert.match(m.contenedor.todos().find(n => n.attrs['data-celda'] === 'Media|Alta').attrs['aria-label'], /1 riesgo \(Causa el impacto 1\)/);
+  m.salir(); assert.equal(panel(m), undefined);
 });

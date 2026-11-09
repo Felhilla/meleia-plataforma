@@ -76,40 +76,90 @@
 
   async function render(modulo, c, d, p, original) {
     const el = root.App.el;
-    if (!p.puedeEditar) return original.render(c, d, p);
-    // Casos de muestra: la Alimentación por secciones no los modifica (sus Resultados los ven los clientes).
-    // Se prueba en la Empresa de demostración.
-    { const emp = (await d.empresas?.())?.find?.(x => x.id === p.empresa);
-      if (emp?.muestra_comercial && p.empresa !== 'empresa-demo') { c.append(root.App.el('p', 'Caso de muestra: sus datos no se modifican desde aquí. Para probar la Alimentación por secciones use la Empresa de demostración.', 'kit-met-nota kit-ali-aviso-muestra')); return original.render(c, d, p); } }
-    const M = await MODULOS[modulo](d, p), AV = modulo + '-avance', EV = modulo + '-evidencias';
-    const cargar = async () => Object.fromEntries(await Promise.all([...M.colecciones, AV, EV].map(async n => [n, await d.listar(p.empresa, n)])));
+    // E64 (9-nov, Felipe): sin permiso de edición, y en los casos de muestra, la Alimentación se ve como ejemplo de solo
+    // lectura (sus Resultados los ven los clientes y no se modifican). Se prueba de verdad en la Empresa de demostración.
+    let RO = !p.puedeEditar;
+    if (!RO) { const emp = (await d.empresas?.())?.find?.(x => x.id === p.empresa); RO = !!emp?.muestra_comercial && p.empresa !== 'empresa-demo'; }
+    const M = await MODULOS[modulo](d, p), AV = modulo + '-avance', EV = modulo + '-evidencias', BO = modulo + '-borrador';
+    const cargar = async () => Object.fromEntries(await Promise.all([...M.colecciones, AV, EV, BO].map(async n => [n, RO && [AV, EV, BO].includes(n) ? [] : await d.listar(p.empresa, n)])));
     let L = await cargar();
     if (p.vigente && !p.vigente()) return;
     const zona = el('div', null, 'kit-ali'), otros = el('details', null, 'kit-ali-otros'), cuerpoOriginal = el('div');
-    otros.append(el('summary', 'Registrar, editar a fondo o borrar registros, y cargar la plantilla de Excel'), cuerpoOriginal);
-    c.append(zona, otros);
-    const desmontar = await original.render(cuerpoOriginal, d, p);
-    const guardarAv = reg => d.guardar(p.empresa, AV, reg.id, reg);
+    otros.append(el('summary', `Registrar, editar a fondo o borrar ${M.unidad}, y cargar la plantilla de Excel`), cuerpoOriginal);
+    c.append(zona); if (!RO) c.append(otros);
+    const desmontar = RO ? undefined : await original.render(cuerpoOriginal, d, p);
+    const guardarAv = reg => RO ? reg : d.guardar(p.empresa, AV, reg.id, reg);
+    // E64 (9-nov, Felipe): agregar un actor (o un riesgo) sin buscar el editor. Abre el editor de abajo en su formulario
+    // de alta; al cerrarlo, el tablero se vuelve a calcular con el registro nuevo.
+    const agregar = () => { const b = el('button', modulo === 'actores' ? '+ Agregar actor' : '+ Agregar riesgo', 'kit-ali-secundario kit-ali-agregar'); b.type = 'button';
+      b.onclick = () => { otros.open = true; const alta = [...(cuerpoOriginal.querySelectorAll?.('button') || [])].find(x => /^(Agregar|Registrar|Nuevo)/.test(String(x.textContent).trim())); if (alta) { alta.click?.(); const f = cuerpoOriginal.querySelector?.('form'); (f || alta).scrollIntoView?.({ block: 'start' }); } else otros.scrollIntoView?.({ block: 'start' }); };
+      return b; };
+    otros.addEventListener?.('toggle', async () => { if (!otros.open && !RO) { L = await cargar(); tablero(); } });
     const estado = () => { const meta = (L[AV] || []).find(a => a.id === 'evaluacion') || null;
-      return { meta, ciclo: meta?.ciclo || 0, enProceso: meta?.estado === 'en-proceso', sec: id => (L[AV] || []).find(a => a.id === 'sec-' + id && a.ciclo === meta?.ciclo) || { estado: 'sin-empezar' } }; };
+      return { meta, ciclo: meta?.ciclo || 0, enProceso: meta?.estado === 'en-proceso', nueva: meta?.estado === 'en-proceso' && meta?.tipo === 'nueva', sec: id => (L[AV] || []).find(a => a.id === 'sec-' + id && a.ciclo === meta?.ciclo) || { estado: 'sin-empezar' } }; };
     const evidencias = id => (L[EV] || []).find(e => e.id === id)?.enlaces || [];
+    // E64: "Nueva evaluación" parte en blanco. Las calificaciones van a <modulo>-borrador y los registros vigentes no se tocan
+    // hasta "Terminar". "Editar la evaluación vigente" califica directo sobre los registros (como antes).
+    const claveB = (S, x, it) => `${S.ciclo}:${x.id}:${it.id}`;
+    const secciones = () => { const S = estado(), secs = M.secciones(L); if (!S.nueva) return secs;
+      return secs.map(x => !x.campos.length ? x : { ...x, items: x.items.map(it => { const b = (L[BO] || []).find(r => r.id === claveB(S, x, it)), reg = { ...it.registro };
+        x.campos.forEach(cp => { reg[cp.id] = b?.valores?.[cp.id]; }); return { ...it, registro: reg, borrador: true }; }) }); };
+    const guardarItem = async (x, it) => { const S = estado(); if (RO) return;
+      if (!S.nueva) return M.guardar(it);
+      const r = { id: claveB(S, x, it), ciclo: S.ciclo, seccion: x.id, item: it.id, valores: Object.fromEntries(x.campos.map(cp => [cp.id, it.registro[cp.id]]).filter(([, v]) => !vacio(v))), actualizado: new Date().toISOString() };
+      await d.guardar(p.empresa, BO, r.id, r); const k = (L[BO] ||= []).findIndex(y => y.id === r.id); if (k < 0) L[BO].push(r); else L[BO][k] = r; };
+    // Al terminar una evaluación nueva, lo calificado pasa a los registros (validado). Lo que no se calificó conserva su valor.
+    async function aplicarBorrador() { const S = estado(); if (!S.nueva) return;
+      for (const x of M.secciones(L)) { if (!x.campos.length) continue;
+        for (const it of x.items) { const b = (L[BO] || []).find(r => r.id === claveB(S, x, it)); if (!b || !Object.keys(b.valores || {}).length) continue;
+          await M.guardar({ ...it, registro: { ...it.registro, ...b.valores } }); } } }
+    const cifrasDe = (secs, S) => { const items = secs.flatMap(x => x.items.map(it => ({ x, it }))), hechos = items.filter(({ x, it }) => x.completo(it)).length;
+      return { items, hechos, sinEv: items.filter(({ x, it }) => x.campos.length && !evidencias(it.id).length).length, completas: secs.filter(x => S.sec(x.id).estado === 'completa').length }; };
+
+    // Evaluación vigente (sin proceso abierto): avance real de los datos cargados y las dos opciones.
+    function opciones(s, S) {
+      const secs = M.secciones(L), { items, hechos } = cifrasDe(secs, S);
+      s.append(el('h2', RO ? 'Así se alimenta este caso' : 'Evaluación vigente', 'kit-met-titulo'),
+        el('p', RO ? 'Caso de muestra: puede recorrer las secciones y ver cómo se calificó cada registro. Sus datos no se modifican desde aquí.'
+          : `Los Resultados que se ven hoy salen de estos datos. Puede corregirlos o empezar una evaluación nueva. Para agregar ${M.unidad}, use el editor de abajo.`, 'kit-met-texto'));
+      const tiles = el('ul', null, 'kit-met-tiles');
+      [[(items.length ? Math.round(hechos * 100 / items.length) : 0) + ' %', 'Datos cargados', `${hechos} de ${items.length} registros con todos sus datos`], [String(secs.length), 'Secciones', 'en que se organiza la calificación']].forEach(([a, r, t]) => {
+        const li = el('li'), x = el('div', null, 'kit-met-tile kit-ali-cifra'); x.append(el('span', a, 'kit-met-tile-num'), el('span', r, 'kit-met-tile-rotulo'), el('span', t, 'kit-met-tile-sub')); li.append(x); tiles.append(li); });
+      s.append(tiles);
+      const dos = el('div', null, 'kit-ali-opciones');
+      const tarjeta = (titulo, texto, rotulo, tipo) => {
+        const f = el('form', null, 'kit-ali-opcion'), b = el('button', rotulo, 'kit-met-pastilla'), aviso = el('p', null, 'kit-met-nota'), n = el('input');
+        n.type = 'text'; n.maxLength = 80; n.placeholder = tipo === 'nueva' ? 'Nombre, por ejemplo Evaluación 2027' : 'Nombre, por ejemplo Corrección de noviembre'; n.setAttribute('aria-label', 'Nombre de la ' + titulo.toLowerCase());
+        b.type = 'submit'; aviso.setAttribute('role', 'status');
+        f.append(el('h3', titulo, 'kit-ali-opcion-titulo'), el('p', texto, 'kit-met-texto'), n, b, aviso);
+        if (RO) { b.disabled = true; n.disabled = true; aviso.textContent = 'Disponible en la cuenta de la empresa.'; }
+        f.onsubmit = async ev => { ev?.preventDefault?.(); if (RO) return; if (!n.value.trim()) { aviso.textContent = 'Escribe un nombre.'; return; }
+          b.disabled = true; try { await guardarAv({ id: 'evaluacion', ciclo: S.ciclo + 1, estado: 'en-proceso', tipo, nombre: n.value.trim(), iniciada: new Date().toISOString() }); L = await cargar(); tablero(); }
+          catch (e) { aviso.textContent = e.message || 'No se pudo empezar.'; b.disabled = false; } };
+        return f; };
+      dos.append(tarjeta('Editar la evaluación vigente', 'Corrige o completa los datos ya cargados. El avance parte de lo que ya está.', 'Editar', 'edicion'),
+        tarjeta('Nueva evaluación', `Califica de nuevo a los mismos ${M.unidad}, desde cero. Los Resultados vigentes se mantienen hasta terminar; lo que no se califique conserva su valor anterior.`, 'Empezar', 'nueva'));
+      s.append(dos); if (!RO) { const fila = el('div', null, 'kit-ali-acciones'); fila.append(agregar()); s.append(fila); }
+      return listaSecciones(secs, S, true);
+    }
+    function listaSecciones(secs, S, vigente) {
+      const lista = el('ol', null, 'kit-ali-secciones');
+      secs.forEach((x, k) => {
+        const n = x.items.filter(it => x.completo(it)).length, st = vigente ? (n === x.items.length ? 'completa' : 'en-curso') : S.sec(x.id).estado, b = el('button', null, 'kit-ali-seccion estado-' + st); b.type = 'button';
+        const barra = el('span', null, 'kit-ali-barra'), relleno = el('span'); relleno.style?.setProperty?.('width', (x.items.length ? n * 100 / x.items.length : 0) + '%'); barra.append(relleno);
+        b.append(el('span', String(k + 1).padStart(2, '0'), 'kit-mono'), el('span', x.titulo, 'kit-ali-seccion-titulo'), barra, el('span', `${n} de ${x.items.length}`, 'kit-ali-seccion-n'), el('span', vigente ? (st === 'completa' ? 'Con datos' : 'Datos faltantes') : ESTADO[st] || 'En curso', 'kit-ali-estado'));
+        b.setAttribute('aria-label', `${x.titulo}: ${n} de ${x.items.length} completos. Abrir la sección`);
+        b.onclick = () => seccion(x.id, vigente); const li = el('li'); li.append(b); lista.append(li);
+      });
+      return lista;
+    }
 
     function tablero() {
-      const S = estado(), secs = M.secciones(L), s = el('section', null, 'kit-banda kit-banda-oscura kit-ali-tablero');
-      s.append(el('p', `Módulo ${M.romano}, alimentación`, 'kit-mono'));
-      if (!S.enProceso) {
-        s.append(el('h2', 'Nueva actualización', 'kit-met-titulo'), el('p', `Se califica por secciones y se guarda solo. Puede hacerlo en varios días y desde cualquier equipo. Los Resultados se muestran de nuevo cuando todas las secciones estén completas. Para agregar ${M.unidad}, use el editor de abajo.`, 'kit-met-texto'));
-        const f = el('form', null, 'kit-ali-inicio'), n = el('input'), b = el('button', 'Empezar', 'kit-met-pastilla'), aviso = el('p', null, 'kit-met-nota');
-        n.type = 'text'; n.maxLength = 80; n.placeholder = 'Nombre, por ejemplo Actualización 2026'; n.setAttribute('aria-label', 'Nombre de la actualización'); b.type = 'submit'; aviso.setAttribute('role', 'status');
-        f.append(n, b, aviso);
-        f.onsubmit = async ev => { ev?.preventDefault?.(); if (!n.value.trim()) { aviso.textContent = 'Escribe un nombre.'; return; }
-          b.disabled = true; try { await guardarAv({ id: 'evaluacion', ciclo: S.ciclo + 1, estado: 'en-proceso', nombre: n.value.trim(), iniciada: new Date().toISOString() }); L = await cargar(); tablero(); }
-          catch (e) { aviso.textContent = e.message || 'No se pudo empezar.'; b.disabled = false; } };
-        s.append(f); zona.replaceChildren(s); return;
-      }
-      const items = secs.flatMap(x => x.items.map(it => ({ x, it }))), hechos = items.filter(({ x, it }) => x.completo(it)).length;
-      const sinEv = items.filter(({ x, it }) => x.campos.length && !evidencias(it.id).length).length, completas = secs.filter(x => S.sec(x.id).estado === 'completa').length;
-      s.append(el('h2', S.meta.nombre, 'kit-met-titulo'), el('p', `En proceso desde ${String(S.meta.iniciada || '').slice(0, 10)}. Lo que se califica queda guardado de inmediato.`, 'kit-met-texto'));
+      const S = estado(), secs = secciones(), s = el('section', null, 'kit-banda kit-banda-oscura kit-ali-tablero');
+      s.append(el('p', RO ? `Módulo ${M.romano}, alimentación de ejemplo` : `Módulo ${M.romano}, alimentación`, 'kit-mono'));
+      if (!S.enProceso || RO) { const lista = opciones(s, S); zona.replaceChildren(s, lista); return; }
+      const { items, hechos, sinEv, completas } = cifrasDe(secs, S);
+      s.append(el('h2', S.meta.nombre, 'kit-met-titulo'), el('p', `${S.nueva ? 'Evaluación nueva, empieza en blanco' : 'Edición de la evaluación vigente'}. En proceso desde ${String(S.meta.iniciada || '').slice(0, 10)}. Lo que se califica queda guardado de inmediato.`, 'kit-met-texto'));
       const tiles = el('ul', null, 'kit-met-tiles');
       [[(items.length ? Math.round(hechos * 100 / items.length) : 0) + ' %', 'Avance', `${hechos} de ${items.length} registros completos`], [`${completas}/${secs.length}`, 'Secciones completas', 'marcadas por la empresa'],
         [String(sinEv), 'Sin evidencia', 'registros calificados sin enlace'], [String(items.length - hechos), 'Por completar', 'registros con datos faltantes']].forEach(([a, r, t]) => {
@@ -119,27 +169,20 @@
       if (pend) { const b = el('button', 'Seguir donde quedé', 'kit-met-pastilla'); b.type = 'button'; b.onclick = () => seccion(pend.id); acc.append(b); }
       const fin = el('button', 'Terminar y ver los Resultados', 'kit-met-pastilla kit-ali-calcular'); fin.type = 'button'; fin.disabled = completas < secs.length;
       fin.title = fin.disabled ? 'Se habilita cuando todas las secciones estén completas.' : '';
-      fin.onclick = async () => { fin.disabled = true; try { await guardarAv({ ...S.meta, estado: 'publicada', publicada: new Date().toISOString() }); L = await cargar(); tablero(); aviso.textContent = 'Listo. Los Resultados ya se ven en la pestaña Resultados.'; }
+      fin.onclick = async () => { fin.disabled = true; try { await aplicarBorrador(); await guardarAv({ ...S.meta, estado: 'publicada', publicada: new Date().toISOString() }); L = await cargar(); tablero(); aviso.textContent = 'Listo. Los Resultados ya se ven en la pestaña Resultados.'; }
         catch (e) { aviso.textContent = e.message || 'No se pudo terminar.'; fin.disabled = false; } };
-      acc.append(fin); s.append(acc, aviso);
-      const lista = el('ol', null, 'kit-ali-secciones');
-      secs.forEach((x, k) => {
-        const n = x.items.filter(it => x.completo(it)).length, st = S.sec(x.id).estado, b = el('button', null, 'kit-ali-seccion estado-' + st); b.type = 'button';
-        const barra = el('span', null, 'kit-ali-barra'), relleno = el('span'); relleno.style?.setProperty?.('width', (x.items.length ? n * 100 / x.items.length : 0) + '%'); barra.append(relleno);
-        b.append(el('span', String(k + 1).padStart(2, '0'), 'kit-mono'), el('span', x.titulo, 'kit-ali-seccion-titulo'), barra, el('span', `${n} de ${x.items.length}`, 'kit-ali-seccion-n'), el('span', ESTADO[st] || 'En curso', 'kit-ali-estado'));
-        b.setAttribute('aria-label', `${x.titulo}: ${n} de ${x.items.length} completos, ${ESTADO[st] || st}. Abrir la sección`);
-        b.onclick = () => seccion(x.id); const li = el('li'); li.append(b); lista.append(li);
-      });
+      acc.append(fin, agregar()); s.append(acc, aviso);
+      const lista = listaSecciones(secs, S, false);
       zona.replaceChildren(s, lista);
     }
 
-    function seccion(id) {
-      const S = estado(), x = M.secciones(L).find(y => y.id === id); if (!x) return tablero();
-      const cab = el('section', null, 'kit-banda kit-banda-oscura kit-ali-cabeza'), guardado = el('p', x.ayuda || 'Los cambios se guardan solos.', 'kit-met-nota kit-ali-guardado'); guardado.setAttribute('role', 'status');
+    function seccion(id, vigente = false) {
+      const S = estado(), x = (vigente ? M.secciones(L) : secciones()).find(y => y.id === id); if (!x) return tablero();
+      const cab = el('section', null, 'kit-banda kit-banda-oscura kit-ali-cabeza'), guardado = el('p', RO || vigente ? 'Vista de consulta: para calificar, abra una evaluación en el tablero.' : x.ayuda || 'Los cambios se guardan solos.', 'kit-met-nota kit-ali-guardado'); guardado.setAttribute('role', 'status');
       const volver = () => { const v = el('button', '← Volver al tablero', 'kit-ali-secundario'); v.type = 'button'; v.onclick = () => tablero(); return v; };
-      cab.append(volver(), el('p', 'Sección', 'kit-mono'), el('h2', x.titulo, 'kit-met-titulo'), guardado);
+      cab.append(volver(), el('p', 'Sección', 'kit-mono'), el('h2', x.titulo, 'kit-met-titulo'), guardado, ...(RO ? [] : [agregar()]));
       const cuerpo = el('div', null, 'kit-ali-preguntas'), tiempos = new Map();
-      const enCurso = async () => { if (S.sec(x.id).estado === 'sin-empezar') { const a = { id: 'sec-' + x.id, ciclo: S.ciclo, estado: 'en-curso', actualizado: new Date().toISOString() }; await guardarAv(a); (L[AV] ||= []).push(a); } };
+      const enCurso = async () => { if (RO) return; if (S.sec(x.id).estado === 'sin-empezar') { const a = { id: 'sec-' + x.id, ciclo: S.ciclo, estado: 'en-curso', actualizado: new Date().toISOString() }; await guardarAv(a); (L[AV] ||= []).push(a); } };
       const programar = (it, fn) => { root.clearTimeout?.(tiempos.get(it.id)); tiempos.set(it.id, root.setTimeout(async () => { tiempos.delete(it.id);
         try { await fn(); await enCurso(); guardado.textContent = 'Guardado a las ' + hora(); } catch (e) { guardado.textContent = 'No se guardó ' + it.titulo + ': ' + (e.message || 'error'); } }, 900)); };
       x.items.forEach(it => {
@@ -148,7 +191,7 @@
         cabI.lastChild.append(el('p', it.titulo, 'kit-ali-texto'), ...(it.sub ? [el('p', it.sub, 'kit-met-nota')] : []));
         caja.append(cabI);
         if (x.campos.length) {
-          const reg = it.registro, guardarIt = () => programar(it, () => M.guardar(it));
+          const reg = it.registro, guardarIt = () => { if (!RO && !vigente) programar(it, () => guardarItem(x, it)); };
           const det = el('div', null, 'kit-ali-detalle');
           x.campos.forEach(cp => {
             if (cp.tipo === 'escala') {
@@ -193,7 +236,9 @@
         try { const a = { id: 'sec-' + x.id, ciclo: S.ciclo, estado: 'completa', actualizado: new Date().toISOString() }; await guardarAv(a); L = await cargar(); tablero(); }
         catch (e) { aviso.textContent = e.message || 'No se pudo marcar la sección.'; b.disabled = false; }
       };
-      pie.append(volver(), b, aviso); zona.replaceChildren(cab, cuerpo, pie); zona.scrollIntoView?.({ block: 'start' });
+      pie.append(volver(), ...(RO || vigente ? [] : [b, aviso]));
+      if (RO || vigente) cuerpo.querySelectorAll?.('button, input, select, textarea').forEach(n => { n.disabled = true; });
+      zona.replaceChildren(cab, cuerpo, pie); zona.scrollIntoView?.({ block: 'start' });
     }
     tablero();
     return desmontar;
@@ -210,7 +255,13 @@
     return { nombre: meta.nombre, completas: av.filter(a => a.ciclo === meta.ciclo && a.estado === 'completa' && a.id !== 'evaluacion').length, total: null };
   }
   instalar();
-  const api = { MODULOS, enlaceValido, enProceso, VISTA };
+  // E64: solo lectura para los Módulos II y III (sus vistas tienen su propio código). Deshabilita lo que edita cada vez que
+  // la zona se vuelve a pintar; la navegación (secciones, volver, seguir) sigue activa. Es comodidad: la barrera real es RLS.
+  function soloLectura(zona) {
+    const apagar = () => zona.querySelectorAll?.('.kit-ali-preguntas input, .kit-ali-preguntas select, .kit-ali-preguntas textarea, .kit-ali-preguntas button, .kit-ali-calcular, .kit-ali-pie .kit-met-pastilla, .kit-ali-dimensiones input, .kit-ali-dimensiones textarea').forEach(n => { n.disabled = true; });
+    if (root.MutationObserver) new root.MutationObserver(apagar).observe(zona, { childList: true, subtree: true });
+  }
+  const api = { MODULOS, enlaceValido, enProceso, VISTA, soloLectura };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.KitAlimentacionRegistros = api;
 }(typeof window !== 'undefined' ? window : globalThis));

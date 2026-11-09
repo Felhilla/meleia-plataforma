@@ -80,3 +80,27 @@
 .mat-nota .dim-ficha-rotulo { grid-column:1 / -1; }
 .mat-ficha-estado { display:flex; flex-wrap:wrap; gap:var(--e3); align-items:baseline; }
 .mat-ficha-estado h3, .mat-ficha-estado p { margin:0; }
+
+/* E66 (9-nov): Resultados del Módulo III con la lógica de cuadrantes del Módulo I (E65). */
+.mat-tablero-cuadrantes { margin-bottom: var(--e4); }
+.mat-tablero-cuadrantes .mat-resultado { padding: 0; }
+.mat-tablero-cuadrantes .mat-resultado > h2 { margin: 0 0 var(--e1); font-size: var(--t-h2); }
+.ka-marco-oro .mat-zona-doble { fill: #E8EDE0; } .ka-marco-oro .mat-zona-impacto { fill: #E6ECF2; } .ka-marco-oro .mat-zona-financiera { fill: #F5EDDA; } .ka-marco-oro .mat-zona-base { fill: #F9F6F2; }
+.mat-zoom-doble { --zoom: #9BC46B; background: #EEF3E6 !important; }
+.mat-zoom-impacto { --zoom: #4F7396; background: #EDF1F5 !important; }
+.mat-zoom-financiera { --zoom: #D27F2F; background: #F7F0E0 !important; }
+.mat-zoom-base { --zoom: #7C7F70; background: #F6F4EF !important; }
+.ka-zoom-dim { border-left-color: var(--dato) !important; }
+.ka-zoom-doble { border-left-color: #33402B; }
+.ka-fav.ka-cla-doble, .ka-conv-fav.ka-cla-doble::before { fill: #33402B; background: #33402B; } .ka-punto-chico.ka-cla-doble { stroke: #33402B; }
+.ka-fav.ka-cla-impacto, .ka-conv-fav.ka-cla-impacto::before { fill: #8DBF5A; background: #8DBF5A; } .ka-punto-chico.ka-cla-impacto { stroke: #8DBF5A; }
+.ka-fav.ka-cla-financiera, .ka-conv-fav.ka-cla-financiera::before { fill: #D27F2F; background: #D27F2F; } .ka-punto-chico.ka-cla-financiera { stroke: #D27F2F; }
+.ka-fav.ka-cla-no-material, .ka-conv-fav.ka-cla-no-material::before { fill: #C4BDAF; background: #C4BDAF; } .ka-punto-chico.ka-cla-no-material { stroke: #C4BDAF; }
+.ka-resumen-tarjeta li.mat-cla-doble { border-left-color: #33402B; } .ka-resumen-tarjeta li.mat-cla-impacto { border-left-color: #8DBF5A; } .ka-resumen-tarjeta li.mat-cla-financiera { border-left-color: #D27F2F; } .ka-resumen-tarjeta li.mat-cla-no-material { border-left-color: #C4BDAF; }
+.mat-top { margin: var(--e2) 0 0; padding-left: var(--e4); display: grid; gap: 2px; }
+.mat-top li { font-size: var(--t-chico); }
+.mat-participantes { margin: var(--e2) 0 0; padding-left: var(--e4); font-size: var(--t-chico); }
+.ka-matriz-dialogo.materialidad { overflow-wrap: normal; }
+.ka-matriz-dialogo.materialidad th, .ka-matriz-dialogo.materialidad td { color: #1F241B; border-color: #DCD5C6; }
+/* La ficha del aspecto se abre sobre el zoom del cuadrante (Muñeca Rusa). */
+.ka-fondo ~ .fondo-dialogo { z-index: 70; }
