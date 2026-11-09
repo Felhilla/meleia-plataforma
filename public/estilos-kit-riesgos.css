@@ -70,3 +70,25 @@
 .kit-ficha .kr-tecnica th, .kit-ficha .kr-tecnica td { border:1px solid var(--borde); font-weight:700; }
 .kit-ficha .kr-tecnica th[scope="row"] { font-size:var(--t-chico); text-transform:none; letter-spacing:normal; }
 .kit-ficha .kr-tecnica .kr-tecnica-subtitulo { font-size:var(--t-micro); text-transform:uppercase; letter-spacing:.1em; color:var(--oro-texto); }
+
+/* E67 (9-nov): matriz de riesgos con la lógica de cuadrantes de los módulos I y III. */
+.kr-tablero { margin-bottom: var(--e4); }
+.ka-marco-oro .kr-zona-alta { fill: #F4E1DA; } .ka-marco-oro .kr-zona-media { fill: #F6EDD3; } .ka-marco-oro .kr-zona-baja { fill: #E8EDE0; }
+.ka-rejilla .ka-cruz { stroke-width: 3; }
+.ka-rejilla .ka-zona-nombre { font-size: 13px; }
+.kr-zoom-alta { --zoom: #A8503A; background: #F7ECE7 !important; }
+.kr-zoom-media { --zoom: #B78D36; background: #F7F0E0 !important; }
+.kr-zoom-baja { --zoom: #5E7A45; background: #EEF3E6 !important; }
+.ka-zoom-tip-potencial { border-left-color: #33402B; } .ka-zoom-tip-manifestado { border-left-color: #9E2B25; }
+.ka-fav.ka-tip-potencial, .ka-conv-fav.ka-tip-potencial::before { fill: #33402B; background: #33402B; } .ka-punto-chico.ka-tip-potencial { stroke: #33402B; }
+.ka-fav.ka-tip-manifestado, .ka-conv-fav.ka-tip-manifestado::before { fill: #9E2B25; background: #9E2B25; } .ka-punto-chico.ka-tip-manifestado { stroke: #9E2B25; }
+.ka-resumen-tarjeta li.kr-res-alta { border-left-color: #A8503A; } .ka-resumen-tarjeta li.kr-res-media { border-left-color: #B78D36; } .ka-resumen-tarjeta li.kr-res-baja { border-left-color: #5E7A45; }
+.kr-res-lista { margin: var(--e2) 0 0; padding-left: var(--e4); font-size: var(--t-chico); display: grid; gap: 4px; }
+.kr-res-ir { display: inline-block; margin-top: var(--e2); font-size: var(--t-chico); }
+.kr-matriz-dialogo .kr-filtros { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--e3); margin: var(--e3) 0; }
+.kr-matriz-dialogo .kr-filtros select { width: 100%; }
+.kr-matriz-dialogo td, .kr-matriz-dialogo th { font-size: var(--t-micro); overflow-wrap: normal; word-break: normal; color: #1F241B; }
+.kr-matriz-dialogo td:first-child { min-width: 220px; }
+/* La ficha del riesgo se abre sobre el zoom de la celda. */
+.ka-fondo ~ .kr-fondo { z-index: 100; }
+@media (max-width: 700px) { .kr-matriz-dialogo .kr-filtros { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

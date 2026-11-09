@@ -127,7 +127,7 @@
         const vista = c.closest?.('.kit-vista'), sel = vista?.querySelector?.(':scope > .kit-casos, :scope > .kit-caso-unico');
         if (sel) caso.append(sel);
         const cuerpo = root.App.el('section', null, 'kit-res-cuerpo');
-        if (modulo === 'actores' || modulo === 'materialidad') {
+        if (modulo === 'actores' || modulo === 'materialidad' || modulo === 'riesgos') {
           const el = root.App.el, ver = el('button', 'Ver resultados', 'kit-res-ver'), cerrar = el('button', '×', 'kit-cerrar kit-res-cerrar');
           ver.type = 'button'; ver.setAttribute('aria-expanded', 'false'); cerrar.type = 'button'; cerrar.setAttribute('aria-label', 'Cerrar resultados');
           cuerpo.hidden = true; cuerpo.classList.add('kit-res-plegable'); cuerpo.append(cerrar);

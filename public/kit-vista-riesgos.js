@@ -140,45 +140,111 @@
     } catch (e) { ctx.error(validaciones, e); }
 
   }
+  // E67 (Felipe, 9-nov): misma lectura que los módulos I y III (E65, E66). La matriz 3 × 3 de gravedad y probabilidad
+  // se lee por celdas: en cada una, un círculo por relación de la empresa con el impacto (causa, contribuye,
+  // directamente vinculada). El punto de color de cada riesgo es su tipo de impacto (potencial o manifestado).
+  const CIRC = (cx, cy, r) => `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0`;
+  const icono = (d, color) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`);
+  const VINCULOS = [
+    ['Causa', 'Causa el impacto', '#6E3A6E', CIRC(12, 12, 8) + CIRC(12, 12, 4.5) + CIRC(12, 12, 1)],
+    ['Contribuye', 'Contribuye al impacto', '#B78D36', CIRC(8, 8, 2.5) + CIRC(16, 8, 2.5) + 'M3 19c0-3 2-5 5-5s5 2 5 5M11 19c0-3 2-5 5-5s5 2 5 5'],
+    ['Directamente vinculada', 'Directamente vinculada', '#2F5D7C', 'M10 14a4 4 0 0 1 0-5.6l2.4-2.4a4 4 0 0 1 5.6 5.6l-1.2 1.2M14 10a4 4 0 0 1 0 5.6l-2.4 2.4a4 4 0 0 1-5.6-5.6l1.2-1.2']
+  ].map(([id, nombre, color, d]) => ({ id, nombre, color, icono: icono(d, '#1F241B') }));
+  const SIN_VINCULO = { id: '', nombre: 'Sin relación asignada', color: '#7C7F70', icono: icono(CIRC(12, 12, 8), '#1F241B') };
+  const TIPOS = [['Potencial', 'potencial'], ['Manifestado', 'manifestado']];
+  const RANGOS = { Baja: [1, 1.5], Media: [1.5, 2.5], Alta: [2.5, 3] };
+  function filaResumen(cifra, rotulo, clase) { const d = el('details', null, 'ka-res-fila ' + clase), s = el('summary'); s.append(el('span', '#', 'ka-res-icono'), el('strong', cifra), el('span', rotulo, 'ka-res-rotulo')); d.append(s); return d; }
   async function matriz(contenedor, datos, params) {
     const cfg = await json('config/kit-riesgos-config.json'); if (!params.vigente()) return;
-    const ctx = contexto(contenedor, datos, params, cfg);
+    const ctx = contexto(contenedor, datos, params, cfg), KC = root.KitCuadrantes;
     await ctx.cargar(['riesgos', 'riesgos-calificacion', 'riesgos-validaciones', 'riesgos-medidas']); if (!ctx.activo()) return;
     const riesgos = ctx.listas.riesgos; contenedor.classList.add('kr');
-    if (!riesgos.length) texto(contenedor, 'Esta empresa aún no tiene riesgos registrados. Registra el riesgo y su calificación técnica para ubicarlo en la matriz.');
-
-    const marco = el('div', null, 'kr-marco'); marco.append(el('div', 'Gravedad', 'kr-eje-gravedad'));
-    const mapa = el('div', null, 'kr-mapa'); mapa.setAttribute('role', 'table'); mapa.setAttribute('aria-label', 'Matriz de riesgos: gravedad en filas, probabilidad en columnas');
-    const cab = el('div', null, 'kr-fila'); cab.setAttribute('role', 'row'); cab.append(el('span'));
-    cfg.probabilidades.forEach((p, i) => { const h = el('strong', `${i + 1} · ${p}`); h.setAttribute('role', 'columnheader'); cab.append(h); });
-    cfg.niveles.forEach(g => {
-      const fila = el('div', null, 'kr-fila'); fila.setAttribute('role', 'row'); const rotulo = el('strong', `${cfg.niveles.length - cfg.niveles.indexOf(g)} · ${g}`); rotulo.setAttribute('role', 'rowheader'); fila.append(rotulo);
-      cfg.probabilidades.forEach(p => {
-        const prio = cfg.prioridad[g][p], celda = el('div', null, 'kr-celda kr-' + prio.toLowerCase()); celda.dataset.celda = g + '|' + p; celda.setAttribute('role', 'cell'); celda.setAttribute('aria-label', `Gravedad ${g}, probabilidad ${p}, prioridad ${prio}`);
-        celda.append(el('small', 'Prioridad ' + prio));
-        riesgos.filter(r => K.gravedad(tecnica(ctx, r.id), cfg)?.nivel === g && tecnica(ctx, r.id)?.probabilidad === p).forEach(r => { const b = boton(r.codigo, () => fichaRiesgo(ctx, r)); b.title = r.nombre; celda.append(b); }); fila.append(celda);
-      }); mapa.append(fila);
-    }); mapa.append(cab); marco.append(mapa, el('div', 'Probabilidad', 'kr-eje-probabilidad')); contenedor.append(marco);
-    const pendientes = riesgos.filter(r => !K.prioridad(tecnica(ctx, r.id), cfg));
-    if (pendientes.length) { const s = bloque(contenedor, 'Sin calificación técnica'); pendientes.forEach(r => s.append(boton(`${r.codigo} · ${r.nombre}`, () => fichaRiesgo(ctx, r)))); }
-    const filtros = el('div', null, 'kr-filtros'), lista = el('div');
-    const opciones = valores => [{ id: '', nombre: 'Todos' }, ...valores];
-    const derecho = seleccionar(filtros, 'Derecho', opciones([...new Set(riesgos.map(r => r.derecho_humano))]));
-    const ambito = seleccionar(filtros, 'Ámbito', opciones([...new Set(riesgos.flatMap(r => r.ambitos || []))]));
-    const prio = seleccionar(filtros, 'Prioridad', opciones([...cfg.niveles, 'Sin calificación']));
-    const validado = seleccionar(filtros, 'Estado de validación', opciones(['Pendiente', 'Revisado', 'Con ajustes', 'Todos confirman']));
-    const pintar = () => {
-      lista.replaceChildren();
-      const filtrados = riesgos.filter(r => {
-        const v = K.validacion(r.id, ctx.listas['riesgos-validaciones'], cfg), estado = validado.value;
-        return (!derecho.value || derecho.value === r.derecho_humano) && (!ambito.value || r.ambitos?.includes(ambito.value)) && (!prio.value || prioridad(ctx, r.id) === prio.value) && (!estado || (estado === 'Pendiente' && !v.revisados) || (estado === 'Revisado' && v.revisados) || (estado === 'Con ajustes' && v.revisados > v.confirman) || (estado === 'Todos confirman' && v.revisados > 0 && v.confirman === v.revisados));
-      });
-      // El orden explícito deja los pendientes al final.
-      filtrados.sort((a, b) => (cfg.niveles.indexOf(prioridad(ctx, a.id)) < 0 ? cfg.niveles.length : cfg.niveles.indexOf(prioridad(ctx, a.id))) - (cfg.niveles.indexOf(prioridad(ctx, b.id)) < 0 ? cfg.niveles.length : cfg.niveles.indexOf(prioridad(ctx, b.id))) || a.id.localeCompare(b.id));
-      tabla(lista, ['Riesgo', 'Prioridad', 'Validación'], filtrados.map(r => [boton(`${r.codigo} · ${r.nombre}`, () => fichaRiesgo(ctx, r)), prioridad(ctx, r.id), K.validacion(r.id, ctx.listas['riesgos-validaciones'], cfg).texto]));
-      if (!filtrados.length) texto(lista, 'No hay riesgos con estos filtros.');
+    if (!riesgos.length) { texto(contenedor, 'Esta empresa aún no tiene riesgos registrados. Registra el riesgo y su calificación técnica para ubicarlo en la matriz.'); accesos(contenedor, params); return ctx.limpiar; }
+    const vinculo = r => VINCULOS.find(v => v.id === tecnica(ctx, r.id)?.vinculacion) || SIN_VINCULO;
+    const tipo = r => tecnica(ctx, r.id)?.tipo_impacto || 'Potencial';
+    const medidasDe = lista => { const ids = new Set(lista.map(r => r.id)); return ctx.listas['riesgos-medidas'].filter(a => a.riesgos?.some(id => ids.has(id))); };
+    const abrir = r => fichaRiesgo(ctx, r);
+    const raiz = el('div', null, 'ka-resultados kr-tablero'), lateral = el('aside', null, 'ka-lateral'), figura = el('figure', null, 'ka-matriz');
+    const vinculosPresentes = VINCULOS.filter(v => riesgos.some(r => vinculo(r) === v));
+    const vista = seleccionar(lateral, 'Vista', [{ id: '', nombre: 'General' }, ...vinculosPresentes.map(v => ({ id: v.id, nombre: v.nombre }))]);
+    const filtro = seleccionar(lateral, 'Filtro', [{ id: '', nombre: 'Todos los tipos de impacto' }, ...TIPOS.map(([t]) => ({ id: t, nombre: t === 'Potencial' ? 'Potenciales' : 'Manifestados' }))]);
+    [...lateral.children].forEach(l => { l.className = 'ka-vista'; });
+    const tarjeta = el('section', null, 'ka-resumen-tarjeta'), met = el('a', null, 'ka-met-tarjeta'); met.href = '#/riesgos/' + encodeURIComponent(params.empresa) + '/metodologia';
+    const ico = root.KitVistaMetodologia?.ICONOS?.balanza; if (ico) { const s = KC.svg('svg', { viewBox: '0 0 24 24', 'aria-hidden': 'true', class: 'ka-met-icono' }); s.append(KC.svg('path', { d: ico })); met.append(s); }
+    met.append(el('strong', 'Metodología'), el('span', 'Debida diligencia: cómo se calificó la gravedad y la probabilidad de cada riesgo.'));
+    lateral.append(tarjeta, met);
+    const marco = el('div', null, 'ka-marco-oro'), leyenda = el('figcaption', null, 'ka-convenciones'), verMatriz = el('button', 'Matriz de riesgos', 'ka-ver-matriz'); verMatriz.type = 'button';
+    figura.append(marco, leyenda, verMatriz); raiz.append(lateral, figura); contenedor.append(raiz);
+    const visiblesAhora = () => riesgos.filter(r => (!vista.value || vinculo(r).id === vista.value) && (!filtro.value || tipo(r) === filtro.value));
+    const descripcion = () => [vista.value ? VINCULOS.find(v => v.id === vista.value).nombre : 'Todas las relaciones', filtro.value ? (filtro.value === 'Potencial' ? 'potenciales' : 'manifestados') : 'todos los tipos de impacto'].join(' · ');
+    const etiquetaRiesgo = r => `${r.codigo} · ${r.nombre}`;
+    function zoomDe(c) {
+      const lista = visiblesAhora().filter(r => K.gravedad(tecnica(ctx, r.id), cfg)?.nivel === c.gravedad && tecnica(ctx, r.id)?.probabilidad === c.probabilidad);
+      const w = KC.ventana(`Gravedad ${c.gravedad.toLowerCase()} · probabilidad ${c.probabilidad.toLowerCase()}`, 'ka-zoom kr-zoom kr-zoom-' + c.prioridad.toLowerCase(), el);
+      const med = medidasDe(lista);
+      w.panel.append(el('p', `Prioridad ${c.prioridad.toLowerCase()} · ${descripcion()}`, 'ka-zoom-vista'), KC.resumen([[numero(lista.length), lista.length === 1 ? 'Riesgo en la celda' : 'Riesgos en la celda', 'total'], [numero(med.length), 'Medidas asociadas', 'actores'],
+        [numero(med.filter(a => a.estado === cfg.estadoCumplido).length), 'Medidas cumplidas', 'favorable'], ...TIPOS.map(([t, s]) => [numero(lista.filter(r => tipo(r) === t).length), t === 'Potencial' ? 'Impactos potenciales' : 'Impactos manifestados', 'tip-' + s])], el));
+      if (!lista.length) { w.panel.append(el('p', 'No hay riesgos en esta celda con la vista y el filtro elegidos.', 'nota')); return; }
+      const ordenados = [...lista].sort((a, b) => (K.gravedad(tecnica(ctx, b.id), cfg)?.promedio || 0) - (K.gravedad(tecnica(ctx, a.id), cfg)?.promedio || 0) || a.codigo.localeCompare(b.codigo, 'es'));
+      w.panel.append(KC.zoom({ numero, ejeX: 'Probabilidad ' + c.probabilidad.toLowerCase(), ejeY: 'Gravedad (promedio de los tres criterios)', etiqueta: `${lista.length} riesgos en su posición`, xr: [0, 1], yr: RANGOS[c.gravedad], marcasX: false, abrir,
+        puntos: ordenados.map(r => { const v = vinculo(r), g = K.gravedad(tecnica(ctx, r.id), cfg), t = tipo(r);
+          return { id: r.id, dato: r, nombre: etiquetaRiesgo(r), x: .5, y: g.promedio, color: v.color, icono: v.icono, clase: 'ka-tip-' + t.toLowerCase(), etiqueta: `${etiquetaRiesgo(r)}. ${v.nombre}. Impacto ${t.toLowerCase()}. Gravedad ${numero(g.promedio)}. Abrir ficha` }; }) }),
+        KC.leyenda(TIPOS.map(([t, s]) => ['Impacto ' + t.toLowerCase(), 'ka-tip-' + s]), el));
+      w.panel.append(el('p', 'Cada riesgo está a la altura de su gravedad (promedio de los tres criterios). La probabilidad es una categoría, por eso los riesgos de la celda comparten columna; el punto negro marca su posición real.', 'nota ka-zoom-nota'));
+    }
+    verMatriz.onclick = () => {
+      const w = KC.ventana('Matriz de riesgos', 'ka-matriz-dialogo kr-matriz-dialogo', el), filtros = el('div', null, 'kr-filtros'), lista = el('div');
+      const base = visiblesAhora(), opciones = valores => [{ id: '', nombre: 'Todos' }, ...valores];
+      const derecho = seleccionar(filtros, 'Derecho', opciones([...new Set(base.map(r => r.derecho_humano))]));
+      const ambito = seleccionar(filtros, 'Ámbito', opciones([...new Set(base.flatMap(r => r.ambitos || []))]));
+      const prio = seleccionar(filtros, 'Prioridad', opciones([...cfg.niveles, 'Sin calificación']));
+      const validado = seleccionar(filtros, 'Estado de validación', opciones(['Pendiente', 'Revisado', 'Con ajustes', 'Todos confirman']));
+      const pintarLista = () => {
+        lista.replaceChildren();
+        const filtrados = base.filter(r => {
+          const v = K.validacion(r.id, ctx.listas['riesgos-validaciones'], cfg), estado = validado.value;
+          return (!derecho.value || derecho.value === r.derecho_humano) && (!ambito.value || r.ambitos?.includes(ambito.value)) && (!prio.value || prioridad(ctx, r.id) === prio.value) && (!estado || (estado === 'Pendiente' && !v.revisados) || (estado === 'Revisado' && v.revisados) || (estado === 'Con ajustes' && v.revisados > v.confirman) || (estado === 'Todos confirman' && v.revisados > 0 && v.confirman === v.revisados));
+        });
+        const orden = r => { const i = cfg.niveles.indexOf(prioridad(ctx, r.id)); return i < 0 ? cfg.niveles.length : i; };
+        filtrados.sort((a, b) => orden(a) - orden(b) || a.id.localeCompare(b.id));
+        tabla(lista, ['Riesgo', 'Derecho afectado', 'Grupos afectados', 'Relación', 'Tipo de impacto', 'Gravedad', 'Probabilidad', 'Prioridad', 'Medidas', 'Validación'], filtrados.map(r => {
+          const c = tecnica(ctx, r.id), g = K.gravedad(c, cfg), b = boton(etiquetaRiesgo(r), () => abrir(r)); b.className = 'ka-principal';
+          return [b, r.derecho_humano, (r.ambitos || []).join(' · ') || 'Sin registrar', c?.vinculacion || 'Sin calificar', c?.tipo_impacto || 'Sin calificar', g ? `${g.nivel} · ${numero(g.promedio)}` : 'Sin calificar', c?.probabilidad || 'Sin calificar', prioridad(ctx, r.id), numero(medidasDe([r]).length), K.validacion(r.id, ctx.listas['riesgos-validaciones'], cfg).texto];
+        }));
+        if (!filtrados.length) texto(lista, 'No hay riesgos con estos filtros.');
+      };
+      [derecho, ambito, prio, validado].forEach(s => { s.onchange = pintarLista; });
+      w.panel.append(el('p', `${descripcion()}.`, 'nota'), filtros, lista); pintarLista();
     };
-    [derecho, ambito, prio, validado].forEach(s => { s.onchange = pintar; }); const desplegable = el('details', null, 'kr-lista'); desplegable.append(el('summary', 'Ver lista de riesgos'), filtros, lista); contenedor.append(desplegable); accesos(contenedor, params); pintar(); return ctx.limpiar;
+    function pintar() {
+      const visibles = visiblesAhora(), calificados = visibles.filter(r => K.prioridad(tecnica(ctx, r.id), cfg)), med = medidasDe(visibles);
+      tarjeta.replaceChildren(el('h2', 'Resumen'), el('p', descripcion(), 'nota'));
+      const pr = filaResumen(numero(visibles.length), 'Prioridad', 'ka-res-fav'), ul = el('ul');
+      [...cfg.niveles, 'Sin calificación'].forEach(n => { const k = visibles.filter(r => prioridad(ctx, r.id) === n).length; if (n === 'Sin calificación' && !k) return; const li = el('li', null, 'kr-res-' + (n === 'Sin calificación' ? 'sin' : n.toLowerCase())); li.append(el('strong', numero(k)), el('span', n === 'Sin calificación' ? n : 'Prioridad ' + n.toLowerCase())); ul.append(li); });
+      pr.append(ul, el('p', 'Riesgos según su prioridad (gravedad × probabilidad).', 'nota'));
+      const rs = filaResumen(numero(visibles.length), visibles.length === 1 ? 'Riesgo' : 'Riesgos', 'ka-res-gi');
+      [...VINCULOS, SIN_VINCULO].forEach(v => { const de = visibles.filter(r => vinculo(r) === v); if (!de.length) return; const sec = el('div', null, 'ka-res-grupo'), cab = el('div', null, 'ka-res-grupo-cabeza'), img = el('img'), chips = el('div', null, 'ka-chips'); img.src = v.icono; img.alt = ''; img.className = 'ka-res-grupo-icono'; cab.style.setProperty('--gi', v.color); cab.append(img, el('span', v.nombre)); de.forEach(r => { const b = boton(etiquetaRiesgo(r), () => abrir(r)); b.className = 'ka-chip'; chips.append(b); }); sec.append(cab, chips); rs.append(sec); });
+      const derechos = [...new Set(visibles.map(r => r.derecho_humano).filter(Boolean))], dr = filaResumen(numero(derechos.length), derechos.length === 1 ? 'Derecho afectado' : 'Derechos afectados', 'ka-res-actores'), dl = el('ul', null, 'kr-res-lista');
+      derechos.forEach(d => dl.append(el('li', `${d}: ${visibles.filter(r => r.derecho_humano === d).map(r => r.codigo).join(', ')}`))); dr.append(dl);
+      const md = filaResumen(numero(med.length), med.length === 1 ? 'Medida de gestión' : 'Medidas de gestión', 'ka-res-medidas'), ml = el('ul', null, 'kr-res-lista');
+      med.forEach(a => ml.append(el('li', `${a.codigo} · ${a.titulo} (${a.estado})`))); const ir = el('a', 'Ver el plan de medidas', 'kr-res-ir'); ir.href = '#/riesgos/' + encodeURIComponent(params.empresa) + '/medidas'; md.append(ml, ir);
+      tarjeta.append(pr, rs, dr, md);
+      const celdas = [];
+      cfg.niveles.forEach((g, fila) => cfg.probabilidades.forEach((p, columna) => {
+        const prioridadCelda = cfg.prioridad[g][p], en = calificados.filter(r => K.gravedad(tecnica(ctx, r.id), cfg)?.nivel === g && tecnica(ctx, r.id)?.probabilidad === p);
+        celdas.push({ fila, columna, gravedad: g, probabilidad: p, prioridad: prioridadCelda, dato: g + '|' + p, nombre: 'Prioridad ' + prioridadCelda.toLowerCase(), clase: 'kr-zona-' + prioridadCelda.toLowerCase(), cuenta: `${numero(en.length)} ${en.length === 1 ? 'riesgo' : 'riesgos'}`,
+          grupos: [...VINCULOS, SIN_VINCULO].map(v => ({ nombre: v.nombre, color: v.color, icono: v.icono, n: en.filter(r => vinculo(r) === v).length })) });
+      }));
+      marco.replaceChildren(KC.general({ numero, filas: cfg.niveles.length, columnas: cfg.probabilidades.length, ejeX: 'Probabilidad', ejeY: 'Gravedad', etiquetasX: cfg.probabilidades, etiquetasY: cfg.niveles, etiqueta: `Matriz de riesgos: gravedad en filas, probabilidad en columnas, con ${numero(calificados.length)} riesgos calificados`, cuadrantes: celdas, alZoom: zoomDe }));
+      leyenda.replaceChildren();
+      vinculosPresentes.forEach(v => { const s = el('span', v.nombre, 'ka-conv-gi'); s.style.setProperty('--gi', v.color); leyenda.append(s); });
+      leyenda.append(el('span', 'El color de cada celda es su prioridad. El tamaño del círculo es el número de riesgos según la relación de la empresa con el impacto. Haz clic en una celda para ampliarla.', 'nota'));
+    }
+    vista.onchange = pintar; filtro.onchange = pintar; pintar();
+    const pendientes = riesgos.filter(r => !K.prioridad(tecnica(ctx, r.id), cfg));
+    if (pendientes.length) { const s = bloque(contenedor, 'Sin calificación técnica'); pendientes.forEach(r => s.append(boton(etiquetaRiesgo(r), () => abrir(r)))); }
+    accesos(contenedor, params);
+    const limpiar = ctx.limpiar; return () => { limpiar(); KC.ventana.cerrarTodas(); };
   }
   async function esquema(ctx, coleccion) {
     const derechos = coleccion === 'riesgos' ? await json('data/derechos.json') : undefined;

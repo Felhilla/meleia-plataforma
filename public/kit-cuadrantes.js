@@ -28,27 +28,34 @@
     g.append(texto(m.i + (A - m.i - m.d) / 2, H - 6, x + ' →', 'ka-eje-nombre'));
     const cy = m.s + (H - m.s - m.b) / 2, ey = texto(14, cy, y + ' →', 'ka-eje-nombre'); ey.setAttribute('transform', `rotate(-90 14 ${cy})`); g.append(ey);
   }
-  // cuadrantes: [{ nombre, izq, arriba, clase, cuenta, grupos: [{ nombre, color, icono, n }] }]
-  function general({ cuadrantes, ejeX, ejeY, etiqueta, numero, alZoom }) {
-    const A = 720, H = 480, m = { i: 30, d: 6, s: 6, b: 28 }, w = A - m.i - m.d, h = H - m.s - m.b, cx = m.i + w / 2, cy = m.s + h / 2;
-    const g = svg('svg', { viewBox: `0 0 ${A} ${H}`, role: 'group', 'aria-label': etiqueta, class: 'ka-matriz-svg ka-general' });
+  // cuadrantes: [{ nombre, izq, arriba (o fila, columna), clase, cuenta, grupos: [{ nombre, color, icono, n }] }]
+  // Con filas/columnas > 2 la matriz es una cuadrícula (Módulo IV: 3 × 3); etiquetasX/Y rotulan cada columna y fila.
+  function general({ cuadrantes, ejeX, ejeY, etiqueta, numero, alZoom, filas = 2, columnas = 2, etiquetasX, etiquetasY }) {
+    const A = 720, H = 480, m = { i: etiquetasY ? 62 : 30, d: 6, s: 6, b: etiquetasX ? 46 : 28 }, w = A - m.i - m.d, h = H - m.s - m.b, cw = w / columnas, ch = h / filas;
+    const g = svg('svg', { viewBox: `0 0 ${A} ${H}`, role: 'group', 'aria-label': etiqueta, class: 'ka-matriz-svg ka-general' + (filas > 2 ? ' ka-rejilla' : '') });
     const maximo = Math.max(1, ...cuadrantes.flatMap(c => c.grupos.map(x => x.n)));
+    // El tamaño es comparable entre celdas: todos los círculos usan el mismo tope.
+    const anchoFila = Math.max(1, ...cuadrantes.map(c => Math.min(3, c.grupos.filter(x => x.n).length)));
     cuadrantes.forEach(c => {
-      const x0 = c.izq ? m.i : cx, y0 = c.arriba ? m.s : cy, grupo = svg('g', { class: 'ka-cuadrante-boton' }), items = c.grupos.filter(x => x.n);
-      grupo.append(svg('rect', { x: x0, y: y0, width: w / 2, height: h / 2, class: 'ka-zona ' + c.clase }));
+      const col = c.columna ?? (c.izq ? 0 : 1), fil = c.fila ?? (c.arriba ? 0 : 1), x0 = m.i + col * cw, y0 = m.s + fil * ch, grupo = svg('g', { class: 'ka-cuadrante-boton' }), items = c.grupos.filter(x => x.n);
+      if (c.dato) grupo.setAttribute('data-celda', c.dato);
+      grupo.append(svg('rect', { x: x0, y: y0, width: cw, height: ch, class: 'ka-zona ' + c.clase }));
       grupo.append(texto(x0 + 14, y0 + 24, c.nombre, 'ka-zona-nombre', 'start'), texto(x0 + 14, y0 + 42, c.cuenta, 'ka-zona-cuenta', 'start'));
-      const filas = []; for (let i = 0; i < items.length; i += 3) filas.push(items.slice(i, i + 3));
-      const altoFila = (h / 2 - 60) / Math.max(1, filas.length), rMax = filas.length > 1 ? 30 : 40;
-      filas.forEach((fila, f) => fila.forEach((it, j) => {
-        const x = x0 + (w / 2) * (j + 1) / (fila.length + 1), r = 13 + (rMax - 13) * Math.sqrt(it.n / maximo), yc = y0 + 52 + altoFila * (f + .5) - 9;
+      const porFila = cw < 300 ? 3 : 3, filasC = []; for (let i = 0; i < items.length; i += porFila) filasC.push(items.slice(i, i + porFila));
+      const altoFila = (ch - 60) / Math.max(1, filasC.length), rMax = Math.min(filasC.length > 1 ? 30 : 40, altoFila / 2 - 9);
+      filasC.forEach((fila, f) => fila.forEach((it, j) => {
+        const tope = Math.min(rMax, cw / (anchoFila + 1) / 2 - 3), r = Math.max(10, Math.min(tope, 10 + (tope - 10) * Math.sqrt(it.n / maximo))), x = x0 + cw * (j + 1) / (fila.length + 1), yc = y0 + 52 + altoFila * (f + .5) - 9;
         grupo.append(svg('circle', { cx: x, cy: yc, r, class: 'ka-gi-circulo', fill: it.color, stroke: it.color }), icono(it.icono, x, yc, r * 1.15));
         const t = texto(x, yc + r + 17, numero(it.n), 'ka-gi-numero'); t.setAttribute('fill', it.color); grupo.append(t);
       }));
-      if (!items.length) grupo.append(texto(x0 + w / 4, y0 + h / 4 + 10, 'Sin elementos', 'ka-zona-vacia'));
+      if (!items.length) grupo.append(texto(x0 + cw / 2, y0 + ch / 2 + 14, 'Sin elementos', 'ka-zona-vacia'));
       comoBoton(grupo, `${c.nombre}: ${c.cuenta}${items.length ? ' (' + items.map(it => `${it.nombre} ${numero(it.n)}`).join(', ') + ')' : ''}. Ampliar el cuadrante`, () => alZoom(c));
       g.append(grupo);
     });
-    g.append(svg('line', { x1: cx, y1: m.s, x2: cx, y2: m.s + h, class: 'ka-cruz' }), svg('line', { x1: m.i, y1: cy, x2: m.i + w, y2: cy, class: 'ka-cruz' }));
+    for (let k = 1; k < columnas; k++) g.append(svg('line', { x1: m.i + k * cw, y1: m.s, x2: m.i + k * cw, y2: m.s + h, class: 'ka-cruz' }));
+    for (let k = 1; k < filas; k++) g.append(svg('line', { x1: m.i, y1: m.s + k * ch, x2: m.i + w, y2: m.s + k * ch, class: 'ka-cruz' }));
+    etiquetasX?.forEach((t, k) => g.append(texto(m.i + cw * (k + .5), m.s + h + 18, t, 'ka-eje-valor')));
+    etiquetasY?.forEach((t, k) => g.append(texto(m.i - 8, m.s + ch * (k + .5) + 4, t, 'ka-eje-valor', 'end')));
     ejes(g, A, H, m, ejeX, ejeY);
     return g;
   }
@@ -70,13 +77,13 @@
     }
   }
   // puntos (en orden de prioridad): [{ nombre, x, y, color, icono, clase, etiqueta, dato }]
-  function zoom({ xr, yr, ejeX, ejeY, puntos, numero, abrir, etiqueta, grandes = GRANDES }) {
-    const A = 900, H = 600, m = { i: 46, d: 14, s: 14, b: 40 }, bx = 80, by = 46;
+  function zoom({ xr, yr, ejeX, ejeY, puntos, numero, abrir, etiqueta, grandes = GRANDES, marcasX = true }) {
+    const A = 900, H = 600, m = { i: 58, d: 14, s: 14, b: 40 }, bx = 80, by = 46;
     const X = v => m.i + bx + (v - xr[0]) / (xr[1] - xr[0]) * (A - m.i - m.d - 2 * bx), Y = v => H - m.b - by - (v - yr[0]) / (yr[1] - yr[0]) * (H - m.s - m.b - 2 * by);
     const g = svg('svg', { viewBox: `0 0 ${A} ${H}`, role: 'group', 'aria-label': etiqueta, class: 'ka-matriz-svg ka-zoom-svg' });
     g.append(svg('rect', { x: m.i, y: m.s, width: A - m.i - m.d, height: H - m.s - m.b, class: 'ka-zoom-area' }));
     const marcas = r => { const largo = r[1] - r[0], paso = largo <= 1 ? .25 : largo <= 2.5 ? .5 : 1, v = [r[0], r[1]]; for (let t = Math.ceil(r[0] / paso) * paso; t < r[1] - 1e-9; t += paso) if (t > r[0] + paso * .4 && t < r[1] - paso * .4) v.push(Math.round(t * 100) / 100); return v.sort((a, b) => a - b); };
-    marcas(xr).forEach(v => g.append(svg('line', { x1: X(v), y1: m.s, x2: X(v), y2: H - m.b, class: 'ka-guia' }), texto(X(v), H - m.b + 18, numero(v), 'ka-eje-valor')));
+    if (marcasX) marcas(xr).forEach(v => g.append(svg('line', { x1: X(v), y1: m.s, x2: X(v), y2: H - m.b, class: 'ka-guia' }), texto(X(v), H - m.b + 18, numero(v), 'ka-eje-valor')));
     marcas(yr).forEach(v => g.append(svg('line', { x1: m.i, y1: Y(v), x2: A - m.d, y2: Y(v), class: 'ka-guia' }), texto(m.i - 8, Y(v) + 4, numero(v), 'ka-eje-valor', 'end')));
     ejes(g, A, H, m, ejeX, ejeY);
     const nodos = puntos.map((p, i) => { const grande = i < grandes; return { p, grande, ax: X(p.x), ay: Y(p.y), hw: grande ? 64 : 8, hh: grande ? 46 : 8, oy: grande ? 18 : 0 }; });
