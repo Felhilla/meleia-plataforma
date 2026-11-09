@@ -121,7 +121,7 @@
         // 9-nov (Felipe): sin numeración en los segmentos ni en las tarjetas; el ícono o el logo ocupa todo el espacio posible.
         const [cx, cy] = punto(RN, medio); nodosActuales.push([cx, cy]);
         // E46 (boceto Aliados, 6-nov): en Equipo la foto y en Aliados el logo crecen y se integran al gráfico.
-        const rN = n > 5 ? 60 : n > 3 ? 70 : 76;
+        const rN = Math.min(n > 5 ? 60 : n > 3 ? 70 : 76, Math.floor(RN * Math.sin(paso * Math.PI / 360)) - 3); // sin montarse aunque haya muchos
         const [ancho, alto] = item.nodo.tarjeta === 'foto' ? (n > 3 ? [132, 132] : [150, 150]) : item.nodo.tarjeta === 'logo' ? [184, 104] : [2 * rN, 2 * rN];
         // 9-nov (Felipe): las guías son siempre rectas (horizontales); con muchos elementos el título se compacta (ver CSS).
         const yT = cy;
@@ -164,7 +164,8 @@
       });
       const centro = svg('g', { class: 'kit-serv-centro' });
       centro.append(svg('circle', { cx: C[0], cy: C[1], r: 158 }));
-      const t0 = svg('text', { x: C[0], y: C[1] - 52, 'text-anchor': 'middle', class: 'kit-serv-centro-ante' }); t0.textContent = 'MELEIA'; centro.append(t0);
+      // 9-nov (Felipe): el centro lleva el logo de Meleia en lugar del texto.
+      const t0 = svg('image', { href: 'img/logo-meleia-grande-claro.png', x: C[0] - 78, y: C[1] - 112, width: 156, height: 64, class: 'kit-serv-centro-logo', role: 'img', 'aria-label': 'Meleia' }); centro.append(t0);
       let lineas, extra = [];
       if (tema.centro) {
         // Experiencia: las cifras van en el centro, grandes, y el centro abre el listado de clientes.
@@ -274,7 +275,28 @@
       fila.append(cifra);
       return [cabeza({ icono: x.icono, sigla: x.clientes[0]?.sigla }, i, 'Sector ' + dos(i), x.sector),
         mono('¿Qué hemos hecho en este sector?', 'kit-ficha-sub'), caja(vistos.size ? hecho : el('p', 'Por confirmar.')),
-        mono('Clientes', 'kit-ficha-sub'), fila];
+        mono('Clientes', 'kit-ficha-sub'), fila, ...metodologiasSector(x)];
+    }
+    // 9-nov (Felipe): cada sector se relaciona con sus estándares sectoriales (Metodologías). Si no hay uno específico,
+    // el botón lleva directamente a las metodologías con las que trabajamos.
+    function metodologiasSector(x) {
+      const grupos = (met?.categorias || []).flatMap(c => c.grupos || []).filter(g => (g.sectores || []).includes(x.sector));
+      const salida = [mono('Metodologías del sector', 'kit-ficha-sub')];
+      if (grupos.length) {
+        const fila = el('div', null, 'kit-sector-metodologias');
+        grupos.forEach(g => g.estandares.forEach(e => {
+          const b = el('button', null, 'kit-est-tarjeta kit-sector-estandar'); b.type = 'button';
+          b.append(el('span', e.sigla || e.nombre, 'kit-est-tarjeta-sigla'), el('span', g.nombre, 'kit-est-tarjeta-tipo'));
+          b.setAttribute('aria-label', `${e.sigla}: ${e.nombre}. Abrir la ficha`);
+          b.onclick = () => abrir({ titulo: e.sigla || e.nombre, clase: 'kit-ficha-metodologias', origen: b, nodos: () => fichaEstandar(e, 0) });
+          fila.append(b);
+        }));
+        salida.push(fila);
+      } else salida.push(el('p', 'No hay un estándar específico para este sector: aplican las metodologías generales.', 'nota'));
+      const todas = el('button', grupos.length ? 'Ver todas las metodologías →' : 'Ir a las metodologías →', 'kit-sector-ir-met'); todas.type = 'button';
+      todas.onclick = () => abrir({ titulo: 'Metodologías por enfoque', origen: todas, nodos: () => fichaTodasMetodologias() });
+      salida.push(todas);
+      return salida;
     }
     // Listado de clientes: todos por sector (desde el centro) o solo los de un sector (desde su ficha).
     function fichaClientes(solo) {

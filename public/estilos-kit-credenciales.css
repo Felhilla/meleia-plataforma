@@ -272,3 +272,14 @@ textarea.kit-contacto-campo { border-radius: 24px; resize: vertical; }
   .kit-serv-titulos.compacto .kit-serv-titulo-texto { font-size: clamp(1rem, 1.5vw, 1.3rem); white-space: nowrap; line-height: 1.2; }
   .kit-serv-titulos.compacto .kit-serv-ver { grid-column: 2; font-size: var(--t-micro); }
 }
+/* 9-nov: metodologías de cada sector en su ficha. */
+.kit-sector-metodologias { display: flex; flex-wrap: wrap; gap: var(--e2); }
+.kit-sector-estandar { min-width: 150px; }
+.kit-sector-ir-met { margin-top: var(--e3); padding: 10px 16px; border: 1px solid var(--oro); border-radius: var(--radio-chico); background: transparent; color: var(--texto); font: inherit; font-weight: 600; cursor: pointer; }
+.kit-sector-ir-met:hover, .kit-sector-ir-met:focus-visible { background: color-mix(in srgb, var(--oro) 18%, transparent); }
+.kit-serv-centro-logo { pointer-events: none; }
+.kit-serv-titulos.compacto .kit-serv-titulo .kit-mono { white-space: nowrap; }
+.kit-sector-metodologias .kit-sector-estandar { display: grid; gap: 2px; width: auto; min-width: 140px; padding: 10px 14px; border: 1px solid var(--borde-fuerte); border-radius: var(--radio-chico); background: var(--fondo-alterno); color: var(--texto); text-align: left; cursor: pointer; font: inherit; }
+.kit-sector-metodologias .kit-sector-estandar:hover, .kit-sector-metodologias .kit-sector-estandar:focus-visible { border-color: var(--oro); }
+.kit-sector-metodologias .kit-est-tarjeta-sigla { font-family: var(--fuente-titulos); font-size: 1.1rem; }
+.kit-sector-metodologias .kit-est-tarjeta-tipo { font-size: var(--t-micro); color: var(--texto-suave); }

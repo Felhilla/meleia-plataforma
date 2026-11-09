@@ -44,26 +44,14 @@
       const document = root.document, el = App.el;
       const contenido = document.getElementById('contenido'), cuenta = document.getElementById('kit-cuenta'), nav = document.getElementById('kit-nav');
       let usuario, empresas = [], revision = 0, limpieza;
-      const leer = k => { try { return root.localStorage.getItem(k); } catch (_) { return null; } };
-      const guardar = (k, v) => { try { root.localStorage.setItem(k, v); } catch (_) { /* Comodidad opcional. */ } };
-      const media = root.matchMedia?.('(prefers-color-scheme: dark)');
-      let tema = leer('gh-meleia-tema-v2');
       const botonMenu = document.getElementById('kit-menu') || { hidden: true, setAttribute() {}, addEventListener() {} };
       function menu(abrir) { nav.classList?.toggle('abierto', abrir); botonMenu.setAttribute('aria-expanded', String(abrir)); botonMenu.setAttribute('aria-label', abrir ? 'Cerrar el menú' : 'Abrir el menú'); }
       botonMenu.addEventListener('click', () => menu(botonMenu.getAttribute?.('aria-expanded') !== 'true'));
       nav.addEventListener?.('click', e => { if (e.target.closest?.('a')) menu(false); });
       root.document?.addEventListener?.('keydown', e => { if (e.key === 'Escape' && botonMenu.getAttribute?.('aria-expanded') === 'true') { menu(false); botonMenu.focus?.(); } });
-      const botonTema = document.getElementById('tema');
-      function aplicarTema() {
-        // 9-nov (Felipe): el tema oscuro es el predeterminado; el claro solo si la persona lo elige con el botón.
-        const oscuro = tema !== 'claro';
-        document.documentElement.dataset.tema = oscuro ? 'oscuro' : 'claro';
-        botonTema.textContent = oscuro ? '☀' : '☾';
-        botonTema.setAttribute('aria-label', oscuro ? 'Activar tema claro' : 'Activar tema oscuro');
-        botonTema.setAttribute('aria-pressed', String(!!oscuro));
-      }
-      botonTema.onclick = () => { tema = document.documentElement.dataset.tema === 'oscuro' ? 'claro' : 'oscuro'; guardar('gh-meleia-tema-v2', tema); aplicarTema(); };
-      media?.addEventListener?.('change', aplicarTema); aplicarTema();
+      // 9-nov (Felipe): el Kit solo tiene tema oscuro. Se quita el botón de tema y no se lee ninguna preferencia guardada.
+      document.documentElement.dataset.tema = 'oscuro';
+      document.getElementById('tema')?.remove?.();
       const saltar = document.querySelector('.saltar');
       saltar.onclick = e => { e.preventDefault(); contenido.focus(); };
       // E64 (9-nov, Felipe): el caso se identifica con su logo, en un recuadro blanco grande (como en Aliados). Meleia es la

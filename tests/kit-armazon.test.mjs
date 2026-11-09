@@ -131,7 +131,7 @@ test('DOM E46: temas en semicírculo, fichas flotantes y caso con entregables en
   await boton('equipo').onclick(); assert.equal(titulos().length, 4); titulos()[1].onclick(); assert.match(capa.textContent, /Felipe Hillón/);
   await boton('aliados').onclick(); assert.equal(titulos().length, 4); assert.equal(capa.hidden, true);
   // Sin logos confirmados, los casos siguen anonimizados (sin imágenes de clientes).
-  await boton('experiencia').onclick(); assert.ok(!todos().some(n => n.tag === 'image' || (n.tag === 'img' && /logo/.test(n.className || '') && !/hero/.test(n.className))));
+  await boton('experiencia').onclick(); assert.ok(!todos().some(n => (n.tag === 'image' && !/logo-meleia/.test(n.attrs?.href || '')) || (n.tag === 'img' && /logo/.test(n.className || '') && !/hero/.test(n.className))));
 });
 test('DOM E24: selector accesible con uno o varios casos y pestaña Mapa de actores', async () => {
   const una = await montar({ empresas: muestras, hash:'#/ddhh' });
