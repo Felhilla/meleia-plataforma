@@ -327,18 +327,27 @@
     // E64: ficha de una categoría de Metodologías (Muñeca Rusa): cada estándar abre su propia ficha.
     function fichaCategoria(c, i) {
       const bloques = c.grupos ? c.grupos : [{ estandares: c.estandares || [] }], salida = [cabeza({ icono: c.icono }, i, 'Enfoque ' + dos(i), c.nombre), caja(el('p', c.descripcion || ''))];
-      bloques.forEach(g => {
+      // 9-nov (Felipe): mismo modelo que la ventana Estándares de la Metodología: portadas en carrusel con flechas.
+      bloques.forEach((g, k) => {
         if (g.nombre) salida.push(mono(g.nombre, 'kit-ficha-sub'));
-        const fila = el('div', null, 'kit-met-estandares');
-        g.estandares.forEach(e => {
-          const b = el('button', null, 'kit-met-estandar'); b.type = 'button';
-          b.append(el('span', e.sigla || e.nombre, 'kit-met-estandar-sigla'), el('span', e.nombre || '', 'kit-met-estandar-nombre'));
+        const pista = el('ul', null, 'kit-est-pista');
+        g.estandares.forEach((e, j) => {
+          const port = el('span', null, 'kit-est-portada kit-est-portada-tipo'); port.setAttribute('aria-hidden', 'true');
+          port.style?.setProperty?.('--color', e.color || COLORES[(j + k) % COLORES.length]);
+          port.append(el('span', e.sigla || e.nombre, 'kit-est-portada-sigla'), el('span', e.emisor || '', 'kit-est-portada-emisor'));
+          const b = el('button', null, 'kit-est-tarjeta'); b.type = 'button';
+          b.append(port, el('span', e.sigla || e.nombre, 'kit-est-tarjeta-sigla'), el('span', e.tipo || '', 'kit-est-tarjeta-tipo'));
           b.setAttribute('aria-label', `${e.sigla}: ${e.nombre}. Abrir la ficha`);
           b.onclick = () => abrir({ titulo: e.sigla || e.nombre, clase: 'kit-ficha-metodologias', origen: b, nodos: () => fichaEstandar(e, i) });
-          fila.append(b);
+          const li = el('li'); li.style?.setProperty?.('--i', j); li.append(b); pista.append(li);
         });
-        salida.push(fila);
+        const mover = d => () => pista.scrollBy?.({ left: d * (pista.clientWidth || 600) * .8, behavior: sinMovimiento() ? 'auto' : 'smooth' });
+        const flecha = (t, r, d) => { const f = el('button', null, 'kit-est-flecha'); f.type = 'button'; f.append(el('span', t)); f.setAttribute('aria-label', r); f.onclick = mover(d); return f; };
+        const carrusel = el('div', null, 'kit-est-carrusel kit-met-carrusel');
+        carrusel.append(flecha('←', 'Ver los estándares anteriores', -1), pista, flecha('→', 'Ver más estándares', 1));
+        salida.push(carrusel);
       });
+      salida.push(el('p', `${plural(estandaresDe(c).length, 'estándar', 'estándares')}. Toque una portada para ver su ficha.`, 'nota kit-met-carrusel-nota'));
       return salida;
     }
     // E64: desde el centro, todas las metodologías por categoría (cada una abre su ficha).
