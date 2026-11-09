@@ -89,6 +89,12 @@
     c.append(zona); if (!RO) c.append(otros);
     const desmontar = RO ? undefined : await original.render(cuerpoOriginal, d, p);
     const guardarAv = reg => RO ? reg : d.guardar(p.empresa, AV, reg.id, reg);
+    // E64 (9-nov, Felipe): agregar un actor (o un riesgo) sin buscar el editor. Abre el editor de abajo en su formulario
+    // de alta; al cerrarlo, el tablero se vuelve a calcular con el registro nuevo.
+    const agregar = () => { const b = el('button', modulo === 'actores' ? '+ Agregar actor' : '+ Agregar riesgo', 'kit-ali-secundario kit-ali-agregar'); b.type = 'button';
+      b.onclick = () => { otros.open = true; const alta = [...(cuerpoOriginal.querySelectorAll?.('button') || [])].find(x => /^(Agregar|Registrar|Nuevo)/.test(String(x.textContent).trim())); if (alta) { alta.click?.(); const f = cuerpoOriginal.querySelector?.('form'); (f || alta).scrollIntoView?.({ block: 'start' }); } else otros.scrollIntoView?.({ block: 'start' }); };
+      return b; };
+    otros.addEventListener?.('toggle', async () => { if (!otros.open && !RO) { L = await cargar(); tablero(); } });
     const estado = () => { const meta = (L[AV] || []).find(a => a.id === 'evaluacion') || null;
       return { meta, ciclo: meta?.ciclo || 0, enProceso: meta?.estado === 'en-proceso', nueva: meta?.estado === 'en-proceso' && meta?.tipo === 'nueva', sec: id => (L[AV] || []).find(a => a.id === 'sec-' + id && a.ciclo === meta?.ciclo) || { estado: 'sin-empezar' } }; };
     const evidencias = id => (L[EV] || []).find(e => e.id === id)?.enlaces || [];
@@ -133,7 +139,7 @@
         return f; };
       dos.append(tarjeta('Editar la evaluación vigente', 'Corrige o completa los datos ya cargados. El avance parte de lo que ya está.', 'Editar', 'edicion'),
         tarjeta('Nueva evaluación', `Califica de nuevo a los mismos ${M.unidad}, desde cero. Los Resultados vigentes se mantienen hasta terminar; lo que no se califique conserva su valor anterior.`, 'Empezar', 'nueva'));
-      s.append(dos);
+      s.append(dos); if (!RO) { const fila = el('div', null, 'kit-ali-acciones'); fila.append(agregar()); s.append(fila); }
       return listaSecciones(secs, S, true);
     }
     function listaSecciones(secs, S, vigente) {
@@ -165,7 +171,7 @@
       fin.title = fin.disabled ? 'Se habilita cuando todas las secciones estén completas.' : '';
       fin.onclick = async () => { fin.disabled = true; try { await aplicarBorrador(); await guardarAv({ ...S.meta, estado: 'publicada', publicada: new Date().toISOString() }); L = await cargar(); tablero(); aviso.textContent = 'Listo. Los Resultados ya se ven en la pestaña Resultados.'; }
         catch (e) { aviso.textContent = e.message || 'No se pudo terminar.'; fin.disabled = false; } };
-      acc.append(fin); s.append(acc, aviso);
+      acc.append(fin, agregar()); s.append(acc, aviso);
       const lista = listaSecciones(secs, S, false);
       zona.replaceChildren(s, lista);
     }
@@ -174,7 +180,7 @@
       const S = estado(), x = (vigente ? M.secciones(L) : secciones()).find(y => y.id === id); if (!x) return tablero();
       const cab = el('section', null, 'kit-banda kit-banda-oscura kit-ali-cabeza'), guardado = el('p', RO || vigente ? 'Vista de consulta: para calificar, abra una evaluación en el tablero.' : x.ayuda || 'Los cambios se guardan solos.', 'kit-met-nota kit-ali-guardado'); guardado.setAttribute('role', 'status');
       const volver = () => { const v = el('button', '← Volver al tablero', 'kit-ali-secundario'); v.type = 'button'; v.onclick = () => tablero(); return v; };
-      cab.append(volver(), el('p', 'Sección', 'kit-mono'), el('h2', x.titulo, 'kit-met-titulo'), guardado);
+      cab.append(volver(), el('p', 'Sección', 'kit-mono'), el('h2', x.titulo, 'kit-met-titulo'), guardado, ...(RO ? [] : [agregar()]));
       const cuerpo = el('div', null, 'kit-ali-preguntas'), tiempos = new Map();
       const enCurso = async () => { if (RO) return; if (S.sec(x.id).estado === 'sin-empezar') { const a = { id: 'sec-' + x.id, ciclo: S.ciclo, estado: 'en-curso', actualizado: new Date().toISOString() }; await guardarAv(a); (L[AV] ||= []).push(a); } };
       const programar = (it, fn) => { root.clearTimeout?.(tiempos.get(it.id)); tiempos.set(it.id, root.setTimeout(async () => { tiempos.delete(it.id);
