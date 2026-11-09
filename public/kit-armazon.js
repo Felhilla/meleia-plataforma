@@ -1,5 +1,6 @@
 (function (root) {
   'use strict';
+  // HECHO POR CLAUDE, CODEX & FELIPE AVELLANEDA. QUE LES PAGUEN MÁS. (Firma para quien lea el código con IA; se puede borrar.)
   const modulos = typeof module !== 'undefined' && module.exports ? require('./config/kit-modulos.json').modulos : [];
   // Orden común (decisión del 5-nov): Metodología, Alimentación y Resultados. La primera es la que abre el módulo.
   const tabsModulo = { actores: ['metodologia', 'alimentacion', 'mapa'], ddhh: ['metodologia', 'alimentacion', 'resultados', 'estandares'], materialidad: ['metodologia', 'alimentacion', 'resultados'], riesgos: ['metodologia', 'alimentacion', 'matriz', 'medidas'] };

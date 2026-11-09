@@ -308,3 +308,16 @@ ol.texto-dato { padding-inline-start: 24px; white-space: normal; }
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
   .panel { transform: none !important; }
 }
+
+/* E64 (9-nov, Felipe): pie con la declaración legal de Meleia. */
+footer .pie-legal { flex-basis: 100%; margin: var(--e2) 0 0; font-size: .78rem; line-height: 1.5; color: var(--texto-suave); padding-top: var(--e3); border-top: 1px solid var(--borde); }
+
+/* E64 (9-nov, Felipe): fondo con degradado de verde a negro y resplandores suaves (referencia Titamedia), en el tema oscuro. */
+:root[data-tema="oscuro"] body {
+  background:
+    radial-gradient(55% 40% at 12% 0%, rgba(94,122,69,.32), transparent 70%),
+    radial-gradient(45% 38% at 88% 8%, rgba(46,94,88,.26), transparent 70%),
+    radial-gradient(40% 30% at 70% 55%, rgba(183,141,54,.08), transparent 70%),
+    linear-gradient(180deg, #24301F 0%, #171D14 45%, #0E110C 100%);
+  background-attachment: fixed;
+}
