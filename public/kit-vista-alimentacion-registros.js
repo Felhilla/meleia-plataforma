@@ -100,7 +100,7 @@
     const evidencias = id => (L[EV] || []).find(e => e.id === id)?.enlaces || [];
     // E64: "Nueva evaluación" parte en blanco. Las calificaciones van a <modulo>-borrador y los registros vigentes no se tocan
     // hasta "Terminar". "Editar la evaluación vigente" califica directo sobre los registros (como antes).
-    const claveB = (S, x, it) => `${S.ciclo}:${x.id}:${it.id}`;
+    const claveB = (S, x, it) => claveBorrador(S.ciclo, x.id, it.id);
     const secciones = () => { const S = estado(), secs = M.secciones(L); if (!S.nueva) return secs;
       return secs.map(x => !x.campos.length ? x : { ...x, items: x.items.map(it => { const b = (L[BO] || []).find(r => r.id === claveB(S, x, it)), reg = { ...it.registro };
         x.campos.forEach(cp => { reg[cp.id] = b?.valores?.[cp.id]; }); return { ...it, registro: reg, borrador: true }; }) }); };
@@ -261,7 +261,10 @@
     const apagar = () => zona.querySelectorAll?.('.kit-ali-preguntas input, .kit-ali-preguntas select, .kit-ali-preguntas textarea, .kit-ali-preguntas button, .kit-ali-calcular, .kit-ali-pie .kit-met-pastilla, .kit-ali-dimensiones input, .kit-ali-dimensiones textarea').forEach(n => { n.disabled = true; });
     if (root.MutationObserver) new root.MutationObserver(apagar).observe(zona, { childList: true, subtree: true });
   }
-  const api = { MODULOS, enlaceValido, enProceso, VISTA, soloLectura };
+  // E68 (9-nov): el id del borrador debe cumplir la regla de la base (^[a-z0-9-]{1,80}$, kit-datos.js). Antes usaba «:» y
+  // la base lo rechazaba («Identificador inválido»): «Nueva evaluación» de los Módulos I y IV no guardaba nada.
+  function claveBorrador(ciclo, seccion, item) { return `c${ciclo}-${seccion}-${item}`.toLowerCase().replace(/[^a-z0-9-]+/g, '-').slice(0, 80); }
+  const api = { MODULOS, enlaceValido, enProceso, VISTA, soloLectura, claveBorrador };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.KitAlimentacionRegistros = api;
 }(typeof window !== 'undefined' ? window : globalThis));

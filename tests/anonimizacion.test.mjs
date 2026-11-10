@@ -29,7 +29,8 @@ test('sin términos prohibidos en contenido ni nombres de archivos y carpetas', 
       if (path.relative(root, ruta) === 'public/config/kit-modulos.json') {
         const config = JSON.parse(contenido);
         const modulo = config.modulos.find(m => m.id === 'materialidad');
-        assert.equal(modulo.casos.length, 1);
+        // E68 (9-nov): además del caso, la empresa de Meleia (empresa-demo), que alimenta los 4 módulos (orden del 6-nov).
+        assert.deepEqual(modulo.casos.slice(1), ['empresa-demo']);
         assert.equal(createHash('sha256').update(modulo.casos[0]).digest('hex'), '56430f5b7fb61dc8b60c2bbb16d3b6f2f4e5154aded422375cf77acf45b19ad5');
         modulo.casos = [];
         contenido = JSON.stringify(config);
